@@ -32,7 +32,7 @@ Because storage is per-browser, a course set up on one computer does not appear 
 
 ## First run
 
-On first open with no saved courses, the engine seeds your existing **BIO 004, CRN 60099** course (23 enrolled, 20 wait-list with add codes, Mon to Thu across Weeks 1 and 2, teams on, team names Femur, Scapula, Cranium, Patella, Sternum, Mandible) so nothing from the original tool is lost and you have a live example to copy.
+The engine starts **blank**. On first open with no saved courses it opens the setup wizard so a professor can enter the course identity (title, institution, course and section, term, CRN, instructor), set the meeting schedule, choose team-based or not, and import a roster. Clicking **Save course** creates and stores it. From then on the engine opens to the last course used. To rebuild your BIO 004 roster, create a course and paste or upload the class list and wait list.
 
 ## Reuse and accessibility
 

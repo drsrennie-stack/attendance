@@ -292,7 +292,7 @@
   function nameHtml(st){var n=esc(st.name);if(st.conf)n+=' <sup class="conf" title="FERPA confidential / directory hold">[C]</sup>';return n;}
   function byName(a,b){return a.name.toLowerCase().localeCompare(b.name.toLowerCase());}
   function byPos(a,b){return (a.pos||999)-(b.pos||999)||byName(a,b);}
-  function lst(status,cmp){return state.students.filter(function(s){return s.status===status;}).sort(cmp||function(){return 0;});}
+  function lst(status,cmp){return state?state.students.filter(function(s){return s.status===status;}).sort(cmp||function(){return 0;}):[];}
   function today(){var d=new Date();return ('0'+(d.getMonth()+1)).slice(-2)+'/'+('0'+d.getDate()).slice(-2)+'/'+d.getFullYear();}
   function uid(p){return (p||'s')+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);}
 
@@ -622,26 +622,15 @@
   $('setupBtn').addEventListener('click',function(){if(!state){openSetup(false);}else openSetup(true);});
   $('newCourseBtn').addEventListener('click',function(){openSetup(false);});
 
-  // ===================== seed first-run BIO 004 =====================
-  function seedBio004(){
-    var enrolled=["Addison, Tobias","Alvarado De La Cruz, Xiomara","Anderson, Sidney","Falk, Malia","Felix, Lizette","Garcia, Emely","Godinez Alvarado, Hemma","Greenwood, Chanel","Guevara, Daisy","Guizar, Samantha [C]","Harris, Andrea","Horna, Brianna","Jones, Damiyah","Kaur, Harbeen","Lea, Isabella","Magno, Aaliyah","Mcintyre, Shelby","Oregel, Ylana","Panush, Tyler","Valle, Alejandra","Watson, Aaliyah","Welsh, Mikayla","Wenceslao, Araceli"];
-    var wl=[["Villicana Cervantes, Lizette [C]","07CHJ0"],["Marin, Alexandra","4MFFEV"],["Patindol, Bianca","4TJRF6"],["Vazquez, Justino [C]","5BD7S3"],["Martinez Gaitan, Brenda [C]","6QSDPJ"],["Thurston, Hannah","7V4QQC"],["Nguyen, Jasmine [C]","BKYFIB"],["Garcia Casanova, Bertha","BMDKWC"],["Lynch, Marissa","BSGH9Q"],["Cancino, Roxjanjanea","C3ASL3"],["Salindong, Elian","DFY2JI"],["Castro, Jazlyn","EZUOKZ"],["Vazquez, Manuel","F1JP7Q"],["Flanagan, Morgan","FTS8IY"],["Espino, Kayla Erika","G5V1RH"],["Torres, Yareli","GHXQSP"],["Cacuyog, Sophia","GW47WS"],["Robles, Tania","GZBU0T"],["Tran, Bryant","HZS0OM"],["Miller, Alana","I87018"]];
-    var enr=enrolled.map(function(n){var c=/\[c\]/i.test(n);return {name:n.replace(/\s*\[c\]/ig,'').trim(),conf:c,code:'',pos:null};});
-    var wls=wl.map(function(p,i){var n=p[0];var c=/\[c\]/i.test(n);return {name:n.replace(/\s*\[c\]/ig,'').trim(),conf:c,code:p[1],pos:i+1};});
-    var d=genDays('2026-06-15',[1,2,3,4],2); // Mon-Thu, Weeks 1-2
-    var id=uid('c');
-    var meta={title:'Interactive Roll & Teams',institution:'Solano Community College',course:'BIO 004 · Human Anatomy',term:'Summer 2026 Intensive',crn:'60099',instructor:'Dr. Sharilyn Rennie'};
-    var c={id:id,meta:meta,schedule:{start:'2026-06-15',weeks:2,weekdays:[1,2,3,4]},days:d,tbl:true,teamNames:["Femur","Scapula","Cranium","Patella","Sternum","Mandible"],students:studentsFromRoster(enr,wls)};
-    saveCourse(c);setIndex([{id:id,label:courseLabel(meta)}]);jset(CUR_KEY,id);
-    return id;
-  }
-
   // ===================== boot =====================
   function boot(){
     var idx=index();
     if(!idx.length){
-      // first ever run: seed BIO 004 so nothing is lost and the engine has a live example
-      var id=seedBio004();activate(id);return;
+      // blank start: no course until a professor sets one up and saves it
+      state=null;jset(CUR_KEY,'');
+      paintHeader();paintCourseSel();applyTbl();renderAll();
+      openSetup(false); // invite them to enter or upload a roster, then Save course
+      return;
     }
     var cur=jget(CUR_KEY,'');
     var found=idx.some(function(c){return c.id===cur;});
