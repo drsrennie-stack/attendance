@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Attendance Engine &middot; Interactive Roll &amp; Teams</title>
+<style>
+  :root{--navy:#1E3D4C;--navy-deep:#142a36;--navy-tint:#EDF1F3;--gold:#B8924A;--terra:#C2734D;--terra-dark:#A0522D;--white:#fff;--offwhite:#FAFAF9;--gray:#6b6b6b;}
+  *{box-sizing:border-box;}
+  body{font-family:'DM Sans',-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--navy);background:var(--offwhite);margin:0;padding:20px;}
+  a.skip{position:absolute;left:-999px;} a.skip:focus{left:12px;top:12px;background:var(--navy);color:#fff;padding:8px 12px;border-radius:6px;z-index:50;}
+  .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--terra-dark);font-weight:600;margin:0 0 4px;}
+  h1{font-size:23px;font-weight:800;margin:0;color:var(--navy);}
+  .sub{color:var(--terra-dark);font-weight:600;font-size:14px;margin:2px 0;}
+  .meta{font-size:12.5px;margin:2px 0 14px;}
+  .site-header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:12px;border-bottom:1px solid rgba(30,61,76,.16);}
+  .site-header .logo{height:54px;width:auto;flex:0 0 auto;}
+  .site-header .idblock{min-width:240px;}
+  .site-header .idblock p,.site-header .idblock h1{margin-top:0;}
+  .site-header .idblock .meta{margin-bottom:0;}
+  .coursebar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 12px;}
+  .coursebar label{font-size:12px;font-weight:700;color:var(--terra-dark);text-transform:uppercase;letter-spacing:.05em;}
+  .courseSel{font:inherit;font-size:13px;font-weight:600;padding:6px 10px;border:1px solid var(--navy);border-radius:6px;background:var(--white);color:var(--navy);cursor:pointer;min-width:13em;}
+  .courseSel:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .tabs{display:flex;gap:6px;border-bottom:2px solid var(--navy);flex-wrap:wrap;}
+  .tab{appearance:none;border:1px solid var(--navy);border-bottom:none;background:var(--white);color:var(--navy);font:inherit;font-weight:600;font-size:14px;padding:9px 16px;border-radius:8px 8px 0 0;cursor:pointer;position:relative;top:2px;}
+  .tab[aria-selected="true"]{background:var(--navy);color:#fff;}
+  .tab:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:14px 0 6px;}
+  .tally{font-size:13px;font-weight:600;margin:0;} .tally .p{color:var(--navy);} .tally .a{color:var(--terra-dark);} .tally .u{color:var(--gray);}
+  .box{display:inline-block;min-width:1.4em;text-align:center;}
+  .btn{appearance:none;border:1px solid var(--navy);background:var(--white);color:var(--navy);font:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;}
+  .btn:hover{background:var(--navy-tint);} .btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .btn.primary{background:var(--navy);color:#fff;} .btn.primary:hover{background:var(--navy-deep);}
+  .btn.ghost{border-color:var(--terra-dark);color:var(--terra-dark);} .btn.ghost:hover{background:#f6e9e2;}
+  .legend{font-size:11px;color:var(--gray);margin-left:auto;}
+  .teambar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:8px 0 12px;padding:11px 13px;border:1px solid var(--gold);border-radius:8px;background:var(--white);}
+  .teambar .tlabel{font-size:12px;font-weight:700;color:var(--terra-dark);text-transform:uppercase;letter-spacing:.05em;}
+  .tedit{display:inline-flex;align-items:center;gap:6px;}
+  .sw{width:15px;height:15px;border-radius:4px;border:1px solid rgba(0,0,0,.25);flex:0 0 auto;}
+  .tname-in{font:inherit;font-size:12.5px;font-weight:600;color:var(--navy);border:1px solid #ccc;border-radius:5px;padding:3px 6px;width:8.5em;}
+  .tname-in:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+  .tcount{font-size:12px;font-weight:800;color:var(--gray);min-width:1.1em;text-align:center;}
+  .teambar .spacer{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;}
+  .panel[hidden]{display:none;}
+  .scroll{max-height:72vh;overflow:auto;border:1px solid var(--navy);border-radius:8px;background:#fff;}
+  table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;min-width:880px;}
+  caption{text-align:left;font-size:12.5px;color:var(--terra-dark);font-weight:600;padding:8px 10px;}
+  th,td{border-right:1px solid var(--navy);border-bottom:1px solid var(--navy);padding:0;}
+  thead th{position:sticky;top:0;z-index:3;background:var(--navy);color:#fff;font-weight:600;font-size:11px;text-align:center;padding:6px 4px;border-top:1px solid var(--navy);}
+  thead th .dl{display:block;font-size:13px;} thead th .dd{display:block;font-size:10px;opacity:.85;}
+  tbody th,tbody td{background:#fff;}
+  tbody tr:nth-child(even) th,tbody tr:nth-child(even) td{background:#fbfbfa;}
+  .c0{position:sticky;left:0;z-index:2;width:46px;min-width:46px;text-align:center;font-size:12px;font-weight:600;}
+  .c1{position:sticky;left:46px;z-index:2;min-width:188px;text-align:left;padding:6px 10px;white-space:nowrap;font-weight:500;}
+  thead .c0,thead .c1{z-index:4;}
+  td.code{font-family:'Courier New',monospace;font-weight:700;text-align:center;background:var(--navy-tint)!important;padding:6px 8px;letter-spacing:.04em;}
+  .conf{font-size:9px;color:var(--terra-dark);font-weight:700;}
+  td.teamwrap{padding:2px 4px;min-width:118px;}
+  .teamsel{font:inherit;font-size:12px;font-weight:600;width:100%;min-width:108px;padding:5px 6px;border:1px solid var(--navy);border-radius:6px;background:var(--white);color:var(--navy);cursor:pointer;}
+  .teamsel:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+  th.day{width:56px;min-width:56px;}
+  td.cellwrap{padding:0;}
+  .chk{display:flex;align-items:center;justify-content:center;width:100%;min-width:50px;height:34px;border:none;background:transparent;cursor:pointer;font:inherit;}
+  .chk:focus-visible{outline:3px solid var(--gold);outline-offset:-3px;}
+  .chk .mark{font-size:19px;font-weight:800;line-height:1;}
+  .chk[data-state="1"]{background:var(--navy-tint);} .chk[data-state="1"] .mark::before{content:"\2713";color:var(--navy);}
+  .chk[data-state="2"]{background:#f6e9e2;} .chk[data-state="2"] .mark::before{content:"\2715";color:var(--terra-dark);}
+  @media (hover:hover){.chk:hover{background:#eef3f5;}}
+  td.actcell{padding:3px 6px;white-space:nowrap;text-align:center;}
+  .mini{appearance:none;font:inherit;font-size:11px;font-weight:700;padding:4px 9px;border-radius:5px;cursor:pointer;border:1px solid var(--navy);background:#fff;color:var(--navy);}
+  .mini+.mini{margin-left:5px;}
+  .mini.drop{border-color:var(--terra-dark);color:var(--terra-dark);} .mini.drop:hover{background:#f6e9e2;}
+  .mini.enroll{border-color:var(--gold);color:#7a5e1f;} .mini.enroll:hover{background:#f7efdc;}
+  .mini.restore{border-color:var(--navy);} .mini.restore:hover{background:var(--navy-tint);}
+  .mini:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+  .empty{padding:18px;text-align:center;color:var(--gray);font-style:italic;}
+  .help{font-size:11.5px;color:var(--gray);margin-top:12px;line-height:1.5;max-width:78ch;} .help b{color:var(--terra-dark);}
+  body.tbl-off .teamcol{display:none;} body.tbl-off .teambar{display:none;}
+  .switch{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--navy);cursor:pointer;}
+  .switch input{width:16px;height:16px;accent-color:var(--navy);cursor:pointer;}
+  @media (prefers-reduced-motion:no-preference){.chk{transition:background 120ms ease;}}
+  /* ---- modal / wizard ---- */
+  .overlay{position:fixed;inset:0;background:rgba(20,42,54,.55);display:flex;align-items:flex-start;justify-content:center;padding:28px 16px;overflow:auto;z-index:100;}
+  .overlay[hidden]{display:none;}
+  .dialog{background:var(--white);border:1px solid var(--navy);border-radius:12px;max-width:780px;width:100%;padding:22px 24px 24px;box-shadow:0 12px 40px rgba(0,0,0,.25);}
+  .dialog h2{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:800;color:var(--navy);margin:0 0 2px;border:none;padding:0;}
+  .dialog .lead{font-size:12.5px;color:var(--gray);margin:0 0 16px;}
+  fieldset{border:1px solid rgba(30,61,76,.25);border-radius:9px;margin:0 0 16px;padding:12px 14px;}
+  legend{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--terra-dark);padding:0 6px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 14px;}
+  .fld{display:flex;flex-direction:column;gap:3px;}
+  .fld label{font-size:11.5px;font-weight:700;color:var(--navy);}
+  .fld input[type=text],.fld input[type=date],.fld input[type=number],.fld select,.dialog textarea{font:inherit;font-size:13px;padding:7px 8px;border:1px solid #b9c2c7;border-radius:6px;color:var(--navy);background:#fff;width:100%;}
+  .fld input:focus-visible,.dialog textarea:focus-visible,.fld select:focus-visible{outline:3px solid var(--gold);outline-offset:1px;border-color:var(--navy);}
+  .dialog textarea{min-height:88px;resize:vertical;font-family:'Courier New',monospace;font-size:12px;}
+  .dow{display:flex;flex-wrap:wrap;gap:6px;}
+  .dowchip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border:1px solid #b9c2c7;border-radius:20px;padding:5px 11px;cursor:pointer;user-select:none;}
+  .dowchip input{accent-color:var(--navy);}
+  .importrow{display:grid;grid-template-columns:1fr;gap:8px;}
+  .filewrap{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12px;}
+  .hint{font-size:11px;color:var(--gray);margin:4px 0 0;line-height:1.45;}
+  .parsemsg{font-size:11.5px;font-weight:700;color:var(--navy-deep);margin:5px 0 0;}
+  .dialog .actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:6px;}
+  .err{color:var(--terra-dark);font-size:12px;font-weight:700;}
+  @media print{@page{size:landscape;margin:0.35in;}body{padding:0;background:#fff;}.tabs,.coursebar,.toolbar .btn,.toolbar .switch,.legend,.teambar .spacer,.actcell,a.skip{display:none!important;}.scroll{max-height:none;overflow:visible;border:none;}thead th{position:static;}.c0,.c1{position:static;}.chk{height:26px;}.overlay{display:none!important;}}
+</style>
+</head>
+<body>
+<a href="#main" class="skip">Skip to roll sheet</a>
+<header class="site-header">
+  <svg class="logo" viewBox="0 0 60 60" role="img" aria-label="Attendance Engine roster mark" focusable="false">
+    <rect x="6" y="5" width="48" height="50" rx="6" fill="#fff" stroke="#1E3D4C" stroke-width="2.5"/>
+    <rect x="6" y="5" width="48" height="12" rx="6" fill="#1E3D4C"/>
+    <circle cx="16" cy="27" r="3.4" fill="#1E3D4C"/><rect x="23" y="25" width="24" height="4" rx="2" fill="#C2734D"/>
+    <circle cx="16" cy="38" r="3.4" fill="#B8924A"/><rect x="23" y="36" width="24" height="4" rx="2" fill="#1E3D4C"/>
+    <circle cx="16" cy="49" r="3.4" fill="#C2734D"/><rect x="23" y="47" width="18" height="4" rx="2" fill="#1E3D4C"/>
+  </svg>
+  <div class="idblock">
+    <p class="eyebrow" id="hEyebrow">Attendance Engine</p>
+    <h1 id="hTitle">Interactive Roll &amp; Teams</h1>
+    <p class="sub" id="hSub">No course loaded</p>
+    <p class="meta" id="metaLine">Instructor: &mdash;</p>
+  </div>
+</header>
+
+<div class="coursebar">
+  <label for="courseSel">Course</label>
+  <select class="courseSel" id="courseSel" aria-label="Choose a course"></select>
+  <button type="button" class="btn" id="setupBtn">Course setup</button>
+  <button type="button" class="btn primary" id="newCourseBtn">+ New course</button>
+  <button type="button" class="btn" id="exportBtn">Export CSV</button>
+  <button type="button" class="btn ghost" id="deleteCourseBtn">Delete course</button>
+</div>
+
+<div class="tabs" role="tablist" aria-label="Roll sheets">
+  <button class="tab" id="tab-en" role="tab" aria-selected="true" aria-controls="panel-en" tabindex="0">Enrolled (<span id="cEn">0</span>)</button>
+  <button class="tab" id="tab-wl" role="tab" aria-selected="false" aria-controls="panel-wl" tabindex="-1">Wait List (<span id="cWl">0</span>)</button>
+  <button class="tab" id="tab-dr" role="tab" aria-selected="false" aria-controls="panel-dr" tabindex="-1">Dropped / No-show (<span id="cDr">0</span>)</button>
+</div>
+
+<div class="toolbar">
+  <p class="tally" aria-live="polite">Present: <span class="box p" id="tP">0</span> &nbsp; Absent: <span class="box a" id="tA">0</span> &nbsp; Unmarked: <span class="box u" id="tU">0</span></p>
+  <label class="switch" title="Show or hide team features"><input type="checkbox" id="tblToggle"> Team-based (TBL)</label>
+  <button type="button" class="btn primary" id="addBtn">+ Add student</button>
+  <button type="button" class="btn" id="resetBtn">Clear attendance</button>
+  <button type="button" class="btn" onclick="window.print()">Print</button>
+  <span class="legend">Cell: 1&times;=<b>&#10003; here</b>, 2&times;=<b>&#10005; absent</b>, 3&times;=blank</span>
+</div>
+
+<main id="main">
+<section class="panel" id="panel-en" role="tabpanel" aria-labelledby="tab-en">
+  <div class="teambar" aria-label="TBL teams">
+    <span class="tlabel">Edit team names</span>
+    <span class="tedit"><span class="sw" id="sw0"></span><input class="tname-in" data-team="0" maxlength="18" aria-label="Team 1 name"><b class="tcount" id="tc0">0</b></span>
+    <span class="tedit"><span class="sw" id="sw1"></span><input class="tname-in" data-team="1" maxlength="18" aria-label="Team 2 name"><b class="tcount" id="tc1">0</b></span>
+    <span class="tedit"><span class="sw" id="sw2"></span><input class="tname-in" data-team="2" maxlength="18" aria-label="Team 3 name"><b class="tcount" id="tc2">0</b></span>
+    <span class="tedit"><span class="sw" id="sw3"></span><input class="tname-in" data-team="3" maxlength="18" aria-label="Team 4 name"><b class="tcount" id="tc3">0</b></span>
+    <span class="tedit"><span class="sw" id="sw4"></span><input class="tname-in" data-team="4" maxlength="18" aria-label="Team 5 name"><b class="tcount" id="tc4">0</b></span>
+    <span class="tedit"><span class="sw" id="sw5"></span><input class="tname-in" data-team="5" maxlength="18" aria-label="Team 6 name"><b class="tcount" id="tc5">0</b></span>
+    <span class="spacer"><button type="button" class="btn" id="autoBtn">Auto-assign&hellip;</button><button type="button" class="btn" id="clearTeamsBtn">Clear teams</button></span>
+  </div>
+  <div class="scroll">
+    <table>
+      <caption>Enrolled &mdash; pick a team to color the name; click a day to mark attendance; <b>Drop</b> or <b>No-show</b> removes a student</caption>
+      <thead><tr id="enHead"></tr></thead>
+      <tbody id="enBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel" id="panel-wl" role="tabpanel" aria-labelledby="tab-wl" hidden>
+  <div class="scroll">
+    <table>
+      <caption>Wait List &mdash; <b>&rarr; Enroll</b> moves a student to Enrolled (then assign a team there); <b>Drop</b> / <b>No-show</b> removes them</caption>
+      <thead><tr id="wlHead"></tr></thead>
+      <tbody id="wlBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel" id="panel-dr" role="tabpanel" aria-labelledby="tab-dr" hidden>
+  <div class="scroll">
+    <table>
+      <caption>Dropped / No-show &mdash; how and when each student left; <b>Restore</b> puts them back</caption>
+      <thead><tr><th class="c0">#</th><th class="c1">Student Name</th><th>From</th><th>Reason</th><th>Date</th><th>Action</th></tr></thead>
+      <tbody id="drBody"></tbody>
+    </table>
+  </div>
+</section>
+</main>
+
+<p class="help">
+  <b>Course:</b> use <b>+ New course</b> to set up a class (identity, meeting days, roster). <b>Course setup</b> edits the current one. Switch terms from the <b>Course</b> menu; <b>Export CSV</b> downloads the roster, teams, and attendance.<br>
+  <b>Add / drop:</b> <b>+ Add student</b> files a name alphabetically. <b>Drop</b> records a withdrawal; <b>No-show</b> records a never-attended; both move the student to the Dropped tab with today&rsquo;s date. <b>Restore</b> returns them. <b>&rarr; Enroll</b> promotes a wait-list student.<br>
+  <b>Teams (TBL):</b> toggle <b>Team-based</b> on to show teams; rename the 6 teams (colors fixed, AA-contrast checked); pick a team per student; <b>Auto-assign</b> splits Enrolled into balanced teams.<br>
+  <b>[C]</b> = FERPA confidential / directory hold. Everything saves in this browser only.
+</p>
+
+<!-- ===================== Setup wizard ===================== -->
+<div class="overlay" id="setupOverlay" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="setupTitle" id="setupDialog">
+    <h2 id="setupTitle">New course</h2>
+    <p class="lead">Set up a class once. Everything saves in this browser and you can reuse or duplicate it next term.</p>
+
+    <fieldset>
+      <legend>Course identity</legend>
+      <div class="grid">
+        <div class="fld"><label for="fTitle">Title</label><input type="text" id="fTitle" placeholder="Interactive Roll &amp; Teams"></div>
+        <div class="fld"><label for="fInst">Institution</label><input type="text" id="fInst" placeholder="Solano Community College"></div>
+        <div class="fld"><label for="fCourse">Course &amp; section</label><input type="text" id="fCourse" placeholder="BIO 004 &middot; Human Anatomy"></div>
+        <div class="fld"><label for="fTerm">Term</label><input type="text" id="fTerm" placeholder="Summer 2026 Intensive"></div>
+        <div class="fld"><label for="fCrn">CRN / section #</label><input type="text" id="fCrn" placeholder="60099"></div>
+        <div class="fld"><label for="fInstr">Instructor</label><input type="text" id="fInstr" placeholder="Dr. Sharilyn Rennie"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Meeting schedule</legend>
+      <div class="grid">
+        <div class="fld"><label for="fStart">First class date</label><input type="date" id="fStart"></div>
+        <div class="fld"><label for="fWeeks">Number of weeks</label><input type="number" id="fWeeks" min="1" max="20" value="8"></div>
+      </div>
+      <div class="fld" style="margin-top:10px"><label>Meeting days</label>
+        <div class="dow" id="dowWrap">
+          <label class="dowchip"><input type="checkbox" value="1">Mon</label>
+          <label class="dowchip"><input type="checkbox" value="2">Tue</label>
+          <label class="dowchip"><input type="checkbox" value="3">Wed</label>
+          <label class="dowchip"><input type="checkbox" value="4">Thu</label>
+          <label class="dowchip"><input type="checkbox" value="5">Fri</label>
+          <label class="dowchip"><input type="checkbox" value="6">Sat</label>
+          <label class="dowchip"><input type="checkbox" value="0">Sun</label>
+        </div>
+      </div>
+      <p class="parsemsg" id="dayPreview"></p>
+      <p class="hint">Day columns are generated from the start date, the weeks, and the weekdays you check. Changing the schedule after attendance is recorded keeps marks by column position.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Teams</legend>
+      <label class="switch"><input type="checkbox" id="fTbl"> Team-based course (TBL) &mdash; show team features</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Roster import (optional)</legend>
+      <div class="importrow">
+        <div class="fld">
+          <label for="fEnFile">Class list (enrolled)</label>
+          <div class="filewrap"><input type="file" id="fEnFile" accept=".csv,.txt"> <span id="fEnMsg" class="parsemsg"></span></div>
+          <textarea id="fEnPaste" placeholder="...or paste names, one per line:&#10;Addison, Tobias&#10;Anderson, Sidney"></textarea>
+        </div>
+        <div class="fld">
+          <label for="fWlFile">Wait list (optional)</label>
+          <div class="filewrap"><input type="file" id="fWlFile" accept=".csv,.txt"> <span id="fWlMsg" class="parsemsg"></span></div>
+          <textarea id="fWlPaste" placeholder="...or paste waitlist, one per line:&#10;Marin, Alexandra, 4MFFEV&#10;Patindol, Bianca, 4TJRF6"></textarea>
+        </div>
+      </div>
+      <p class="hint">CSV with headers is auto-detected (looks for <b>Name</b> or <b>Last Name</b>/<b>First Name</b>, plus optional <b>Add Code</b>, <b>Position</b>, <b>Confidential</b>). No headers? One per line as <b>Last, First</b> for the class list, or <b>Last, First, CODE</b> for wait-list rows (the add code as a third comma field). Mark a confidential student by adding <b>[C]</b> after the name.</p>
+    </fieldset>
+
+    <p class="err" id="setupErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn ghost" id="setupCancel">Cancel</button>
+      <button type="button" class="btn primary" id="setupSave">Save course</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var COLORS=[{bg:"#1E3D4C",fg:"#FFFFFF"},{bg:"#8A6A2F",fg:"#FFFFFF"},{bg:"#A0522D",fg:"#FFFFFF"},{bg:"#2C6E6A",fg:"#FFFFFF"},{bg:"#6E3A52",fg:"#FFFFFF"},{bg:"#3E6B8C",fg:"#FFFFFF"}];
+  var DEFNAMES=["Team 1","Team 2","Team 3","Team 4","Team 5","Team 6"];
+  var DOW=[["Sun","U"],["Mon","M"],["Tue","T"],["Wed","W"],["Thu","R"],["Fri","F"],["Sat","S"]];
+  var IDX_KEY='attn_engine_index_v1';     // list of {id,label}
+  var CUR_KEY='attn_engine_current_v1';   // id of active course
+  function courseKey(id){return 'attn_engine_course_'+id;}
+
+  // ---------- low-level storage ----------
+  function jget(k,f){try{var v=JSON.parse(localStorage.getItem(k));return v==null?f:v;}catch(e){return f;}}
+  function jset(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function index(){return jget(IDX_KEY,[]);}
+  function setIndex(a){jset(IDX_KEY,a);}
+  function loadCourse(id){return jget(courseKey(id),null);}
+  function saveCourse(c){jset(courseKey(c.id),c);}
+
+  var state=null; // active course object
+
+  // ---------- helpers ----------
+  function esc(t){return (t+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function word(s){return s==='1'?'present':s==='2'?'absent':'unmarked';}
+  function nameHtml(st){var n=esc(st.name);if(st.conf)n+=' <sup class="conf" title="FERPA confidential / directory hold">[C]</sup>';return n;}
+  function byName(a,b){return a.name.toLowerCase().localeCompare(b.name.toLowerCase());}
+  function byPos(a,b){return (a.pos||999)-(b.pos||999)||byName(a,b);}
+  function lst(status,cmp){return state.students.filter(function(s){return s.status===status;}).sort(cmp||function(){return 0;});}
+  function today(){var d=new Date();return ('0'+(d.getMonth()+1)).slice(-2)+'/'+('0'+d.getDate()).slice(-2)+'/'+d.getFullYear();}
+  function uid(p){return (p||'s')+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);}
+
+  function genDays(startStr,weekdays,weeks){
+    var out=[];
+    if(!startStr||!weekdays||!weekdays.length||!weeks)return out;
+    var d=new Date(startStr+'T00:00:00');if(isNaN(d.getTime()))return out;
+    var span=weeks*7;
+    for(var i=0;i<span;i++){
+      var dt=new Date(d.getTime()+i*86400000);var dw=dt.getDay();
+      if(weekdays.indexOf(dw)>=0){
+        out.push({dl:DOW[dw][1],dd:(dt.getMonth()+1)+'/'+dt.getDate(),full:DOW[dw][0]+' '+(dt.getMonth()+1)+'/'+dt.getDate()});
+      }
+    }
+    return out;
+  }
+
+  // ---------- CSV ----------
+  function parseCSV(text){
+    var rows=[],row=[],cur='',q=false,i,c;
+    text=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+    for(i=0;i<text.length;i++){c=text[i];
+      if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
+      else{if(c==='"')q=true;else if(c===','){row.push(cur);cur='';}else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}else cur+=c;}
+    }
+    if(cur!==''||row.length){row.push(cur);rows.push(row);}
+    return rows.filter(function(r){return r.some(function(x){return (x||'').trim()!=='';});});
+  }
+  function findCol(header,names){for(var i=0;i<header.length;i++){var h=header[i].trim().toLowerCase();for(var j=0;j<names.length;j++){if(h===names[j])return i;}}return -1;}
+  function truthy(v){v=(v||'').trim().toLowerCase();return v==='y'||v==='yes'||v==='true'||v==='1'||v==='c'||v==='confidential'||v==='hold';}
+  // returns array of {name,conf,code,pos}
+  function parseRoster(text){
+    text=(text||'').trim();if(!text)return [];
+    var rows=parseCSV(text);if(!rows.length)return [];
+    var header=rows[0].map(function(x){return x.trim().toLowerCase();});
+    var ni=findCol(header,['student name','name','full name','student']);
+    var li=findCol(header,['last name','last','surname','family name']);
+    var fi=findCol(header,['first name','first','given name','given']);
+    var ci=findCol(header,['add code','permission number','permission code','reg code','registration code','code']);
+    var conf=findCol(header,['confidential','ferpa','directory hold','hold','restricted']);
+    var pi=findCol(header,['position','waitlist position','wait list position','rank','pos','order']);
+    var hasHeader=(ni>=0||(li>=0&&fi>=0));
+    var data=hasHeader?rows.slice(1):rows;
+    var out=[];
+    data.forEach(function(r){
+      var nm='',code='';
+      if(hasHeader){
+        if(ni>=0)nm=(r[ni]||'').trim();
+        else if(li>=0&&fi>=0){var l=(r[li]||'').trim(),f=(r[fi]||'').trim();nm=l&&f?(l+', '+f):(l||f);}
+        if(ci>=0)code=(r[ci]||'').trim();
+      } else {
+        // no header (paste): "Last, First" = name only; "Last, First, CODE" = 3rd field is the code
+        var parts=r.map(function(x){return (x||'').trim();});
+        while(parts.length&&parts[parts.length-1]==='')parts.pop();
+        if(parts.length>=3){code=parts.pop();}
+        nm=parts.join(', ');
+      }
+      if(!nm)return;
+      var cf=false;
+      if(/\[c\]/i.test(nm)||/\[confidential\]/i.test(nm)){cf=true;nm=nm.replace(/\s*\[c\]/ig,'').replace(/\s*\[confidential\]/ig,'').trim();}
+      if(hasHeader&&conf>=0&&truthy(r[conf]))cf=true;
+      var pos=null;
+      if(hasHeader&&pi>=0){var p=parseInt((r[pi]||'').trim(),10);if(!isNaN(p))pos=p;}
+      out.push({name:nm,conf:cf,code:code,pos:pos});
+    });
+    return out;
+  }
+
+  // ---------- build a course from setup form ----------
+  function studentsFromRoster(enr,wl){
+    var arr=[],i=0;
+    enr.forEach(function(s){arr.push(mkStudent(s,'enrolled'));});
+    var pos=0;
+    wl.forEach(function(s,k){var p=(s.pos!=null)?s.pos:(k+1);if(p>pos)pos=p;arr.push(mkStudent({name:s.name,conf:s.conf,code:s.code,pos:p},'waitlist'));});
+    return arr;
+  }
+  function mkStudent(s,status){return {uid:uid(status[0]),name:s.name,conf:!!s.conf,code:s.code||'',pos:(s.pos||null),status:status,prev:null,team:null,att:{},dropped:null,reason:null,manual:false};}
+
+  // ---------- DOM refs ----------
+  var $=function(id){return document.getElementById(id);};
+
+  // ---------- header / chrome ----------
+  function paintHeader(){
+    if(!state){$('hEyebrow').textContent='Attendance Engine';$('hTitle').textContent='Interactive Roll & Teams';$('hSub').textContent='No course loaded. Click + New course';$('metaLine').textContent='';return;}
+    var m=state.meta||{};
+    var eb=[m.course,m.institution].filter(Boolean).join('  ·  ')||'Attendance Engine';
+    $('hEyebrow').textContent=eb;
+    $('hTitle').textContent=m.title||'Interactive Roll & Teams';
+    var sub=[m.term, (m.crn?('CRN '+m.crn):'')].filter(Boolean).join('  ·  ');
+    $('hSub').textContent=sub||'';
+    $('metaLine').textContent=m.instructor?('Instructor: '+m.instructor):'';
+    document.title=(m.title||'Attendance Engine')+(m.crn?(' · CRN '+m.crn):'');
+  }
+  function paintCourseSel(){
+    var sel=$('courseSel');var idx=index();sel.innerHTML='';
+    if(!idx.length){var o=document.createElement('option');o.textContent='(no courses yet)';o.value='';sel.appendChild(o);sel.disabled=true;return;}
+    sel.disabled=false;
+    idx.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.label;if(state&&c.id===state.id)o.selected=true;sel.appendChild(o);});
+  }
+
+  // ---------- headers / rows ----------
+  function days(){return (state&&state.days)||[];}
+  function dayThs(){var h='',D=days();for(var j=0;j<D.length;j++){h+='<th class="day" title="'+esc(D[j].full)+'"><span class="dl">'+esc(D[j].dl)+'</span><span class="dd">'+esc(D[j].dd)+'</span></th>';}return h;}
+  function colspan(){return days().length+4;}
+  function buildHeads(){
+    $('enHead').innerHTML='<th class="c0">#</th><th class="c1">Student Name</th><th class="teamcol">Team</th>'+dayThs()+'<th>Action</th>';
+    $('wlHead').innerHTML='<th class="c0">Pos</th><th class="c1">Student Name</th><th>Add Code</th>'+dayThs()+'<th>Action</th>';
+  }
+  function attCells(st){var h='',D=days();for(var j=0;j<D.length;j++){var s=st.att[j]||'0';h+='<td class="cellwrap"><button type="button" class="chk" data-uid="'+st.uid+'" data-day="'+j+'" data-state="'+s+'" aria-label="'+esc(st.name)+', '+esc(D[j].full)+': '+word(s)+'"><span class="mark" aria-hidden="true"></span></button></td>';}return h;}
+  function teamSel(st){var o='<option value="">(no team)</option>';for(var i=0;i<COLORS.length;i++){o+='<option value="'+i+'"'+(st.team===i?' selected':'')+' style="background:'+COLORS[i].bg+';color:'+COLORS[i].fg+';">'+esc(state.teamNames[i])+'</option>';}var stl='';if(st.team!=null)stl=' style="background:'+COLORS[st.team].bg+';color:'+COLORS[st.team].fg+';"';return '<select class="teamsel" data-uid="'+st.uid+'"'+stl+' aria-label="Team for '+esc(st.name)+'">'+o+'</select>';}
+
+  function renderEn(){
+    if(!state){$('enBody').innerHTML='';return;}
+    var arr=lst('enrolled',byName),h='';
+    arr.forEach(function(st,idx){var ns='';if(st.team!=null)ns=' style="background:'+COLORS[st.team].bg+';color:'+COLORS[st.team].fg+';"';
+      h+='<tr data-uid="'+st.uid+'"><th scope="row" class="c0">'+(idx+1)+'</th><td class="c1"'+ns+'>'+nameHtml(st)+'</td><td class="teamwrap">'+teamSel(st)+'</td>'+attCells(st)+'<td class="actcell"><button type="button" class="mini drop" data-uid="'+st.uid+'" data-reason="Dropped" title="Student withdrew">Drop</button><button type="button" class="mini drop" data-uid="'+st.uid+'" data-reason="No-show" title="Never attended">No-show</button></td></tr>';});
+    $('enBody').innerHTML=h||'<tr><td class="empty" colspan="'+colspan()+'">No enrolled students.</td></tr>';
+  }
+  function renderWl(){
+    if(!state){$('wlBody').innerHTML='';return;}
+    var arr=lst('waitlist',byPos),h='';
+    arr.forEach(function(st){h+='<tr data-uid="'+st.uid+'"><th scope="row" class="c0">'+(st.pos||'')+'</th><td class="c1">'+nameHtml(st)+'</td><td class="code">'+esc(st.code||'')+'</td>'+attCells(st)+'<td class="actcell"><button type="button" class="mini enroll" data-uid="'+st.uid+'" title="Move to Enrolled">&rarr; Enroll</button><button type="button" class="mini drop" data-uid="'+st.uid+'" data-reason="Dropped" title="Withdrew">Drop</button><button type="button" class="mini drop" data-uid="'+st.uid+'" data-reason="No-show" title="Never attended">No-show</button></td></tr>';});
+    $('wlBody').innerHTML=h||'<tr><td class="empty" colspan="'+colspan()+'">No waitlisted students.</td></tr>';
+  }
+  function renderDr(){
+    if(!state){$('drBody').innerHTML='';return;}
+    var arr=lst('dropped',function(a,b){return (b.dropped||'').localeCompare(a.dropped||'')||byName(a,b);}),h='';
+    arr.forEach(function(st){h+='<tr data-uid="'+st.uid+'"><th scope="row" class="c0"></th><td class="c1">'+nameHtml(st)+'</td><td>'+(st.prev==='waitlist'?'Wait List':'Enrolled')+'</td><td>'+esc(st.reason||'Dropped')+'</td><td>'+esc(st.dropped||'')+'</td><td class="actcell"><button type="button" class="mini restore" data-uid="'+st.uid+'" title="Restore to course">Restore</button></td></tr>';});
+    $('drBody').innerHTML=h||'<tr><td class="empty" colspan="6">No dropped students.</td></tr>';
+  }
+  function counts(){
+    $('cEn').textContent=lst('enrolled').length;
+    $('cWl').textContent=lst('waitlist').length;
+    $('cDr').textContent=lst('dropped').length;
+    var c=COLORS.map(function(){return 0;});
+    state&&state.students.forEach(function(s){if(s.status!=='dropped'&&s.team!=null)c[s.team]++;});
+    c.forEach(function(v,i){var el=$('tc'+i);if(el)el.textContent=v;});
+  }
+  function renderAll(){buildHeads();renderEn();renderWl();renderDr();counts();syncTeamInputs();updateTally();}
+
+  // ---------- actions ----------
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b||!state)return;
+    if(b.classList.contains('chk')){cycle(b);return;}
+    var u=b.getAttribute('data-uid');if(!u)return;
+    if(b.classList.contains('drop')){drop(u,b.getAttribute('data-reason')||'Dropped');}
+    else if(b.classList.contains('enroll')){enroll(u);}
+    else if(b.classList.contains('restore')){restore(u);}
+  });
+  document.addEventListener('change',function(e){if(e.target.classList.contains('teamsel'))setTeam(e.target.getAttribute('data-uid'),e.target.value);});
+
+  function getU(u){for(var k=0;k<state.students.length;k++)if(state.students[k].uid===u)return state.students[k];return null;}
+  function persist(){if(state)saveCourse(state);}
+  function cycle(btn){var st=getU(btn.getAttribute('data-uid')),day=btn.getAttribute('data-day');var ns=(((+ (st.att[day]||'0'))+1)%3)+'';if(ns==='0')delete st.att[day];else st.att[day]=ns;btn.setAttribute('data-state',ns);btn.setAttribute('aria-label',st.name+', '+days()[day].full+': '+word(ns));persist();updateTally();}
+  function setTeam(u,v){var st=getU(u);st.team=(v===''?null:(+v));persist();renderEn();counts();}
+  function drop(u,reason){var st=getU(u);if(!confirm('Are you sure you want to do this?\n\nThis records '+st.name+' as "'+reason+'", removes them from the course, and moves them to the Dropped / No-show tab (dated today). You can Restore them later.'))return;st.prev=st.status;st.status='dropped';st.reason=reason;st.dropped=today();persist();renderAll();}
+  function enroll(u){var st=getU(u);st.prev='waitlist';st.status='enrolled';persist();renderAll();selectTabById('tab-en');alert(st.name+' moved to Enrolled.'+(state.tbl?' Pick their team from the Team dropdown on their row.':''));}
+  function restore(u){var st=getU(u);st.status=st.prev||'enrolled';st.dropped=null;st.reason=null;persist();renderAll();}
+
+  $('addBtn').addEventListener('click',function(){
+    if(!state){alert('Create a course first.');return;}
+    var raw=prompt('Add a student. Type the name as  Last, First');
+    if(raw===null)return;var nm=raw.trim();if(!nm)return;
+    var act=activeStatus();var status=(act==='waitlist')?'waitlist':'enrolled';
+    var pos=null;if(status==='waitlist'){pos=0;state.students.forEach(function(s){if(s.pos>pos)pos=s.pos;});pos++;}
+    state.students.push({uid:uid('m'),name:nm,conf:false,code:'',pos:pos,status:status,prev:null,team:null,att:{},dropped:null,reason:null,manual:true});
+    persist();renderAll();
+  });
+  $('autoBtn').addEventListener('click',function(){
+    if(!state)return;
+    var n=prompt('Split Enrolled students into how many teams? (2-'+COLORS.length+')','5');
+    if(n===null)return;n=parseInt(n,10);if(isNaN(n)||n<2){alert('Enter 2 to '+COLORS.length);return;}if(n>COLORS.length)n=COLORS.length;
+    var arr=lst('enrolled',byName);
+    for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var x=arr[i];arr[i]=arr[j];arr[j]=x;}
+    arr.forEach(function(st,idx){st.team=idx%n;});persist();renderEn();counts();
+  });
+  $('clearTeamsBtn').addEventListener('click',function(){
+    if(!state)return;
+    if(!confirm('Are you sure you want to do this?\n\nThis will clear ALL team assignments. This cannot be undone.'))return;
+    state.students.forEach(function(s){s.team=null;});persist();renderEn();counts();
+  });
+  $('resetBtn').addEventListener('click',function(){
+    if(!state)return;
+    var st=activeStatus();if(st==='dropped'){alert('Nothing to clear on the Dropped tab.');return;}
+    var nm=(st==='enrolled'?'Enrolled':'Wait List');
+    if(!confirm('Are you sure you want to do this?\n\nThis will erase ALL attendance marks on the '+nm+' sheet. This cannot be undone.'))return;
+    state.students.forEach(function(s){if(s.status===st)s.att={};});persist();renderAll();
+  });
+
+  // ---------- team name inputs ----------
+  for(var i=0;i<COLORS.length;i++){var sw=$('sw'+i);if(sw)sw.style.background=COLORS[i].bg;}
+  var tInputs=Array.prototype.slice.call(document.querySelectorAll('.tname-in'));
+  tInputs.forEach(function(inp){var i=+inp.getAttribute('data-team');
+    inp.addEventListener('input',function(){if(!state)return;state.teamNames[i]=inp.value.trim()||DEFNAMES[i];persist();renderEn();});});
+  function syncTeamInputs(){tInputs.forEach(function(inp){var i=+inp.getAttribute('data-team');inp.value=state?state.teamNames[i]:'';});}
+
+  // ---------- tabs ----------
+  var tabs=Array.prototype.slice.call(document.querySelectorAll('[role=tab]'));
+  function selectTab(tab){tabs.forEach(function(t){var sel=t===tab;t.setAttribute('aria-selected',sel?'true':'false');t.tabIndex=sel?0:-1;$(t.getAttribute('aria-controls')).hidden=!sel;});updateTally();}
+  function selectTabById(id){var t=$(id);if(t)selectTab(t);}
+  tabs.forEach(function(tab,i){tab.addEventListener('click',function(){selectTab(tab);});
+    tab.addEventListener('keydown',function(e){var ni=null;if(e.key==='ArrowRight'||e.key==='ArrowDown')ni=(i+1)%tabs.length;else if(e.key==='ArrowLeft'||e.key==='ArrowUp')ni=(i-1+tabs.length)%tabs.length;else if(e.key==='Home')ni=0;else if(e.key==='End')ni=tabs.length-1;if(ni!=null){e.preventDefault();tabs[ni].focus();selectTab(tabs[ni]);}});});
+  function activePanel(){return document.querySelector('.panel:not([hidden])');}
+  function activeStatus(){var p=activePanel().id;return p==='panel-en'?'enrolled':p==='panel-wl'?'waitlist':'dropped';}
+  function updateTally(){var p=0,a=0,u=0;activePanel().querySelectorAll('.chk').forEach(function(b){var s=b.getAttribute('data-state');if(s==='1')p++;else if(s==='2')a++;else u++;});$('tP').textContent=p;$('tA').textContent=a;$('tU').textContent=u;}
+
+  // ---------- TBL toggle ----------
+  var tblBox=$('tblToggle');
+  function applyTbl(){document.body.classList.toggle('tbl-off',!(state&&state.tbl));tblBox.checked=!!(state&&state.tbl);}
+  tblBox.addEventListener('change',function(){if(!state)return;state.tbl=tblBox.checked;persist();applyTbl();});
+
+  // ---------- course switching ----------
+  $('courseSel').addEventListener('change',function(){activate(this.value);});
+  function activate(id){
+    var c=loadCourse(id);if(!c)return;
+    state=c;jset(CUR_KEY,id);
+    paintHeader();paintCourseSel();applyTbl();renderAll();selectTabById('tab-en');
+  }
+
+  // ---------- CSV export ----------
+  $('exportBtn').addEventListener('click',function(){
+    if(!state){alert('Create a course first.');return;}
+    var D=days();var head=['Status','Position','Student Name','Confidential','Team','Add Code'];
+    D.forEach(function(d){head.push(d.full);});
+    head.push('Dropped From','Reason','Date');
+    var lines=[head];
+    function cell(s){s=(s==null?'':''+s);return /[",\n]/.test(s)?('"'+s.replace(/"/g,'""')+'"'):s;}
+    var order={enrolled:0,waitlist:1,dropped:2};
+    var rows=state.students.slice().sort(function(a,b){return (order[a.status]-order[b.status])||byPos(a,b)||byName(a,b);});
+    rows.forEach(function(st){
+      var r=[st.status,(st.pos||''),st.name,(st.conf?'Y':''),(st.team!=null?state.teamNames[st.team]:''),st.code||''];
+      D.forEach(function(d,j){var v=st.att[j];r.push(v==='1'?'Present':v==='2'?'Absent':'');});
+      r.push(st.status==='dropped'?(st.prev==='waitlist'?'Wait List':'Enrolled'):'', st.reason||'', st.dropped||'');
+      lines.push(r);
+    });
+    var csv=lines.map(function(r){return r.map(cell).join(',');}).join('\r\n');
+    var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+    var url=URL.createObjectURL(blob);var a=document.createElement('a');
+    var fn=((state.meta.course||state.meta.title||'attendance')+(state.meta.crn?('_'+state.meta.crn):'')).replace(/[^a-z0-9]+/gi,'_')+'_'+today().replace(/\//g,'-')+'.csv';
+    a.href=url;a.download=fn;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},1500);
+  });
+
+  // ---------- delete course ----------
+  $('deleteCourseBtn').addEventListener('click',function(){
+    if(!state){return;}
+    if(!confirm('Are you sure you want to do this?\n\nThis permanently deletes the course "'+(state.meta.title||state.id)+'" and all its roster and attendance from this browser. This cannot be undone.'))return;
+    try{localStorage.removeItem(courseKey(state.id));}catch(e){}
+    var idx=index().filter(function(c){return c.id!==state.id;});setIndex(idx);
+    state=null;
+    if(idx.length){activate(idx[0].id);}else{jset(CUR_KEY,'');paintHeader();paintCourseSel();applyTbl();renderAll();}
+  });
+
+  // ===================== setup wizard =====================
+  var overlay=$('setupOverlay'),editingId=null,lastFocus=null;
+  var enRoster=[],wlRoster=[]; // parsed staging
+
+  function openSetup(editing){
+    editingId=editing?state.id:null;
+    lastFocus=document.activeElement;
+    $('setupTitle').textContent=editing?'Course setup':'New course';
+    $('setupErr').textContent='';
+    enRoster=[];wlRoster=[];
+    $('fEnMsg').textContent='';$('fWlMsg').textContent='';$('fEnPaste').value='';$('fWlPaste').value='';$('fEnFile').value='';$('fWlFile').value='';
+    var m=(editing&&state.meta)||{};var sc=(editing&&state.schedule)||{};
+    $('fTitle').value=m.title||'';$('fInst').value=m.institution||'';$('fCourse').value=m.course||'';$('fTerm').value=m.term||'';$('fCrn').value=m.crn||'';$('fInstr').value=m.instructor||'';
+    $('fStart').value=sc.start||'';$('fWeeks').value=sc.weeks||8;
+    var wds=sc.weekdays||[];Array.prototype.slice.call($('dowWrap').querySelectorAll('input')).forEach(function(c){c.checked=wds.indexOf(+c.value)>=0;});
+    $('fTbl').checked=editing?!!state.tbl:false;
+    // hide roster import area when editing existing (avoid accidental wipe); keep for new
+    updateDayPreview();
+    overlay.hidden=false;
+    setTimeout(function(){$('fTitle').focus();},30);
+  }
+  function closeSetup(){overlay.hidden=true;if(lastFocus&&lastFocus.focus)lastFocus.focus();}
+  function selectedWeekdays(){return Array.prototype.slice.call($('dowWrap').querySelectorAll('input:checked')).map(function(c){return +c.value;});}
+  function updateDayPreview(){
+    var d=genDays($('fStart').value,selectedWeekdays(),parseInt($('fWeeks').value,10)||0);
+    $('dayPreview').textContent=d.length?(d.length+' class day'+(d.length>1?'s':'')+': '+d.slice(0,6).map(function(x){return x.full;}).join(', ')+(d.length>6?' …':'')):'No class days yet. Set a start date, weeks, and meeting days.';
+  }
+  $('fStart').addEventListener('change',updateDayPreview);$('fWeeks').addEventListener('input',updateDayPreview);
+  $('dowWrap').addEventListener('change',updateDayPreview);
+
+  function wireImport(fileId,pasteId,msgId,target){
+    $(fileId).addEventListener('change',function(){
+      var f=this.files&&this.files[0];if(!f){return;}
+      var rd=new FileReader();rd.onload=function(){var arr=parseRoster(rd.result);stage(target,arr);$(msgId).textContent=arr.length+' name'+(arr.length===1?'':'s')+' read from file.';};rd.readAsText(f);
+    });
+    $(pasteId).addEventListener('input',function(){
+      if(this.value.trim()){var arr=parseRoster(this.value);stage(target,arr);$(msgId).textContent=arr.length+' name'+(arr.length===1?'':'s')+' from paste.';}
+    });
+  }
+  function stage(target,arr){if(target==='en')enRoster=arr;else wlRoster=arr;}
+  wireImport('fEnFile','fEnPaste','fEnMsg','en');
+  wireImport('fWlFile','fWlPaste','fWlMsg','wl');
+
+  $('setupCancel').addEventListener('click',closeSetup);
+  overlay.addEventListener('click',function(e){if(e.target===overlay)closeSetup();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hidden)closeSetup();});
+
+  $('setupSave').addEventListener('click',function(){
+    var err=$('setupErr');err.textContent='';
+    var title=$('fTitle').value.trim()||'Interactive Roll & Teams';
+    var weekdays=selectedWeekdays();
+    var start=$('fStart').value;var weeks=parseInt($('fWeeks').value,10)||0;
+    var d=genDays(start,weekdays,weeks);
+    if(!d.length){err.textContent='Add at least one class day: set a first class date, number of weeks, and at least one meeting day.';return;}
+    var meta={title:title,institution:$('fInst').value.trim(),course:$('fCourse').value.trim(),term:$('fTerm').value.trim(),crn:$('fCrn').value.trim(),instructor:$('fInstr').value.trim()};
+    var schedule={start:start,weeks:weeks,weekdays:weekdays};
+    if(editingId){
+      // edit in place: keep students/teams/attendance
+      state.meta=meta;state.schedule=schedule;state.days=d;state.tbl=$('fTbl').checked;
+      persist();
+      // update index label
+      var idx=index().map(function(c){return c.id===state.id?{id:c.id,label:courseLabel(meta)}:c;});setIndex(idx);
+      paintHeader();paintCourseSel();applyTbl();renderAll();closeSetup();
+    } else {
+      var id=uid('c');
+      var students=studentsFromRoster(enRoster,wlRoster);
+      var c={id:id,meta:meta,schedule:schedule,days:d,tbl:$('fTbl').checked,teamNames:DEFNAMES.slice(),students:students};
+      saveCourse(c);
+      var idx=index();idx.push({id:id,label:courseLabel(meta)});setIndex(idx);
+      closeSetup();activate(id);
+    }
+  });
+  function courseLabel(m){return [m.course||m.title,(m.crn?('('+m.crn+')'):''),m.term].filter(Boolean).join(' ').trim()||'Untitled course';}
+
+  $('setupBtn').addEventListener('click',function(){if(!state){openSetup(false);}else openSetup(true);});
+  $('newCourseBtn').addEventListener('click',function(){openSetup(false);});
+
+  // ===================== seed first-run BIO 004 =====================
+  function seedBio004(){
+    var enrolled=["Addison, Tobias","Alvarado De La Cruz, Xiomara","Anderson, Sidney","Falk, Malia","Felix, Lizette","Garcia, Emely","Godinez Alvarado, Hemma","Greenwood, Chanel","Guevara, Daisy","Guizar, Samantha [C]","Harris, Andrea","Horna, Brianna","Jones, Damiyah","Kaur, Harbeen","Lea, Isabella","Magno, Aaliyah","Mcintyre, Shelby","Oregel, Ylana","Panush, Tyler","Valle, Alejandra","Watson, Aaliyah","Welsh, Mikayla","Wenceslao, Araceli"];
+    var wl=[["Villicana Cervantes, Lizette [C]","07CHJ0"],["Marin, Alexandra","4MFFEV"],["Patindol, Bianca","4TJRF6"],["Vazquez, Justino [C]","5BD7S3"],["Martinez Gaitan, Brenda [C]","6QSDPJ"],["Thurston, Hannah","7V4QQC"],["Nguyen, Jasmine [C]","BKYFIB"],["Garcia Casanova, Bertha","BMDKWC"],["Lynch, Marissa","BSGH9Q"],["Cancino, Roxjanjanea","C3ASL3"],["Salindong, Elian","DFY2JI"],["Castro, Jazlyn","EZUOKZ"],["Vazquez, Manuel","F1JP7Q"],["Flanagan, Morgan","FTS8IY"],["Espino, Kayla Erika","G5V1RH"],["Torres, Yareli","GHXQSP"],["Cacuyog, Sophia","GW47WS"],["Robles, Tania","GZBU0T"],["Tran, Bryant","HZS0OM"],["Miller, Alana","I87018"]];
+    var enr=enrolled.map(function(n){var c=/\[c\]/i.test(n);return {name:n.replace(/\s*\[c\]/ig,'').trim(),conf:c,code:'',pos:null};});
+    var wls=wl.map(function(p,i){var n=p[0];var c=/\[c\]/i.test(n);return {name:n.replace(/\s*\[c\]/ig,'').trim(),conf:c,code:p[1],pos:i+1};});
+    var d=genDays('2026-06-15',[1,2,3,4],2); // Mon-Thu, Weeks 1-2
+    var id=uid('c');
+    var meta={title:'Interactive Roll & Teams',institution:'Solano Community College',course:'BIO 004 · Human Anatomy',term:'Summer 2026 Intensive',crn:'60099',instructor:'Dr. Sharilyn Rennie'};
+    var c={id:id,meta:meta,schedule:{start:'2026-06-15',weeks:2,weekdays:[1,2,3,4]},days:d,tbl:true,teamNames:["Femur","Scapula","Cranium","Patella","Sternum","Mandible"],students:studentsFromRoster(enr,wls)};
+    saveCourse(c);setIndex([{id:id,label:courseLabel(meta)}]);jset(CUR_KEY,id);
+    return id;
+  }
+
+  // ===================== boot =====================
+  function boot(){
+    var idx=index();
+    if(!idx.length){
+      // first ever run: seed BIO 004 so nothing is lost and the engine has a live example
+      var id=seedBio004();activate(id);return;
+    }
+    var cur=jget(CUR_KEY,'');
+    var found=idx.some(function(c){return c.id===cur;});
+    activate(found?cur:idx[0].id);
+  }
+  boot();
+})();
+// iframe height-sender (Kajabi / GitHub Pages embed)
+(function(){function sh(){parent.postMessage({frameId:window.name||'attendance-engine',height:document.documentElement.scrollHeight},'*');}window.addEventListener('load',sh);window.addEventListener('resize',sh);if(window.ResizeObserver)new ResizeObserver(sh).observe(document.body);})();
+</script>
+</body>
+</html>
