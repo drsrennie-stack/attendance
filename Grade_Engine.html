@@ -89,6 +89,7 @@
   .fld label{font-size:11.5px;font-weight:700;color:var(--navy);}
   .fld input[type=text],.fld input[type=date],.fld input[type=number],.fld select,.dialog textarea{font:inherit;font-size:13px;padding:7px 8px;border:1px solid #b9c2c7;border-radius:6px;color:var(--navy);background:#fff;width:100%;}
   .fld input:focus-visible,.dialog textarea:focus-visible,.fld select:focus-visible{outline:3px solid var(--gold);outline-offset:1px;border-color:var(--navy);}
+  .dialog input::placeholder,.dialog textarea::placeholder{color:#9aa6ab;font-style:italic;opacity:1;}
   .dialog textarea{min-height:84px;resize:vertical;font-family:'Courier New',monospace;font-size:12px;}
   .hint{font-size:11px;color:var(--gray);margin:4px 0 0;line-height:1.45;}
   .parsemsg{font-size:11.5px;font-weight:700;color:var(--navy-deep);margin:5px 0 0;}
@@ -180,7 +181,7 @@
       <legend>Course identity</legend>
       <div class="grid">
         <div class="fld"><label for="fTitle">Course title</label><input type="text" id="fTitle" placeholder="Human Anatomy &amp; Physiology"></div>
-        <div class="fld"><label for="fInst">Institution</label><input type="text" id="fInst" placeholder="American River College"></div>
+        <div class="fld"><label for="fInst">Institution</label><input type="text" id="fInst" placeholder="Solano Community College"></div>
         <div class="fld"><label for="fCourse">Course &amp; section</label><input type="text" id="fCourse" placeholder="BIO 431 - 01"></div>
         <div class="fld"><label for="fTerm">Term</label><input type="text" id="fTerm" placeholder="Fall 2026"></div>
         <div class="fld"><label for="fCRN">CRN</label><input type="text" id="fCRN" placeholder="optional"></div>
@@ -270,7 +271,7 @@ Marsh, Eleanor [C]"></textarea>
         <div class="fld"><label for="aDate">Date (optional)</label><input type="date" id="aDate"></div>
       </div>
       <div class="grid" id="tblFields" hidden>
-        <div class="fld"><label for="aIMax">iRAT max points</label><input type="number" id="aIMax" min="1" step="0.5" value="10"></div>
+        <div class="fld"><label for="aIMax">iRAT max points</label><input type="number" id="aIMax" min="1" step="0.5" value="30"></div>
         <div class="fld"><label for="aTMax">tRAT max points</label><input type="number" id="aTMax" min="1" step="0.5" value="10"></div>
         <div class="fld"><label class="switch" style="margin-top:18px"><input type="checkbox" id="aBonus"> Add a bonus point column</label></div>
         <div class="fld" id="aBMaxWrap" hidden><label for="aBMax">Bonus max points</label><input type="number" id="aBMax" min="0" step="0.5" value="1"></div>
@@ -304,7 +305,7 @@ Marsh, Eleanor [C]"></textarea>
 
   function defaultCategories(teams){
     return [
-      {id:uid(),name:"RAT (TBL)",kind:"tbl",weight:30,teamScored:false},
+      {id:uid(),name:"TBL (RAT)",kind:"tbl",weight:45,teamScored:false},
       {id:uid(),name:"Lab Quizzes",weight:10,teamScored:false},
       {id:uid(),name:"Lab Practicals",weight:20,teamScored:false},
       {id:uid(),name:"Lecture Exams",weight:20,teamScored:false},
@@ -791,7 +792,7 @@ Marsh, Eleanor [C]"></textarea>
     el("fCourse").value=c?(c.meta.course||""):"";
     el("fTerm").value=c?(c.meta.term||""):"";
     el("fCRN").value=c?(c.meta.crn||""):"";
-    el("fInstr").value=c?(c.meta.instr||""):"Dr. Sharilyn Rennie";
+    el("fInstr").value=c?(c.meta.instr||""):"";
     el("fTeams").checked=c?!!c.teams:true;
     el("fWeighted").checked=c?!!c.weighted:true;
     wizCats=c?JSON.parse(JSON.stringify(c.categories)):defaultCategories(true);
@@ -883,8 +884,8 @@ Marsh, Eleanor [C]"></textarea>
     e.preventDefault();
     var title=el("fTitle").value.trim();
     if(!title){el("wizErr").textContent="Course title is required.";return;}
-    var meta={title:title,inst:el("fInst").value.trim(),course:el("fCourse").value.trim(),
-      term:el("fTerm").value.trim(),crn:el("fCRN").value.trim(),instr:el("fInstr").value.trim()};
+    var meta={title:title,inst:el("fInst").value.trim()||"Solano Community College",course:el("fCourse").value.trim(),
+      term:el("fTerm").value.trim(),crn:el("fCRN").value.trim(),instr:el("fInstr").value.trim()||"Dr. Sharilyn Rennie"};
     var teams=el("fTeams").checked,weighted=el("fWeighted").checked;
     if(wizMode==="edit"){
       var c=state.course;c.meta=meta;c.teams=teams;c.weighted=weighted;c.categories=wizCats;c.scale=wizScale;
@@ -939,7 +940,7 @@ Marsh, Eleanor [C]"></textarea>
     if(!cats.length){alert("Add a category first under Categories & weights.");return;}
     el("aCat").innerHTML=cats.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.name)+(c.kind==="tbl"?" (TBL)":"")+'</option>';}).join("");
     el("aName").value="";el("aMax").value="100";el("aDate").value="";el("asmtErr").textContent="";
-    el("aIMax").value="10";el("aTMax").value="10";el("aBonus").checked=false;el("aBMax").value="1";
+    el("aIMax").value="30";el("aTMax").value="10";el("aBonus").checked=false;el("aBMax").value="1";
     syncAsmtFields();
     el("asmtModal").hidden=false;el("aName").focus();
   });
