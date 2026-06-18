@@ -58,6 +58,9 @@
   .scorein{width:100%;min-width:64px;height:34px;border:none;background:transparent;text-align:center;font:inherit;font-size:13px;font-weight:600;color:var(--navy);padding:0 4px;}
   .scorein:focus-visible{outline:3px solid var(--gold);outline-offset:-3px;}
   .scorein.team{background:var(--navy-tint);}
+  .scorein.ovr{background:#f6e9e2;box-shadow:inset 3px 0 0 var(--terra-dark);}
+  td.tbltotal{min-width:62px;width:62px;text-align:center;font-weight:800;font-size:13px;color:var(--navy);background:#f7efdc!important;border-left:2px solid var(--gold);}
+  thead th.tbltot{background:#7a5e1f;border-bottom:1px solid var(--gold);} tfoot td.tbltot{background:#f7efdc;}
   td.finalwrap,th.final{min-width:64px;width:64px;text-align:center;}
   td.finalwrap{font-weight:800;font-size:13px;padding:6px 4px;}
   td.letterwrap{min-width:50px;width:50px;text-align:center;font-weight:800;font-size:14px;padding:6px 4px;}
@@ -95,10 +98,10 @@
   /* category & assessment editor rows */
   .catlist,.asmtlist{display:flex;flex-direction:column;gap:8px;}
   .catrow-ed,.asmtrow-ed{display:grid;gap:8px;align-items:center;padding:8px;border:1px solid rgba(30,61,76,.2);border-radius:8px;background:var(--offwhite);}
-  .catrow-ed{grid-template-columns:1fr 88px 92px 34px;}
+  .catrow-ed{grid-template-columns:1fr 150px 80px 96px 34px;}
   .asmtrow-ed{grid-template-columns:150px 1fr 78px 130px 34px;}
-  .catrow-ed input,.asmtrow-ed input,.asmtrow-ed select{font:inherit;font-size:12.5px;padding:6px 7px;border:1px solid #b9c2c7;border-radius:6px;width:100%;color:var(--navy);background:#fff;}
-  .catrow-ed input:focus-visible,.asmtrow-ed input:focus-visible,.asmtrow-ed select:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+  .catrow-ed input,.catrow-ed select,.asmtrow-ed input,.asmtrow-ed select{font:inherit;font-size:12.5px;padding:6px 7px;border:1px solid #b9c2c7;border-radius:6px;width:100%;color:var(--navy);background:#fff;}
+  .catrow-ed input:focus-visible,.catrow-ed select:focus-visible,.asmtrow-ed input:focus-visible,.asmtrow-ed select:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
   .rowlab{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--terra-dark);display:block;margin-bottom:2px;}
   .teamflag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--navy);}
   .del{appearance:none;border:1px solid var(--terra-dark);color:var(--terra-dark);background:#fff;border-radius:6px;width:30px;height:30px;font-size:15px;font-weight:800;cursor:pointer;line-height:1;}
@@ -161,7 +164,9 @@
   </div>
 
   <p class="help" id="help">
-    <b>How to use.</b> Pick or set up a course. Add as many assessment columns as you need inside each category (labs, lecture exams, quizzes, TBLs) from <b>+ Add column</b>. Edit category names and weights under <b>Categories &amp; weights</b>. Type a raw score in each cell, up to that column's max points. Turn on <b>Compute weighted grade</b> to see each student's running weighted percent and letter. tRAT and any team-scored category fills every member of a student's team at once. Everything is saved in this browser only. Use <b>Export CSV</b> to keep your records.
+    <b>How to use.</b> Pick or set up a course, or build one from the Attendance Engine page you record on (upload it in Course setup). Add as many assessment columns as you need inside each category (labs, lecture exams, quizzes, TBLs) from <b>+ Add column</b>. Edit category names and weights under <b>Categories &amp; weights</b>. Type a raw score in each cell, up to that column's max points. Turn on <b>Compute weighted grade</b> to see each student's running weighted percent and letter.
+    <br><b>TBL totals for Canvas.</b> In a TBL category (the default <b>RAT (TBL)</b>), each column is one RAT session with separate <b>iRAT</b> and <b>tRAT</b> cells, an optional <b>bonus</b>, and an automatic gold <b>Total</b> column (iRAT + tRAT + bonus). That Total is the single number to record in Canvas. Bonus counts in the Total but is treated as extra credit in the weighted percent.
+    <br><b>Team grades.</b> tRAT and bonus cells are team-scored (light blue): type the score once in any member's cell and it fills the whole team. To adjust one student, for example a no-show who gets a <b>0</b>, edit that filled cell; it overrides just that student (shown with a terra edge) and the rest of the team is untouched. Double-click a cell to push its value to the entire team again. Everything saves in this browser only. Use <b>Export CSV</b> to keep your records.
   </p>
 </main>
 
@@ -214,12 +219,14 @@
         <p class="hint" id="linkHint">If you built this class in the Attendance Engine on this same site, pick it here to pull the enrolled roster (names, teams, confidential flags). Available only when both tools share the same web address.</p>
       </div>
       <div class="fld">
-        <label for="fRoster">Or paste / upload a roster</label>
+        <label for="fFile">Or upload your attendance HTML, a CSV, or paste names</label>
         <div class="filewrap">
-          <input type="file" id="fFile" accept=".csv,text/csv,text/plain">
-          <span class="hint">CSV with a Name (or Last Name + First Name) column, optional Team and Confidential. Or one name per line as Last, First.</span>
+          <input type="file" id="fFile" accept=".html,.htm,.csv,.txt,text/html,text/csv,text/plain">
+          <span class="hint">Upload the <b>Attendance Engine HTML page you record on</b> and the roster (names, teams, confidential flags) is read straight from it. A CSV (Name, optional Team, Confidential) or a saved attendance CSV also work.</span>
         </div>
-        <textarea id="fRoster" placeholder="Rennie, Sharilyn
+        <p class="hint" style="margin:6px 0 4px">To export from the Attendance Engine: open your class, then in your browser choose File then Save Page As and pick &ldquo;Webpage, HTML Only&rdquo;. Upload that file here. Names and confidential flags import exactly; team names import when your browser saves the selected team.</p>
+        <textarea id="fRoster" placeholder="Or paste one per line:
+Rennie, Sharilyn
 Delgado, Maya
 Marsh, Eleanor [C]"></textarea>
         <p class="parsemsg" id="parsemsg" aria-live="polite"></p>
@@ -251,17 +258,24 @@ Marsh, Eleanor [C]"></textarea>
 
 <!-- ===================== ADD COLUMN ===================== -->
 <div class="overlay" id="asmtModal" hidden role="dialog" aria-modal="true" aria-labelledby="asmtTitle">
-  <form class="dialog" id="asmtForm" style="max-width:560px">
-    <h2 id="asmtTitle">Add assessment column</h2>
-    <p class="lead">A column is one graded item: a lab, a lecture exam, a quiz, or a TBL readiness test.</p>
+  <form class="dialog" id="asmtForm" style="max-width:600px">
+    <h2 id="asmtTitle">Add column</h2>
+    <p class="lead">A column is one graded item: a lab, a lecture exam, a quiz, or (in a TBL category) one RAT session that totals iRAT + tRAT.</p>
     <fieldset>
       <legend>Column</legend>
       <div class="grid">
         <div class="fld"><label for="aCat">Category</label><select id="aCat"></select></div>
-        <div class="fld"><label for="aName">Name</label><input type="text" id="aName" placeholder="Lab Quiz 3"></div>
-        <div class="fld"><label for="aMax">Max points</label><input type="number" id="aMax" min="1" step="0.5" value="100"></div>
+        <div class="fld"><label for="aName" id="aNameLab">Name</label><input type="text" id="aName" placeholder="Lab Quiz 3"></div>
+        <div class="fld" id="aMaxWrap"><label for="aMax">Max points</label><input type="number" id="aMax" min="1" step="0.5" value="100"></div>
         <div class="fld"><label for="aDate">Date (optional)</label><input type="date" id="aDate"></div>
       </div>
+      <div class="grid" id="tblFields" hidden>
+        <div class="fld"><label for="aIMax">iRAT max points</label><input type="number" id="aIMax" min="1" step="0.5" value="10"></div>
+        <div class="fld"><label for="aTMax">tRAT max points</label><input type="number" id="aTMax" min="1" step="0.5" value="10"></div>
+        <div class="fld"><label class="switch" style="margin-top:18px"><input type="checkbox" id="aBonus"> Add a bonus point column</label></div>
+        <div class="fld" id="aBMaxWrap" hidden><label for="aBMax">Bonus max points</label><input type="number" id="aBMax" min="0" step="0.5" value="1"></div>
+      </div>
+      <p class="hint" id="tblHint" hidden>This adds one RAT session with separate iRAT and tRAT cells (tRAT fills the team) and an automatic <b>Total</b> column (iRAT + tRAT + bonus) for you to record in Canvas. Bonus is extra credit and is not counted in the category percent.</p>
     </fieldset>
     <p class="err" id="asmtErr" role="alert"></p>
     <div class="actions">
@@ -290,8 +304,7 @@ Marsh, Eleanor [C]"></textarea>
 
   function defaultCategories(teams){
     return [
-      {id:uid(),name:"iRAT",weight:15,teamScored:false},
-      {id:uid(),name:"tRAT",weight:15,teamScored:!!teams},
+      {id:uid(),name:"RAT (TBL)",kind:"tbl",weight:30,teamScored:false},
       {id:uid(),name:"Lab Quizzes",weight:10,teamScored:false},
       {id:uid(),name:"Lab Practicals",weight:20,teamScored:false},
       {id:uid(),name:"Lecture Exams",weight:20,teamScored:false},
@@ -347,13 +360,68 @@ Marsh, Eleanor [C]"></textarea>
   }
   function attnRoster(id){
     var c=read(ATTN_PFX+id); if(!c||!Array.isArray(c.students)) return [];
-    var teams=(c.teams&&c.teams.names)||[];
+    var teams=c.teamNames||(c.teams&&c.teams.names)||[];
     return c.students.filter(function(s){return s&&s.status!=="dropped"&&s.status!=="noshow";}).map(function(s){
       var team="";
-      if(typeof s.team==="number"&&teams[s.team]) team=teams[s.team];
+      if(typeof s.team==="number"&&s.team!=null&&teams[s.team]!=null) team=teams[s.team];
       else if(typeof s.team==="string") team=s.team;
       return {name:s.name,team:team,conf:!!(s.conf||s.confidential)};
     });
+  }
+
+  /* ---------- parse a saved Attendance Engine HTML page ---------- */
+  function parseAttendanceHtml(htmlText){
+    var out=[],doc;
+    try{doc=new DOMParser().parseFromString(htmlText,"text/html");}catch(e){return out;}
+    if(!doc) return out;
+    /* 1) preferred: an embedded data blob (future-proof if the page bakes its roster) */
+    var blob=doc.getElementById("attendance-data")||doc.querySelector('script[type="application/json"]');
+    if(blob&&blob.textContent.trim()){
+      try{
+        var data=JSON.parse(blob.textContent);
+        var students=data.students||(data.course&&data.course.students);
+        var teams=data.teamNames||(data.course&&data.course.teamNames)||[];
+        if(Array.isArray(students)){
+          students.filter(function(s){return s&&s.status!=="dropped";}).forEach(function(s){
+            var team=(typeof s.team==="number"&&teams[s.team]!=null)?teams[s.team]:(typeof s.team==="string"?s.team:"");
+            out.push({name:s.name,team:team,conf:!!s.conf});
+          });
+          if(out.length) return out;
+        }
+      }catch(e){}
+    }
+    /* 2) scrape the rendered roll tables (Enrolled + Wait List) */
+    var bodies=[];
+    ["enBody","wlBody"].forEach(function(idn){var b=doc.getElementById(idn);if(b)bodies.push(b);});
+    if(bodies.length){
+      bodies.forEach(function(tb){scrapeRows(tb.querySelectorAll("tr[data-uid], tr"),out);});
+      if(out.length) return out;
+    }
+    /* 3) generic fallback: any table, first data cell is the name */
+    var tables=doc.querySelectorAll("table");
+    for(var i=0;i<tables.length&&!out.length;i++){scrapeRows(tables[i].querySelectorAll("tr"),out);}
+    return out;
+  }
+  function scrapeRows(rows,out){
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i];
+      var nameCell=r.querySelector("td.c1")||r.querySelector(".c1")||r.querySelector("td");
+      if(!nameCell) continue;
+      var conf=!!nameCell.querySelector(".conf")||/\[c\]/i.test(nameCell.textContent);
+      var name=nameCell.textContent.replace(/\[c\]/ig,"").replace(/\s+/g," ").trim();
+      if(!name||/^(#|pos|student name|name)$/i.test(name)) continue;
+      var team="";
+      var sel=r.querySelector("select.teamsel")||r.querySelector("select");
+      if(sel){
+        var opt=sel.querySelector("option[selected]");
+        if(!opt&&sel.selectedIndex>=0) opt=sel.options[sel.selectedIndex];
+        if(opt){var t=(opt.textContent||"").trim();if(t&&!/^\(?\s*no team\s*\)?$/i.test(t)&&t!=="—")team=t;}
+      } else {
+        var tc=r.querySelector("td.teamwrap, td.team");
+        if(tc){var tt=tc.textContent.trim();if(tt&&!/^\(?\s*no team\s*\)?$/i.test(tt))team=tt;}
+      }
+      out.push({name:name,team:team,conf:conf});
+    }
   }
 
   /* ---------- course CRUD ---------- */
@@ -369,9 +437,27 @@ Marsh, Eleanor [C]"></textarea>
 
   /* ---------- computation ---------- */
   function catAssessments(catId){return (state.course.assessments||[]).filter(function(a){return a.catId===catId;});}
+  /* a TBL unit total = iRAT + tRAT (+ bonus). Bonus is extra credit (not in the denominator). */
+  function unitParts(u){return [u.id+"_i",u.id+"_t"].concat(u.bonus?[u.id+"_b"]:[]);}
+  function unitHasScore(stu,u){return unitParts(u).some(function(k){var v=stu.scores[k];return v!=null&&v!=="";});}
+  function unitTotal(stu,u){
+    if(!unitHasScore(stu,u)) return null;
+    var i=num(stu.scores[u.id+"_i"])||0,t=num(stu.scores[u.id+"_t"])||0,b=u.bonus?(num(stu.scores[u.id+"_b"])||0):0;
+    return i+t+b;
+  }
+  function unitMax(u){return (num(u.iMax)||0)+(num(u.tMax)||0);} /* graded denominator excludes bonus */
   function studentCatPct(stu,cat){
     var as=catAssessments(cat.id),got=0,poss=0,any=false;
-    for(var i=0;i<as.length;i++){var v=stu.scores[as[i].id];if(v!=null&&v!==""){var n=num(v);if(n!=null){got+=n;poss+=num(as[i].max)||0;any=true;}}}
+    for(var i=0;i<as.length;i++){
+      var a=as[i];
+      if(a.kind==="tbl"){
+        var tot=unitTotal(stu,a);
+        if(tot!=null){got+=tot;poss+=unitMax(a);any=true;}
+      } else {
+        var v=stu.scores[a.id];
+        if(v!=null&&v!==""){var n=num(v);if(n!=null){got+=n;poss+=num(a.max)||0;any=true;}}
+      }
+    }
     if(!any||poss<=0) return null;
     return got/poss*100;
   }
@@ -445,58 +531,83 @@ Marsh, Eleanor [C]"></textarea>
     el("gridcap").textContent=(c.meta&&c.meta.title?c.meta.title+" — ":"")+(state.tab==="active"?"Active roster":"Dropped / withdrawn");
   }
 
+  /* one flat list of columns shared by header, body, footer, and export */
+  function buildColumns(){
+    var c=state.course, cats=c.categories||[], teams=c.teams, out=[];
+    cats.forEach(function(cat){
+      var as=catAssessments(cat.id),start=out.length;
+      if(!as.length){out.push({type:"empty",catId:cat.id,cat:cat});}
+      as.forEach(function(a){
+        if(a.kind==="tbl"){
+          out.push({type:"score",cat:cat,unit:a,key:a.id+"_i",label:a.name+" iRAT",max:num(a.iMax)||0,team:false});
+          out.push({type:"score",cat:cat,unit:a,key:a.id+"_t",label:a.name+" tRAT",max:num(a.tMax)||0,team:!!teams});
+          if(a.bonus)out.push({type:"score",cat:cat,unit:a,key:a.id+"_b",label:a.name+" Bonus",max:num(a.bMax)||0,team:!!teams});
+          out.push({type:"total",cat:cat,unit:a,label:a.name+" Total"});
+        } else {
+          out.push({type:"score",cat:cat,unit:null,key:a.id,label:a.name,max:num(a.max)||0,team:!!(teams&&cat.teamScored)});
+        }
+      });
+      out[start]&&(out[start].catStart=true);
+      out._spans=out._spans||{};
+    });
+    return out;
+  }
+  function catSpans(cols){var m={},order=[];cols.forEach(function(col){if(!(col.catId||col.cat.id in m)){}var id=col.cat.id;if(m[id]==null){m[id]=0;order.push(id);}m[id]++;});return {map:m,order:order};}
+
   function renderGrid(list){
-    var c=state.course, cats=c.categories||[], teams=c.teams, weighted=c.weighted;
-    /* header: category row + assessment row */
+    var c=state.course, teams=c.teams, weighted=c.weighted, cols=buildColumns();
+    var sp=catSpans(cols);
+    /* header row 1: category groups */
     var cat1="<tr class='catrow'><th class='c0' rowspan='2' scope='col'>#</th><th class='c1' rowspan='2' scope='col'>Student</th>";
     if(teams) cat1+="<th class='teamcol' rowspan='2' scope='col'>Team</th>";
-    var head2="<tr>";
-    for(var ci=0;ci<cats.length;ci++){
-      var as=catAssessments(cats[ci].id);
-      var span=Math.max(as.length,1);
-      var wlbl=weighted?" · "+(num(cats[ci].weight)||0)+"%":"";
-      cat1+="<th colspan='"+span+"' scope='colgroup'>"+esc(cats[ci].name)+wlbl+"</th>";
-      if(as.length===0){head2+="<th class='asmt'><span class='am' style='font-style:italic'>add column</span></th>";}
-      for(var ai=0;ai<as.length;ai++){
-        head2+="<th class='asmt' scope='col'><span class='al'>"+esc(as[ai].name)+"</span><span class='am'>/"+(num(as[ai].max)||0)+"</span></th>";
-      }
-    }
+    sp.order.forEach(function(id){
+      var cat=(c.categories||[]).filter(function(x){return x.id===id;})[0]||{};
+      var wlbl=weighted?" · "+(num(cat.weight)||0)+"%":"";
+      var tbl=cat.kind==="tbl"?" · iRAT+tRAT":"";
+      cat1+="<th colspan='"+sp.map[id]+"' scope='colgroup'>"+esc(cat.name)+wlbl+tbl+"</th>";
+    });
     if(weighted){cat1+="<th class='weightcol' rowspan='2' scope='col'>Final</th><th class='weightcol' rowspan='2' scope='col'>Grade</th>";}
     cat1+="<th rowspan='2' scope='col'>Actions</th></tr>";
+    /* header row 2: individual columns */
+    var head2="<tr>";
+    cols.forEach(function(col){
+      if(col.type==="empty"){head2+="<th class='asmt'><span class='am' style='font-style:italic'>add column</span></th>";}
+      else if(col.type==="total"){head2+="<th class='asmt tbltot' scope='col' title='Record this in Canvas'><span class='al'>"+esc(col.label)+"</span><span class='am'>Canvas</span></th>";}
+      else {head2+="<th class='asmt' scope='col'><span class='al'>"+esc(col.label)+"</span><span class='am'>/"+col.max+"</span></th>";}
+    });
     head2+="</tr>";
     el("thead").innerHTML=cat1+head2;
 
-    if(!list.length){
-      el("tbody").innerHTML='<tr><td class="empty" colspan="40">No students on this tab.</td></tr>';
-      el("tfoot").innerHTML="";return;
-    }
+    if(!list.length){el("tbody").innerHTML='<tr><td class="empty" colspan="60">No students on this tab.</td></tr>';el("tfoot").innerHTML="";return;}
 
     var rows="";
     for(var i=0;i<list.length;i++){
-      var s=list[i],pos=i+1;
+      var s=list[i];
       rows+="<tr data-sid='"+s.id+"'>";
-      rows+="<td class='c0'>"+pos+"</td>";
+      rows+="<td class='c0'>"+(i+1)+"</td>";
       rows+="<td class='c1'>"+esc(s.name)+(s.conf?" <span class='conf'>[C]</span>":"")+"</td>";
       if(teams) rows+="<td class='teamwrap teamcol'><select class='teamsel' data-act='team' aria-label='Team for "+esc(s.name)+"'>"+teamOptions(s.team)+"</select></td>";
-      for(var ci2=0;ci2<cats.length;ci2++){
-        var as2=catAssessments(cats[ci2].id);
-        if(as2.length===0){rows+="<td class='scorewrap'></td>";}
-        for(var ai2=0;ai2<as2.length;ai2++){
-          var a=as2[ai2],v=s.scores[a.id];
-          var teamCls=(teams&&cats[ci2].teamScored)?" team":"";
-          rows+="<td class='scorewrap'><input class='scorein"+teamCls+"' type='number' inputmode='decimal' min='0' step='0.5' max='"+(num(a.max)||0)+"' value='"+(v==null?"":esc(v))+"' data-act='score' data-aid='"+a.id+"' data-cat='"+cats[ci2].id+"' aria-label='"+esc(s.name)+" "+esc(a.name)+", out of "+(num(a.max)||0)+"'></td>";
+      cols.forEach(function(col){
+        if(col.type==="empty"){rows+="<td class='scorewrap'></td>";}
+        else if(col.type==="total"){
+          var tot=unitTotal(s,col.unit);
+          rows+="<td class='tbltotal' data-total='"+col.unit.id+"' data-cat='"+col.cat.id+"'>"+(tot==null?"—":(Math.round(tot*100)/100))+"</td>";
+        } else {
+          var v=s.scores[col.key];
+          var isOvr=col.team&&s.ovr&&s.ovr[col.key];
+          var cls="scorein"+(col.team?" team":"")+(isOvr?" ovr":"");
+          var ttl=col.team?" title=\"Team-scored. Type once to fill the team; edit a filled cell to override one student (set 0 for an absence); double-click to push this value to the whole team.\"":"";
+          rows+="<td class='scorewrap'><input class='"+cls+"' type='number' inputmode='decimal' min='0' step='0.5' max='"+col.max+"' value='"+(v==null?"":esc(v))+"' data-act='score' data-aid='"+col.key+"' data-cat='"+col.cat.id+"' data-team='"+(col.team?"1":"0")+"'"+ttl+" aria-label='"+esc(s.name)+" "+esc(col.label)+", out of "+col.max+(isOvr?", individual override":"")+"'></td>";
         }
-      }
+      });
       if(weighted){
         var fin=studentFinal(s), lt=letterFor(fin);
         rows+="<td class='finalwrap weightcol'>"+(fin==null?"—":fin.toFixed(1)+"%")+"</td>";
         rows+="<td class='letterwrap weightcol l"+(lt||"")+"'>"+(lt||"—")+"</td>";
       }
-      if(state.tab==="active"){
-        rows+="<td class='actcell'><button class='mini drop' data-act='drop'>Drop</button></td>";
-      } else {
-        rows+="<td class='actcell'>"+(s.dropReason?"<span class='conf'>"+esc(s.dropReason)+"</span> ":"")+"<button class='mini restore' data-act='restore'>Restore</button></td>";
-      }
+      rows+=state.tab==="active"
+        ? "<td class='actcell'><button class='mini drop' data-act='drop'>Drop</button></td>"
+        : "<td class='actcell'>"+(s.dropReason?"<span class='conf'>"+esc(s.dropReason)+"</span> ":"")+"<button class='mini restore' data-act='restore'>Restore</button></td>";
       rows+="</tr>";
     }
     el("tbody").innerHTML=rows;
@@ -505,15 +616,15 @@ Marsh, Eleanor [C]"></textarea>
     if(state.tab==="active"&&list.length){
       var foot="<tr><th class='c0'></th><th class='c1'>Class average</th>";
       if(teams) foot+="<td class='teamcol'></td>";
-      for(var ci3=0;ci3<cats.length;ci3++){
-        var as3=catAssessments(cats[ci3].id);
-        if(as3.length===0){foot+="<td></td>";}
-        for(var ai3=0;ai3<as3.length;ai3++){
-          var aid=as3[ai3].id,sum=0,n=0;
-          for(var k=0;k<list.length;k++){var vv=num(list[k].scores[aid]);if(vv!=null){sum+=vv;n++;}}
-          foot+="<td>"+(n?(sum/n).toFixed(1):"—")+"</td>";
+      cols.forEach(function(col){
+        if(col.type==="empty"){foot+="<td></td>";return;}
+        var sum=0,n=0;
+        for(var k=0;k<list.length;k++){
+          var vv=col.type==="total"?unitTotal(list[k],col.unit):num(list[k].scores[col.key]);
+          if(vv!=null){sum+=vv;n++;}
         }
-      }
+        foot+="<td class='"+(col.type==="total"?"tbltot":"")+"'>"+(n?(Math.round(sum/n*10)/10):"—")+"</td>";
+      });
       if(weighted){
         var fsum=0,fn=0;for(var m2=0;m2<list.length;m2++){var ff=studentFinal(list[m2]);if(ff!=null){fsum+=ff;fn++;}}
         foot+="<td class='weightcol'>"+(fn?(fsum/fn).toFixed(1)+"%":"—")+"</td><td class='weightcol'></td>";
@@ -525,26 +636,56 @@ Marsh, Eleanor [C]"></textarea>
 
   /* ---------- grid interactions ---------- */
   function studentById(id){return state.course.students.filter(function(s){return s.id===id;})[0];}
-  el("tbody").addEventListener("input",function(e){
-    var t=e.target,act=t.getAttribute("data-act");if(act!=="score")return;
-    var tr=t.closest("tr"),sid=tr.getAttribute("data-sid"),s=studentById(sid);if(!s)return;
-    var aid=t.getAttribute("data-aid"),catId=t.getAttribute("data-cat");
-    var max=num(t.getAttribute("max"));var val=t.value===""?"":num(t.value);
-    if(val!==""&&val!=null){if(val<0)val=0;if(max!=null&&val>max)val=max;}
-    s.scores[aid]=(val===""||val==null)?"":val;
-    /* team fill */
-    var cat=(state.course.categories||[]).filter(function(c){return c.id===catId;})[0];
-    if(state.course.teams&&cat&&cat.teamScored&&s.team){
-      state.course.students.forEach(function(o){if(o.id!==s.id&&o.team===s.team){o.scores[aid]=s.scores[aid];}});
+  function catById(id){return (state.course.categories||[]).filter(function(c){return c.id===id;})[0];}
+  function isTeamScored(catId){var c=catById(catId);return !!(state.course.teams&&c&&c.teamScored);}
+  function teammates(s){return state.course.students.filter(function(o){return o.id!==s.id&&o.team&&o.team===s.team;});}
+  function fillTeam(source,aid,val,force){
+    teammates(source).forEach(function(o){
+      if(force||!(o.ovr&&o.ovr[aid])){o.scores[aid]=val;if(force&&o.ovr)delete o.ovr[aid];}
+    });
+  }
+  /* record whether a team-scored cell was empty when editing began */
+  el("tbody").addEventListener("focusin",function(e){
+    var t=e.target;if(t.getAttribute&&t.getAttribute("data-act")==="score"){
+      var s=studentById(t.closest("tr").getAttribute("data-sid"));if(!s)return;
+      var v=s.scores[t.getAttribute("data-aid")];
+      t.dataset.startEmpty=(v===""||v==null)?"1":"0";
     }
+  });
+  el("tbody").addEventListener("input",function(e){
+    var t=e.target;if(t.getAttribute("data-act")!=="score")return;
+    var s=studentById(t.closest("tr").getAttribute("data-sid"));if(!s)return;
+    var aid=t.getAttribute("data-aid");
+    var max=num(t.getAttribute("max"));var val=t.value===""?"":num(t.value);
+    if(val!==""&&val!=null){if(val<0)val=0;if(max!=null&&val>max){val=max;t.value=max;}}
+    s.scores[aid]=(val===""||val==null)?"":val;
     saveCourse();
-    /* light update: final cells + footer without full re-render to keep focus */
-    updateComputedCells();
+    updateComputedCells(); /* keep focus; propagation happens on change */
   });
   el("tbody").addEventListener("change",function(e){
     var t=e.target,act=t.getAttribute("data-act");
     var tr=t.closest("tr");if(!tr)return;var s=studentById(tr.getAttribute("data-sid"));if(!s)return;
-    if(act==="team"){s.team=t.value;saveCourse();render();}
+    if(act==="team"){s.team=t.value;saveCourse();render();return;}
+    if(act==="score"&&t.dataset.team==="1"&&s.team){
+      var aid=t.getAttribute("data-aid"),val=s.scores[aid];
+      if(t.dataset.startEmpty==="1"){           /* first team entry: fill the team */
+        if(s.ovr)delete s.ovr[aid];
+        fillTeam(s,aid,val,false);
+      } else {                                   /* editing a filled cell: override this student only */
+        s.ovr=s.ovr||{};s.ovr[aid]=true;
+      }
+      saveCourse();render();
+    }
+  });
+  /* double-click a team-scored cell to push its value to the entire team, clearing overrides */
+  el("tbody").addEventListener("dblclick",function(e){
+    var t=e.target;if(t.getAttribute&&t.getAttribute("data-act")==="score"&&t.dataset.team==="1"){
+      var s=studentById(t.closest("tr").getAttribute("data-sid"));if(!s||!s.team)return;
+      var aid=t.getAttribute("data-aid");
+      if(s.ovr)delete s.ovr[aid];
+      fillTeam(s,aid,s.scores[aid],true);
+      saveCourse();render();
+    }
   });
   el("tbody").addEventListener("click",function(e){
     var t=e.target;if(t.tagName!=="BUTTON")return;var act=t.getAttribute("data-act");
@@ -558,8 +699,16 @@ Marsh, Eleanor [C]"></textarea>
     }
   });
   function updateComputedCells(){
-    if(!state.course.weighted)return;
     var rows=el("tbody").querySelectorAll("tr[data-sid]");
+    /* TBL unit totals always refresh live */
+    rows.forEach(function(tr){
+      var s=studentById(tr.getAttribute("data-sid"));if(!s)return;
+      tr.querySelectorAll(".tbltotal[data-total]").forEach(function(cell){
+        var unit=(state.course.assessments||[]).filter(function(a){return a.id===cell.getAttribute("data-total");})[0];
+        if(!unit)return;var tot=unitTotal(s,unit);cell.textContent=tot==null?"—":(Math.round(tot*100)/100);
+      });
+    });
+    if(!state.course.weighted)return;
     rows.forEach(function(tr){
       var s=studentById(tr.getAttribute("data-sid"));if(!s)return;
       var fin=studentFinal(s),lt=letterFor(fin);
@@ -600,11 +749,13 @@ Marsh, Eleanor [C]"></textarea>
 
   /* ---------- export ---------- */
   function exportCsv(){
-    var c=state.course,cats=c.categories||[];
+    var c=state.course,cats=c.categories||[],cols=buildColumns().filter(function(col){return col.type!=="empty";});
     var head=["Status","#","Name","Confidential"];
     if(c.teams)head.push("Team");
-    var cols=[];
-    cats.forEach(function(cat){catAssessments(cat.id).forEach(function(a){cols.push({cat:cat,a:a});head.push(cat.name+" - "+a.name+" (/"+(num(a.max)||0)+")");});});
+    cols.forEach(function(col){
+      if(col.type==="total")head.push(col.cat.name+" - "+col.label+" (Canvas)");
+      else head.push(col.cat.name+" - "+col.label+" (/"+col.max+")");
+    });
     cats.forEach(function(cat){head.push(cat.name+" %");});
     if(c.weighted){head.push("Final %");head.push("Letter");}
     head.push("Drop reason");head.push("Drop date");
@@ -613,7 +764,10 @@ Marsh, Eleanor [C]"></textarea>
     all.forEach(function(s,i){
       var row=[s.status==="active"?"Active":"Dropped",i+1,s.name,s.conf?"Y":""];
       if(c.teams)row.push(s.team||"");
-      cols.forEach(function(cc){var v=s.scores[cc.a.id];row.push(v==null||v===""?"":v);});
+      cols.forEach(function(col){
+        if(col.type==="total"){var tot=unitTotal(s,col.unit);row.push(tot==null?"":(Math.round(tot*100)/100));}
+        else {var v=s.scores[col.key];row.push(v==null||v===""?"":v);}
+      });
       cats.forEach(function(cat){var p=studentCatPct(s,cat);row.push(p==null?"":p.toFixed(1));});
       if(c.weighted){var f=studentFinal(s);row.push(f==null?"":f.toFixed(1));row.push(letterFor(f));}
       row.push(s.dropReason||"");row.push(s.dropDate||"");
@@ -627,7 +781,7 @@ Marsh, Eleanor [C]"></textarea>
   function csvCell(v){v=String(v==null?"":v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
 
   /* ============ WIZARD ============ */
-  var wizCats=[],wizScale=[],wizMode="new";
+  var wizCats=[],wizScale=[],wizMode="new",fileRoster=null;
   function openWizard(mode){
     wizMode=mode;
     el("wizTitle").textContent=mode==="edit"?"Course setup":"New course";
@@ -642,7 +796,7 @@ Marsh, Eleanor [C]"></textarea>
     el("fWeighted").checked=c?!!c.weighted:true;
     wizCats=c?JSON.parse(JSON.stringify(c.categories)):defaultCategories(true);
     wizScale=c?JSON.parse(JSON.stringify(c.scale||DEFAULT_SCALE)):JSON.parse(JSON.stringify(DEFAULT_SCALE));
-    el("fRoster").value="";el("parsemsg").textContent="";el("wizErr").textContent="";el("fFile").value="";
+    el("fRoster").value="";el("parsemsg").textContent="";el("wizErr").textContent="";el("fFile").value="";fileRoster=null;
     renderWizCats();renderWizScale();renderAttnLink();
     el("wizard").hidden=false;el("fTitle").focus();
   }
@@ -665,18 +819,21 @@ Marsh, Eleanor [C]"></textarea>
   function renderCatEditor(listId,arr,sumId){
     var host=el(listId);
     host.innerHTML=arr.map(function(cat,i){
+      var isTbl=cat.kind==="tbl";
       return "<div class='catrow-ed'>"+
         "<div><span class='rowlab'>Category</span><input type='text' value='"+esc(cat.name)+"' data-i='"+i+"' data-k='name'></div>"+
+        "<div><span class='rowlab'>Type</span><select data-i='"+i+"' data-k='kind'><option value='simple'"+(isTbl?"":" selected")+">Simple columns</option><option value='tbl'"+(isTbl?" selected":"")+">TBL (iRAT+tRAT)</option></select></div>"+
         "<div><span class='rowlab'>Weight %</span><input type='number' min='0' step='1' value='"+(num(cat.weight)||0)+"' data-i='"+i+"' data-k='weight'></div>"+
-        "<div><span class='rowlab'>Team-scored</span><label class='teamflag'><input type='checkbox' "+(cat.teamScored?"checked":"")+" data-i='"+i+"' data-k='teamScored'> fills team</label></div>"+
+        "<div><span class='rowlab'>Team-scored</span><label class='teamflag'"+(isTbl?" style='opacity:.45'":"")+"><input type='checkbox' "+(cat.teamScored?"checked":"")+(isTbl?" disabled":"")+" data-i='"+i+"' data-k='teamScored'> fills team</label></div>"+
         "<button type='button' class='del' data-i='"+i+"' aria-label='Delete category "+esc(cat.name)+"'>×</button>"+
       "</div>";
     }).join("");
-    host.querySelectorAll("input[data-k]").forEach(function(inp){
-      inp.addEventListener("input",function(){
+    host.querySelectorAll("input[data-k],select[data-k]").forEach(function(inp){
+      inp.addEventListener(inp.tagName==="SELECT"?"change":"input",function(){
         var i=+this.getAttribute("data-i"),k=this.getAttribute("data-k");
         if(k==="teamScored")arr[i][k]=this.checked;
         else if(k==="weight")arr[i][k]=num(this.value)||0;
+        else if(k==="kind"){arr[i].kind=this.value==="tbl"?"tbl":undefined;renderCatEditor(listId,arr,sumId);return;}
         else arr[i][k]=this.value;
         updateWsum(arr,sumId);
       });
@@ -695,11 +852,26 @@ Marsh, Eleanor [C]"></textarea>
   el("wizAddCat").addEventListener("click",function(){wizCats.push({id:uid(),name:"New category",weight:0,teamScored:false});renderWizCats();});
   el("fFile").addEventListener("change",function(){
     var f=this.files&&this.files[0];if(!f)return;
-    var rd=new FileReader();rd.onload=function(){el("fRoster").value=rd.result;previewParse();};rd.readAsText(f);
+    var isHtml=/\.html?$/i.test(f.name)||/html/i.test(f.type);
+    var rd=new FileReader();
+    rd.onload=function(){
+      var text=String(rd.result||"");
+      if(isHtml||/<\s*(html|table|tr|body)[\s>]/i.test(text.slice(0,4000))){
+        fileRoster=parseAttendanceHtml(text);
+        el("fRoster").value="";
+        var withTeam=fileRoster.filter(function(s){return s.team;}).length;
+        el("parsemsg").textContent=fileRoster.length
+          ? (fileRoster.length+" students read from your attendance page"+(withTeam?(", "+withTeam+" with a team assigned"):", no teams found in the saved file")+".")
+          : "No students found in that HTML. Try Save Page As “Webpage, HTML Only”, or paste names below.";
+      } else {
+        fileRoster=null;el("fRoster").value=text;previewParse();
+      }
+    };
+    rd.readAsText(f);
   });
-  el("fRoster").addEventListener("input",previewParse);
+  el("fRoster").addEventListener("input",function(){fileRoster=null;previewParse();});
   el("fLink").addEventListener("change",function(){
-    if(this.value){var r=attnRoster(this.value);el("parsemsg").textContent="Linked roster: "+r.length+" students will be pulled from the Attendance Engine course.";}
+    if(this.value){fileRoster=null;var r=attnRoster(this.value);el("parsemsg").textContent="Linked roster: "+r.length+" students will be pulled from the Attendance Engine course.";}
     else previewParse();
   });
   function previewParse(){
@@ -722,10 +894,11 @@ Marsh, Eleanor [C]"></textarea>
       var label=(meta.course||meta.title);state.index.forEach(function(x){if(x.id===state.current)x.label=label;});
       saveCourse();saveIndex();el("wizard").hidden=true;render();return;
     }
-    /* new course */
+    /* new course: roster priority is same-origin link, then uploaded HTML/file, then pasted text */
     var roster=[];
     var link=el("fLink").value;
     if(link)roster=attnRoster(link);
+    if(!roster.length&&fileRoster&&fileRoster.length)roster=fileRoster;
     if(!roster.length)roster=parseRoster(el("fRoster").value);
     var id=uid();
     var rosterTeams=[];roster.forEach(function(r){if(r.team&&rosterTeams.indexOf(r.team)<0)rosterTeams.push(r.team);});
@@ -764,17 +937,37 @@ Marsh, Eleanor [C]"></textarea>
     if(!state.course)return;
     var cats=state.course.categories||[];
     if(!cats.length){alert("Add a category first under Categories & weights.");return;}
-    el("aCat").innerHTML=cats.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>';}).join("");
+    el("aCat").innerHTML=cats.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.name)+(c.kind==="tbl"?" (TBL)":"")+'</option>';}).join("");
     el("aName").value="";el("aMax").value="100";el("aDate").value="";el("asmtErr").textContent="";
+    el("aIMax").value="10";el("aTMax").value="10";el("aBonus").checked=false;el("aBMax").value="1";
+    syncAsmtFields();
     el("asmtModal").hidden=false;el("aName").focus();
   });
+  function syncAsmtFields(){
+    var cat=catById(el("aCat").value),isTbl=cat&&cat.kind==="tbl";
+    el("tblFields").hidden=!isTbl;el("tblHint").hidden=!isTbl;el("aMaxWrap").hidden=isTbl;
+    el("aNameLab").textContent=isTbl?"RAT session name":"Name";
+    el("aName").placeholder=isTbl?"TBL 1":"Lab Quiz 3";
+    el("aBMaxWrap").hidden=!(isTbl&&el("aBonus").checked);
+  }
+  el("aCat").addEventListener("change",syncAsmtFields);
+  el("aBonus").addEventListener("change",function(){el("aBMaxWrap").hidden=!this.checked;});
   el("asmtCancel").addEventListener("click",function(){el("asmtModal").hidden=true;});
   el("asmtForm").addEventListener("submit",function(e){
     e.preventDefault();
-    var name=el("aName").value.trim();var max=num(el("aMax").value);
+    var name=el("aName").value.trim();
     if(!name){el("asmtErr").textContent="Name is required.";return;}
-    if(max==null||max<=0){el("asmtErr").textContent="Max points must be greater than zero.";return;}
-    state.course.assessments.push({id:uid(),catId:el("aCat").value,name:name,max:max,date:el("aDate").value||""});
+    var cat=catById(el("aCat").value);
+    if(cat&&cat.kind==="tbl"){
+      var iMax=num(el("aIMax").value),tMax=num(el("aTMax").value),bonus=el("aBonus").checked,bMax=num(el("aBMax").value);
+      if(iMax==null||iMax<=0||tMax==null||tMax<=0){el("asmtErr").textContent="iRAT and tRAT max points must be greater than zero.";return;}
+      if(bonus&&(bMax==null||bMax<0)){el("asmtErr").textContent="Bonus max points must be zero or more.";return;}
+      state.course.assessments.push({id:uid(),catId:cat.id,name:name,kind:"tbl",iMax:iMax,tMax:tMax,bonus:bonus,bMax:bonus?bMax:0,date:el("aDate").value||""});
+    } else {
+      var max=num(el("aMax").value);
+      if(max==null||max<=0){el("asmtErr").textContent="Max points must be greater than zero.";return;}
+      state.course.assessments.push({id:uid(),catId:el("aCat").value,name:name,max:max,date:el("aDate").value||""});
+    }
     saveCourse();el("asmtModal").hidden=true;render();
   });
 
