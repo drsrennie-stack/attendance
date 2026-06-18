@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TBL Grade Engine &middot; Weighted Gradebook</title>
+<style>
+  :root{--navy:#1E3D4C;--navy-deep:#142a36;--navy-tint:#EDF1F3;--gold:#B8924A;--terra:#C2734D;--terra-dark:#A0522D;--white:#fff;--offwhite:#FAFAF9;--gray:#6b6b6b;}
+  *{box-sizing:border-box;}
+  body{font-family:'DM Sans',-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--navy);background:var(--offwhite);margin:0;padding:20px;}
+  a.skip{position:absolute;left:-999px;} a.skip:focus{left:12px;top:12px;background:var(--navy);color:#fff;padding:8px 12px;border-radius:6px;z-index:50;}
+  .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--terra-dark);font-weight:600;margin:0 0 4px;}
+  h1{font-size:23px;font-weight:800;margin:0;color:var(--navy);}
+  .sub{color:var(--terra-dark);font-weight:600;font-size:14px;margin:2px 0;}
+  .meta{font-size:12.5px;margin:2px 0 14px;}
+  .site-header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:12px;border-bottom:1px solid rgba(30,61,76,.16);}
+  .site-header .logo{height:54px;width:auto;flex:0 0 auto;}
+  .site-header .idblock{min-width:240px;}
+  .site-header .idblock p,.site-header .idblock h1{margin-top:0;}
+  .site-header .idblock .meta{margin-bottom:0;}
+  .coursebar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 12px;}
+  .coursebar label{font-size:12px;font-weight:700;color:var(--terra-dark);text-transform:uppercase;letter-spacing:.05em;}
+  .courseSel{font:inherit;font-size:13px;font-weight:600;padding:6px 10px;border:1px solid var(--navy);border-radius:6px;background:var(--white);color:var(--navy);cursor:pointer;min-width:13em;}
+  .courseSel:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .tabs{display:flex;gap:6px;border-bottom:2px solid var(--navy);flex-wrap:wrap;}
+  .tab{appearance:none;border:1px solid var(--navy);border-bottom:none;background:var(--white);color:var(--navy);font:inherit;font-weight:600;font-size:14px;padding:9px 16px;border-radius:8px 8px 0 0;cursor:pointer;position:relative;top:2px;}
+  .tab[aria-selected="true"]{background:var(--navy);color:#fff;}
+  .tab:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:14px 0 6px;}
+  .tally{font-size:13px;font-weight:600;margin:0;}
+  .btn{appearance:none;border:1px solid var(--navy);background:var(--white);color:var(--navy);font:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;}
+  .btn:hover{background:var(--navy-tint);} .btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .btn.primary{background:var(--navy);color:#fff;} .btn.primary:hover{background:var(--navy-deep);}
+  .btn.ghost{border-color:var(--terra-dark);color:var(--terra-dark);} .btn.ghost:hover{background:#f6e9e2;}
+  .legend{font-size:11px;color:var(--gray);margin-left:auto;}
+  .switch{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--navy);cursor:pointer;}
+  .switch input{width:16px;height:16px;accent-color:var(--navy);cursor:pointer;}
+  .panel[hidden]{display:none;}
+  .scroll{max-height:72vh;overflow:auto;border:1px solid var(--navy);border-radius:8px;background:#fff;}
+  table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;min-width:760px;}
+  caption{text-align:left;font-size:12.5px;color:var(--terra-dark);font-weight:600;padding:8px 10px;}
+  th,td{border-right:1px solid var(--navy);border-bottom:1px solid var(--navy);padding:0;}
+  thead th{position:sticky;top:0;z-index:3;background:var(--navy);color:#fff;font-weight:600;font-size:11px;text-align:center;padding:6px 4px;border-top:1px solid var(--navy);}
+  thead tr.catrow th{background:var(--navy-deep);font-size:11px;letter-spacing:.03em;border-bottom:1px solid var(--gold);}
+  thead th .al{display:block;font-size:12px;font-weight:700;} thead th .am{display:block;font-size:10px;opacity:.85;font-weight:500;}
+  tbody th,tbody td{background:#fff;}
+  tbody tr:nth-child(even) th,tbody tr:nth-child(even) td{background:#fbfbfa;}
+  tfoot th,tfoot td{position:sticky;bottom:0;z-index:3;background:var(--navy-tint);color:var(--navy);font-weight:700;font-size:11.5px;text-align:center;padding:6px 4px;border-top:2px solid var(--navy);}
+  .c0{position:sticky;left:0;z-index:2;width:42px;min-width:42px;text-align:center;font-size:12px;font-weight:600;}
+  .c1{position:sticky;left:42px;z-index:2;min-width:178px;text-align:left;padding:6px 10px;white-space:nowrap;font-weight:500;}
+  thead .c0,thead .c1,tfoot .c0,tfoot .c1{z-index:4;}
+  .conf{font-size:9px;color:var(--terra-dark);font-weight:700;}
+  td.teamwrap{padding:2px 4px;min-width:112px;}
+  .teamsel{font:inherit;font-size:12px;font-weight:600;width:100%;min-width:100px;padding:5px 6px;border:1px solid var(--navy);border-radius:6px;background:var(--white);color:var(--navy);cursor:pointer;}
+  .teamsel:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+  th.asmt{width:74px;min-width:74px;}
+  td.scorewrap{padding:0;}
+  .scorein{width:100%;min-width:64px;height:34px;border:none;background:transparent;text-align:center;font:inherit;font-size:13px;font-weight:600;color:var(--navy);padding:0 4px;}
+  .scorein:focus-visible{outline:3px solid var(--gold);outline-offset:-3px;}
+  .scorein.team{background:var(--navy-tint);}
+  td.finalwrap,th.final{min-width:64px;width:64px;text-align:center;}
+  td.finalwrap{font-weight:800;font-size:13px;padding:6px 4px;}
+  td.letterwrap{min-width:50px;width:50px;text-align:center;font-weight:800;font-size:14px;padding:6px 4px;}
+  .lA{color:#1E3D4C;} .lB{color:#1E3D4C;} .lC{color:var(--terra-dark);} .lD{color:var(--terra-dark);} .lF{color:#8a2b1a;}
+  td.actcell{padding:3px 6px;white-space:nowrap;text-align:center;}
+  .mini{appearance:none;font:inherit;font-size:11px;font-weight:700;padding:4px 9px;border-radius:5px;cursor:pointer;border:1px solid var(--navy);background:#fff;color:var(--navy);}
+  .mini+.mini{margin-left:5px;}
+  .mini.drop{border-color:var(--terra-dark);color:var(--terra-dark);} .mini.drop:hover{background:#f6e9e2;}
+  .mini.restore{border-color:var(--navy);} .mini.restore:hover{background:var(--navy-tint);}
+  .mini:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+  .empty{padding:18px;text-align:center;color:var(--gray);font-style:italic;}
+  .help{font-size:11.5px;color:var(--gray);margin-top:12px;line-height:1.5;max-width:80ch;} .help b{color:var(--terra-dark);}
+  body.no-teams .teamcol{display:none;}
+  body.no-weight .weightcol{display:none;}
+  @media (prefers-reduced-motion:no-preference){.scorein{transition:background 120ms ease;}}
+  /* ---- modal / wizard ---- */
+  .overlay{position:fixed;inset:0;background:rgba(20,42,54,.55);display:flex;align-items:flex-start;justify-content:center;padding:28px 16px;overflow:auto;z-index:100;}
+  .overlay[hidden]{display:none;}
+  .dialog{background:var(--white);border:1px solid var(--navy);border-radius:12px;max-width:820px;width:100%;padding:22px 24px 24px;box-shadow:0 12px 40px rgba(0,0,0,.25);}
+  .dialog h2{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:800;color:var(--navy);margin:0 0 2px;border:none;padding:0;}
+  .dialog .lead{font-size:12.5px;color:var(--gray);margin:0 0 16px;}
+  fieldset{border:1px solid rgba(30,61,76,.25);border-radius:9px;margin:0 0 16px;padding:12px 14px;}
+  legend{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--terra-dark);padding:0 6px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 14px;}
+  .fld{display:flex;flex-direction:column;gap:3px;}
+  .fld label{font-size:11.5px;font-weight:700;color:var(--navy);}
+  .fld input[type=text],.fld input[type=date],.fld input[type=number],.fld select,.dialog textarea{font:inherit;font-size:13px;padding:7px 8px;border:1px solid #b9c2c7;border-radius:6px;color:var(--navy);background:#fff;width:100%;}
+  .fld input:focus-visible,.dialog textarea:focus-visible,.fld select:focus-visible{outline:3px solid var(--gold);outline-offset:1px;border-color:var(--navy);}
+  .dialog textarea{min-height:84px;resize:vertical;font-family:'Courier New',monospace;font-size:12px;}
+  .hint{font-size:11px;color:var(--gray);margin:4px 0 0;line-height:1.45;}
+  .parsemsg{font-size:11.5px;font-weight:700;color:var(--navy-deep);margin:5px 0 0;}
+  .dialog .actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:6px;}
+  .err{color:var(--terra-dark);font-size:12px;font-weight:700;}
+  .filewrap{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12px;}
+  /* category & assessment editor rows */
+  .catlist,.asmtlist{display:flex;flex-direction:column;gap:8px;}
+  .catrow-ed,.asmtrow-ed{display:grid;gap:8px;align-items:center;padding:8px;border:1px solid rgba(30,61,76,.2);border-radius:8px;background:var(--offwhite);}
+  .catrow-ed{grid-template-columns:1fr 88px 92px 34px;}
+  .asmtrow-ed{grid-template-columns:150px 1fr 78px 130px 34px;}
+  .catrow-ed input,.asmtrow-ed input,.asmtrow-ed select{font:inherit;font-size:12.5px;padding:6px 7px;border:1px solid #b9c2c7;border-radius:6px;width:100%;color:var(--navy);background:#fff;}
+  .catrow-ed input:focus-visible,.asmtrow-ed input:focus-visible,.asmtrow-ed select:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+  .rowlab{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--terra-dark);display:block;margin-bottom:2px;}
+  .teamflag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--navy);}
+  .del{appearance:none;border:1px solid var(--terra-dark);color:var(--terra-dark);background:#fff;border-radius:6px;width:30px;height:30px;font-size:15px;font-weight:800;cursor:pointer;line-height:1;}
+  .del:hover{background:#f6e9e2;} .del:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+  .wsum{font-size:12px;font-weight:700;margin:8px 0 0;} .wsum.ok{color:var(--navy);} .wsum.warn{color:var(--terra-dark);}
+  @media print{@page{size:landscape;margin:0.35in;}body{padding:0;background:#fff;}.tabs,.coursebar,.toolbar .btn,.toolbar .switch,.legend,.actcell,a.skip{display:none!important;}.scroll{max-height:none;overflow:visible;border:none;}thead th,tfoot th,tfoot td{position:static;}.c0,.c1{position:static;}.scorein{color:var(--navy);}.overlay{display:none!important;}}
+</style>
+</head>
+<body>
+<a href="#main" class="skip">Skip to gradebook</a>
+<header class="site-header">
+  <svg class="logo" viewBox="0 0 60 60" role="img" aria-label="TBL Grade Engine mark" focusable="false">
+    <rect x="6" y="5" width="48" height="50" rx="6" fill="#fff" stroke="#1E3D4C" stroke-width="2.5"/>
+    <rect x="6" y="5" width="48" height="12" rx="6" fill="#1E3D4C"/>
+    <rect x="12" y="24" width="9" height="24" rx="2" fill="#C2734D"/>
+    <rect x="25" y="18" width="9" height="30" rx="2" fill="#B8924A"/>
+    <rect x="38" y="30" width="9" height="18" rx="2" fill="#1E3D4C"/>
+  </svg>
+  <div class="idblock">
+    <p class="eyebrow" id="hEyebrow">TBL Grade Engine</p>
+    <h1 id="hTitle">TBL Grade Engine</h1>
+    <p class="sub" id="hSub">Weighted gradebook for Team-Based Learning</p>
+    <p class="meta" id="hMeta">Set up a course to begin.</p>
+  </div>
+</header>
+
+<main id="main">
+  <div class="coursebar">
+    <label for="courseSel">Course</label>
+    <select id="courseSel" class="courseSel" aria-label="Select course"></select>
+    <button class="btn" id="btnSetup" type="button">Course setup</button>
+    <button class="btn ghost" id="btnNew" type="button">+ New course</button>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Roster status">
+    <button class="tab" id="tabActive" role="tab" aria-selected="true" aria-controls="panel" type="button">Active <span id="cActive">(0)</span></button>
+    <button class="tab" id="tabDropped" role="tab" aria-selected="false" aria-controls="panel" type="button">Dropped / Withdrawn <span id="cDropped">(0)</span></button>
+  </div>
+
+  <div class="toolbar">
+    <p class="tally" id="tally" aria-live="polite"></p>
+    <button class="btn" id="btnCats" type="button">Categories &amp; weights</button>
+    <button class="btn" id="btnAddAsmt" type="button">+ Add column</button>
+    <button class="btn" id="btnAddStudent" type="button">+ Add student</button>
+    <label class="switch"><input type="checkbox" id="weightToggle"> Compute weighted grade</label>
+    <button class="btn" id="btnExport" type="button">Export CSV</button>
+    <button class="btn" id="btnPrint" type="button">Print</button>
+    <span class="legend" id="legend"></span>
+  </div>
+
+  <div class="panel" id="panel" role="tabpanel" aria-labelledby="tabActive">
+    <div class="scroll">
+      <table id="grid" aria-describedby="gridcap">
+        <caption id="gridcap"></caption>
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+        <tfoot id="tfoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <p class="help" id="help">
+    <b>How to use.</b> Pick or set up a course. Add as many assessment columns as you need inside each category (labs, lecture exams, quizzes, TBLs) from <b>+ Add column</b>. Edit category names and weights under <b>Categories &amp; weights</b>. Type a raw score in each cell, up to that column's max points. Turn on <b>Compute weighted grade</b> to see each student's running weighted percent and letter. tRAT and any team-scored category fills every member of a student's team at once. Everything is saved in this browser only. Use <b>Export CSV</b> to keep your records.
+  </p>
+</main>
+
+<!-- ===================== SETUP WIZARD ===================== -->
+<div class="overlay" id="wizard" hidden role="dialog" aria-modal="true" aria-labelledby="wizTitle">
+  <form class="dialog" id="wizForm">
+    <h2 id="wizTitle">Course setup</h2>
+    <p class="lead">Set the course identity, weighting, grade scale, and roster. You can change all of it later.</p>
+
+    <fieldset>
+      <legend>Course identity</legend>
+      <div class="grid">
+        <div class="fld"><label for="fTitle">Course title</label><input type="text" id="fTitle" placeholder="Human Anatomy &amp; Physiology"></div>
+        <div class="fld"><label for="fInst">Institution</label><input type="text" id="fInst" placeholder="American River College"></div>
+        <div class="fld"><label for="fCourse">Course &amp; section</label><input type="text" id="fCourse" placeholder="BIO 431 - 01"></div>
+        <div class="fld"><label for="fTerm">Term</label><input type="text" id="fTerm" placeholder="Fall 2026"></div>
+        <div class="fld"><label for="fCRN">CRN</label><input type="text" id="fCRN" placeholder="optional"></div>
+        <div class="fld"><label for="fInstr">Instructor</label><input type="text" id="fInstr" placeholder="Dr. Sharilyn Rennie"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Options</legend>
+      <div class="grid">
+        <div class="fld"><label class="switch" style="margin-top:18px"><input type="checkbox" id="fTeams" checked> Team-based (TBL) course</label></div>
+        <div class="fld"><label class="switch" style="margin-top:18px"><input type="checkbox" id="fWeighted" checked> Show weighted final grade</label></div>
+      </div>
+      <p class="hint">Team-based shows a team column and lets a category fill scores across a whole team (for tRAT). Weighting can be toggled any time from the toolbar.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Categories &amp; weights</legend>
+      <div class="catlist" id="wizCatList"></div>
+      <p class="wsum" id="wizWsum"></p>
+      <button class="btn ghost" id="wizAddCat" type="button" style="margin-top:8px">+ Add category</button>
+      <p class="hint">Weights are used only when the weighted grade is on. They do not need to total 100; the running grade is computed only over categories that have at least one scored column, so partial-term grades stay fair.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Grade scale</legend>
+      <div class="grid" id="wizScale"></div>
+      <p class="hint">Lower bound of each letter, as a percent. Edit to match your syllabus.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Roster</legend>
+      <div class="fld" id="linkWrap" style="margin-bottom:10px">
+        <label for="fLink">Link roster from an Attendance Engine course</label>
+        <select id="fLink"></select>
+        <p class="hint" id="linkHint">If you built this class in the Attendance Engine on this same site, pick it here to pull the enrolled roster (names, teams, confidential flags). Available only when both tools share the same web address.</p>
+      </div>
+      <div class="fld">
+        <label for="fRoster">Or paste / upload a roster</label>
+        <div class="filewrap">
+          <input type="file" id="fFile" accept=".csv,text/csv,text/plain">
+          <span class="hint">CSV with a Name (or Last Name + First Name) column, optional Team and Confidential. Or one name per line as Last, First.</span>
+        </div>
+        <textarea id="fRoster" placeholder="Rennie, Sharilyn
+Delgado, Maya
+Marsh, Eleanor [C]"></textarea>
+        <p class="parsemsg" id="parsemsg" aria-live="polite"></p>
+      </div>
+    </fieldset>
+
+    <p class="err" id="wizErr" role="alert"></p>
+    <div class="actions">
+      <button class="btn" id="wizCancel" type="button">Cancel</button>
+      <button class="btn primary" id="wizSave" type="submit">Save course</button>
+    </div>
+  </form>
+</div>
+
+<!-- ===================== CATEGORIES EDITOR ===================== -->
+<div class="overlay" id="catModal" hidden role="dialog" aria-modal="true" aria-labelledby="catTitle">
+  <form class="dialog" id="catForm">
+    <h2 id="catTitle">Categories &amp; weights</h2>
+    <p class="lead">Rename categories, set weights, and mark which ones are team-scored. Deleting a category also removes its columns.</p>
+    <div class="catlist" id="edCatList"></div>
+    <p class="wsum" id="edWsum"></p>
+    <button class="btn ghost" id="edAddCat" type="button" style="margin-top:8px">+ Add category</button>
+    <div class="actions">
+      <button class="btn" id="catCancel" type="button">Cancel</button>
+      <button class="btn primary" id="catSave" type="submit">Save categories</button>
+    </div>
+  </form>
+</div>
+
+<!-- ===================== ADD COLUMN ===================== -->
+<div class="overlay" id="asmtModal" hidden role="dialog" aria-modal="true" aria-labelledby="asmtTitle">
+  <form class="dialog" id="asmtForm" style="max-width:560px">
+    <h2 id="asmtTitle">Add assessment column</h2>
+    <p class="lead">A column is one graded item: a lab, a lecture exam, a quiz, or a TBL readiness test.</p>
+    <fieldset>
+      <legend>Column</legend>
+      <div class="grid">
+        <div class="fld"><label for="aCat">Category</label><select id="aCat"></select></div>
+        <div class="fld"><label for="aName">Name</label><input type="text" id="aName" placeholder="Lab Quiz 3"></div>
+        <div class="fld"><label for="aMax">Max points</label><input type="number" id="aMax" min="1" step="0.5" value="100"></div>
+        <div class="fld"><label for="aDate">Date (optional)</label><input type="date" id="aDate"></div>
+      </div>
+    </fieldset>
+    <p class="err" id="asmtErr" role="alert"></p>
+    <div class="actions">
+      <button class="btn" id="asmtCancel" type="button">Cancel</button>
+      <button class="btn primary" id="asmtSave" type="submit">Add column</button>
+    </div>
+  </form>
+</div>
+
+<script>
+"use strict";
+(function(){
+  var IDX="grade_engine_index_v1", CUR="grade_engine_current_v1", PFX="grade_engine_course_";
+  var ATTN_IDX="attn_engine_index_v1", ATTN_PFX="attn_engine_course_";
+  var TEAM_NAMES=["Team 1","Team 2","Team 3","Team 4","Team 5","Team 6"];
+  var DEFAULT_SCALE=[{letter:"A",min:90},{letter:"B",min:80},{letter:"C",min:70},{letter:"D",min:60},{letter:"F",min:0}];
+
+  function uid(){return Math.random().toString(36).slice(2,9);}
+  function read(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+  function el(id){return document.getElementById(id);}
+  function num(v){var n=parseFloat(v);return isFinite(n)?n:null;}
+
+  var state={index:[],current:null,course:null,tab:"active"};
+
+  function defaultCategories(teams){
+    return [
+      {id:uid(),name:"iRAT",weight:15,teamScored:false},
+      {id:uid(),name:"tRAT",weight:15,teamScored:!!teams},
+      {id:uid(),name:"Lab Quizzes",weight:10,teamScored:false},
+      {id:uid(),name:"Lab Practicals",weight:20,teamScored:false},
+      {id:uid(),name:"Lecture Exams",weight:20,teamScored:false},
+      {id:uid(),name:"Cumulative Final",weight:20,teamScored:false}
+    ];
+  }
+
+  /* ---------- roster parsing ---------- */
+  function parseRoster(text){
+    var out=[],lines=text.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean);
+    if(!lines.length) return out;
+    var first=lines[0].toLowerCase();
+    var hasHeader=/(^|,)\s*(name|last\s*name|first\s*name)\s*(,|$)/.test(first);
+    if(hasHeader){
+      var cols=lines[0].split(",").map(function(c){return c.trim().toLowerCase();});
+      var iName=cols.indexOf("name"), iLast=cols.indexOf("last name"), iFirst=cols.indexOf("first name");
+      var iTeam=cols.indexOf("team"), iConf=cols.indexOf("confidential");
+      for(var r=1;r<lines.length;r++){
+        var f=splitCsv(lines[r]); if(!f.length) continue;
+        var name="";
+        if(iName>=0) name=f[iName]||"";
+        else if(iLast>=0&&iFirst>=0) name=(f[iLast]||"")+", "+(f[iFirst]||"");
+        name=name.trim(); if(!name) continue;
+        var conf=iConf>=0 ? /^(y|yes|true|1|c)$/i.test((f[iConf]||"").trim()) : false;
+        if(/\[c\]\s*$/i.test(name)){conf=true;name=name.replace(/\[c\]\s*$/i,"").trim();}
+        out.push({name:name,team:iTeam>=0?(f[iTeam]||"").trim():"",conf:conf});
+      }
+    } else {
+      for(var i=0;i<lines.length;i++){
+        var raw=lines[i],conf=false;
+        if(/\[c\]\s*$/i.test(raw)){conf=true;raw=raw.replace(/\[c\]\s*$/i,"").trim();}
+        out.push({name:raw,team:"",conf:conf});
+      }
+    }
+    return out;
+  }
+  function splitCsv(line){
+    var res=[],cur="",q=false;
+    for(var i=0;i<line.length;i++){var ch=line[i];
+      if(ch==='"'){ if(q&&line[i+1]==='"'){cur+='"';i++;} else q=!q; }
+      else if(ch===','&&!q){res.push(cur);cur="";}
+      else cur+=ch;
+    }
+    res.push(cur); return res.map(function(s){return s.trim();});
+  }
+  function lastName(name){var p=String(name).split(",");return (p[0]||name).trim().toLowerCase();}
+  function sortStudents(arr){arr.sort(function(a,b){return lastName(a.name).localeCompare(lastName(b.name));});}
+
+  /* ---------- attendance link ---------- */
+  function attnCourses(){
+    var idx=read(ATTN_IDX); if(!Array.isArray(idx)) return [];
+    return idx.filter(function(c){return c&&c.id;});
+  }
+  function attnRoster(id){
+    var c=read(ATTN_PFX+id); if(!c||!Array.isArray(c.students)) return [];
+    var teams=(c.teams&&c.teams.names)||[];
+    return c.students.filter(function(s){return s&&s.status!=="dropped"&&s.status!=="noshow";}).map(function(s){
+      var team="";
+      if(typeof s.team==="number"&&teams[s.team]) team=teams[s.team];
+      else if(typeof s.team==="string") team=s.team;
+      return {name:s.name,team:team,conf:!!(s.conf||s.confidential)};
+    });
+  }
+
+  /* ---------- course CRUD ---------- */
+  function loadIndex(){state.index=read(IDX)||[];state.current=read(CUR);}
+  function saveIndex(){write(IDX,state.index);write(CUR,state.current);}
+  function loadCourse(id){state.course=read(PFX+id);state.current=id;write(CUR,id);}
+  function saveCourse(){if(state.course&&state.current)write(PFX+state.current,state.course);}
+
+  function newStudentsFrom(list){
+    var arr=list.map(function(r){return {id:uid(),status:"active",name:r.name,conf:!!r.conf,team:r.team||"",scores:{},dropReason:"",dropDate:""};});
+    sortStudents(arr); return arr;
+  }
+
+  /* ---------- computation ---------- */
+  function catAssessments(catId){return (state.course.assessments||[]).filter(function(a){return a.catId===catId;});}
+  function studentCatPct(stu,cat){
+    var as=catAssessments(cat.id),got=0,poss=0,any=false;
+    for(var i=0;i<as.length;i++){var v=stu.scores[as[i].id];if(v!=null&&v!==""){var n=num(v);if(n!=null){got+=n;poss+=num(as[i].max)||0;any=true;}}}
+    if(!any||poss<=0) return null;
+    return got/poss*100;
+  }
+  function studentFinal(stu){
+    var cats=state.course.categories||[],wSum=0,acc=0,any=false;
+    for(var i=0;i<cats.length;i++){var p=studentCatPct(stu,cats[i]);if(p!=null){var w=num(cats[i].weight)||0;acc+=p*w;wSum+=w;any=true;}}
+    if(!any||wSum<=0) return null;
+    return acc/wSum;
+  }
+  function letterFor(pct){
+    if(pct==null) return "";
+    var sc=(state.course.scale||DEFAULT_SCALE).slice().sort(function(a,b){return b.min-a.min;});
+    for(var i=0;i<sc.length;i++){if(pct>=sc[i].min) return sc[i].letter;}
+    return sc.length?sc[sc.length-1].letter:"";
+  }
+
+  /* ---------- render ---------- */
+  function activeStudents(){return (state.course?state.course.students:[]).filter(function(s){return s.status==="active";});}
+  function droppedStudents(){return (state.course?state.course.students:[]).filter(function(s){return s.status!=="active";});}
+
+  function teamOptions(sel){
+    var teams=(state.course.teamNames||TEAM_NAMES).slice();
+    if(sel&&teams.indexOf(sel)<0)teams.push(sel); /* never lose a student's existing team */
+    var h='<option value=""'+(!sel?" selected":"")+'>—</option>';
+    for(var i=0;i<teams.length;i++){h+='<option value="'+esc(teams[i])+'"'+(sel===teams[i]?" selected":"")+'>'+esc(teams[i])+'</option>';}
+    return h;
+  }
+
+  function render(){
+    document.body.classList.toggle("no-teams",!(state.course&&state.course.teams));
+    document.body.classList.toggle("no-weight",!(state.course&&state.course.weighted));
+    renderHeader();
+    renderCourseSel();
+    if(!state.course){renderEmpty();return;}
+    el("weightToggle").checked=!!state.course.weighted;
+    var list=state.tab==="active"?activeStudents():droppedStudents();
+    renderGrid(list);
+    el("cActive").textContent="("+activeStudents().length+")";
+    el("cDropped").textContent="("+droppedStudents().length+")";
+    renderTally(list);
+  }
+
+  function renderHeader(){
+    var c=state.course;
+    if(!c){el("hEyebrow").textContent="TBL Grade Engine";el("hTitle").textContent="TBL Grade Engine";
+      el("hSub").textContent="Weighted gradebook for Team-Based Learning";el("hMeta").textContent="Set up a course to begin.";return;}
+    var m=c.meta||{};
+    el("hEyebrow").textContent=((m.course||"")+(m.inst?" · "+m.inst:"")+" · MedMasters Collaborative").replace(/^ · /,"");
+    el("hTitle").textContent=m.title||"Gradebook";
+    el("hSub").textContent=(m.course||"")+(c.teams?" · Team-Based":"");
+    var bits=[]; if(m.term)bits.push(m.term); if(m.crn)bits.push("CRN "+m.crn); if(m.instr)bits.push(m.instr);
+    el("hMeta").textContent=bits.join("  ·  ")||" ";
+  }
+
+  function renderCourseSel(){
+    var s=el("courseSel");
+    s.innerHTML=state.index.map(function(c){return '<option value="'+esc(c.id)+'"'+(c.id===state.current?" selected":"")+'>'+esc(c.label)+'</option>';}).join("")||'<option value="">No courses yet</option>';
+  }
+
+  function renderEmpty(){
+    el("thead").innerHTML="";el("tbody").innerHTML='<tr><td class="empty">No course loaded. Click <b>+ New course</b> to begin.</td></tr>';
+    el("tfoot").innerHTML="";el("gridcap").textContent="";el("tally").textContent="";el("legend").textContent="";
+    el("cActive").textContent="(0)";el("cDropped").textContent="(0)";
+  }
+
+  function renderTally(list){
+    var c=state.course;
+    var asmtN=(c.assessments||[]).length, catN=(c.categories||[]).length;
+    el("tally").textContent=list.length+" student"+(list.length===1?"":"s")+" · "+catN+" categories · "+asmtN+" columns";
+    el("legend").textContent=c.weighted?"Weighted grade on":"Raw scores";
+    el("gridcap").textContent=(c.meta&&c.meta.title?c.meta.title+" — ":"")+(state.tab==="active"?"Active roster":"Dropped / withdrawn");
+  }
+
+  function renderGrid(list){
+    var c=state.course, cats=c.categories||[], teams=c.teams, weighted=c.weighted;
+    /* header: category row + assessment row */
+    var cat1="<tr class='catrow'><th class='c0' rowspan='2' scope='col'>#</th><th class='c1' rowspan='2' scope='col'>Student</th>";
+    if(teams) cat1+="<th class='teamcol' rowspan='2' scope='col'>Team</th>";
+    var head2="<tr>";
+    for(var ci=0;ci<cats.length;ci++){
+      var as=catAssessments(cats[ci].id);
+      var span=Math.max(as.length,1);
+      var wlbl=weighted?" · "+(num(cats[ci].weight)||0)+"%":"";
+      cat1+="<th colspan='"+span+"' scope='colgroup'>"+esc(cats[ci].name)+wlbl+"</th>";
+      if(as.length===0){head2+="<th class='asmt'><span class='am' style='font-style:italic'>add column</span></th>";}
+      for(var ai=0;ai<as.length;ai++){
+        head2+="<th class='asmt' scope='col'><span class='al'>"+esc(as[ai].name)+"</span><span class='am'>/"+(num(as[ai].max)||0)+"</span></th>";
+      }
+    }
+    if(weighted){cat1+="<th class='weightcol' rowspan='2' scope='col'>Final</th><th class='weightcol' rowspan='2' scope='col'>Grade</th>";}
+    cat1+="<th rowspan='2' scope='col'>Actions</th></tr>";
+    head2+="</tr>";
+    el("thead").innerHTML=cat1+head2;
+
+    if(!list.length){
+      el("tbody").innerHTML='<tr><td class="empty" colspan="40">No students on this tab.</td></tr>';
+      el("tfoot").innerHTML="";return;
+    }
+
+    var rows="";
+    for(var i=0;i<list.length;i++){
+      var s=list[i],pos=i+1;
+      rows+="<tr data-sid='"+s.id+"'>";
+      rows+="<td class='c0'>"+pos+"</td>";
+      rows+="<td class='c1'>"+esc(s.name)+(s.conf?" <span class='conf'>[C]</span>":"")+"</td>";
+      if(teams) rows+="<td class='teamwrap teamcol'><select class='teamsel' data-act='team' aria-label='Team for "+esc(s.name)+"'>"+teamOptions(s.team)+"</select></td>";
+      for(var ci2=0;ci2<cats.length;ci2++){
+        var as2=catAssessments(cats[ci2].id);
+        if(as2.length===0){rows+="<td class='scorewrap'></td>";}
+        for(var ai2=0;ai2<as2.length;ai2++){
+          var a=as2[ai2],v=s.scores[a.id];
+          var teamCls=(teams&&cats[ci2].teamScored)?" team":"";
+          rows+="<td class='scorewrap'><input class='scorein"+teamCls+"' type='number' inputmode='decimal' min='0' step='0.5' max='"+(num(a.max)||0)+"' value='"+(v==null?"":esc(v))+"' data-act='score' data-aid='"+a.id+"' data-cat='"+cats[ci2].id+"' aria-label='"+esc(s.name)+" "+esc(a.name)+", out of "+(num(a.max)||0)+"'></td>";
+        }
+      }
+      if(weighted){
+        var fin=studentFinal(s), lt=letterFor(fin);
+        rows+="<td class='finalwrap weightcol'>"+(fin==null?"—":fin.toFixed(1)+"%")+"</td>";
+        rows+="<td class='letterwrap weightcol l"+(lt||"")+"'>"+(lt||"—")+"</td>";
+      }
+      if(state.tab==="active"){
+        rows+="<td class='actcell'><button class='mini drop' data-act='drop'>Drop</button></td>";
+      } else {
+        rows+="<td class='actcell'>"+(s.dropReason?"<span class='conf'>"+esc(s.dropReason)+"</span> ":"")+"<button class='mini restore' data-act='restore'>Restore</button></td>";
+      }
+      rows+="</tr>";
+    }
+    el("tbody").innerHTML=rows;
+
+    /* footer: per-column class average (active tab only) */
+    if(state.tab==="active"&&list.length){
+      var foot="<tr><th class='c0'></th><th class='c1'>Class average</th>";
+      if(teams) foot+="<td class='teamcol'></td>";
+      for(var ci3=0;ci3<cats.length;ci3++){
+        var as3=catAssessments(cats[ci3].id);
+        if(as3.length===0){foot+="<td></td>";}
+        for(var ai3=0;ai3<as3.length;ai3++){
+          var aid=as3[ai3].id,sum=0,n=0;
+          for(var k=0;k<list.length;k++){var vv=num(list[k].scores[aid]);if(vv!=null){sum+=vv;n++;}}
+          foot+="<td>"+(n?(sum/n).toFixed(1):"—")+"</td>";
+        }
+      }
+      if(weighted){
+        var fsum=0,fn=0;for(var m2=0;m2<list.length;m2++){var ff=studentFinal(list[m2]);if(ff!=null){fsum+=ff;fn++;}}
+        foot+="<td class='weightcol'>"+(fn?(fsum/fn).toFixed(1)+"%":"—")+"</td><td class='weightcol'></td>";
+      }
+      foot+="<td></td></tr>";
+      el("tfoot").innerHTML=foot;
+    } else { el("tfoot").innerHTML=""; }
+  }
+
+  /* ---------- grid interactions ---------- */
+  function studentById(id){return state.course.students.filter(function(s){return s.id===id;})[0];}
+  el("tbody").addEventListener("input",function(e){
+    var t=e.target,act=t.getAttribute("data-act");if(act!=="score")return;
+    var tr=t.closest("tr"),sid=tr.getAttribute("data-sid"),s=studentById(sid);if(!s)return;
+    var aid=t.getAttribute("data-aid"),catId=t.getAttribute("data-cat");
+    var max=num(t.getAttribute("max"));var val=t.value===""?"":num(t.value);
+    if(val!==""&&val!=null){if(val<0)val=0;if(max!=null&&val>max)val=max;}
+    s.scores[aid]=(val===""||val==null)?"":val;
+    /* team fill */
+    var cat=(state.course.categories||[]).filter(function(c){return c.id===catId;})[0];
+    if(state.course.teams&&cat&&cat.teamScored&&s.team){
+      state.course.students.forEach(function(o){if(o.id!==s.id&&o.team===s.team){o.scores[aid]=s.scores[aid];}});
+    }
+    saveCourse();
+    /* light update: final cells + footer without full re-render to keep focus */
+    updateComputedCells();
+  });
+  el("tbody").addEventListener("change",function(e){
+    var t=e.target,act=t.getAttribute("data-act");
+    var tr=t.closest("tr");if(!tr)return;var s=studentById(tr.getAttribute("data-sid"));if(!s)return;
+    if(act==="team"){s.team=t.value;saveCourse();render();}
+  });
+  el("tbody").addEventListener("click",function(e){
+    var t=e.target;if(t.tagName!=="BUTTON")return;var act=t.getAttribute("data-act");
+    var tr=t.closest("tr");var s=studentById(tr.getAttribute("data-sid"));if(!s)return;
+    if(act==="drop"){
+      var why=prompt("Reason (Withdrew, No-show, etc.) for "+s.name+":","Withdrew");
+      if(why===null)return;
+      s.status="dropped";s.dropReason=why||"Dropped";s.dropDate=new Date().toISOString().slice(0,10);saveCourse();render();
+    } else if(act==="restore"){
+      s.status="active";s.dropReason="";s.dropDate="";saveCourse();render();
+    }
+  });
+  function updateComputedCells(){
+    if(!state.course.weighted)return;
+    var rows=el("tbody").querySelectorAll("tr[data-sid]");
+    rows.forEach(function(tr){
+      var s=studentById(tr.getAttribute("data-sid"));if(!s)return;
+      var fin=studentFinal(s),lt=letterFor(fin);
+      var fc=tr.querySelector(".finalwrap"),lc=tr.querySelector(".letterwrap");
+      if(fc)fc.textContent=fin==null?"—":fin.toFixed(1)+"%";
+      if(lc){lc.textContent=lt||"—";lc.className="letterwrap weightcol l"+(lt||"");}
+    });
+    /* footer avg */
+    var list=activeStudents();var foot=el("tfoot");
+    if(foot&&foot.querySelector(".weightcol")){
+      var fsum=0,fn=0;list.forEach(function(s){var ff=studentFinal(s);if(ff!=null){fsum+=ff;fn++;}});
+      var cells=foot.querySelectorAll(".weightcol");if(cells[0])cells[0].textContent=fn?(fsum/fn).toFixed(1)+"%":"—";
+    }
+  }
+
+  /* ---------- tabs ---------- */
+  function setTab(t){
+    state.tab=t;
+    el("tabActive").setAttribute("aria-selected",t==="active");
+    el("tabDropped").setAttribute("aria-selected",t==="dropped");
+    el("panel").setAttribute("aria-labelledby",t==="active"?"tabActive":"tabDropped");
+    render();
+  }
+  el("tabActive").addEventListener("click",function(){setTab("active");});
+  el("tabDropped").addEventListener("click",function(){setTab("dropped");});
+
+  /* ---------- toolbar ---------- */
+  el("courseSel").addEventListener("change",function(){loadCourse(this.value);state.tab="active";render();});
+  el("weightToggle").addEventListener("change",function(){state.course.weighted=this.checked;saveCourse();render();});
+  el("btnPrint").addEventListener("click",function(){window.print();});
+  el("btnAddStudent").addEventListener("click",function(){
+    var name=prompt("Add a student as  Last, First :","");if(!name)return;
+    var conf=false;if(/\[c\]\s*$/i.test(name)){conf=true;name=name.replace(/\[c\]\s*$/i,"").trim();}
+    state.course.students.push({id:uid(),status:"active",name:name.trim(),conf:conf,team:"",scores:{},dropReason:"",dropDate:""});
+    sortStudents(state.course.students);saveCourse();render();
+  });
+  el("btnExport").addEventListener("click",exportCsv);
+
+  /* ---------- export ---------- */
+  function exportCsv(){
+    var c=state.course,cats=c.categories||[];
+    var head=["Status","#","Name","Confidential"];
+    if(c.teams)head.push("Team");
+    var cols=[];
+    cats.forEach(function(cat){catAssessments(cat.id).forEach(function(a){cols.push({cat:cat,a:a});head.push(cat.name+" - "+a.name+" (/"+(num(a.max)||0)+")");});});
+    cats.forEach(function(cat){head.push(cat.name+" %");});
+    if(c.weighted){head.push("Final %");head.push("Letter");}
+    head.push("Drop reason");head.push("Drop date");
+    var lines=[head.map(csvCell).join(",")];
+    var all=(c.students||[]).slice();
+    all.forEach(function(s,i){
+      var row=[s.status==="active"?"Active":"Dropped",i+1,s.name,s.conf?"Y":""];
+      if(c.teams)row.push(s.team||"");
+      cols.forEach(function(cc){var v=s.scores[cc.a.id];row.push(v==null||v===""?"":v);});
+      cats.forEach(function(cat){var p=studentCatPct(s,cat);row.push(p==null?"":p.toFixed(1));});
+      if(c.weighted){var f=studentFinal(s);row.push(f==null?"":f.toFixed(1));row.push(letterFor(f));}
+      row.push(s.dropReason||"");row.push(s.dropDate||"");
+      lines.push(row.map(csvCell).join(","));
+    });
+    var blob=new Blob([lines.join("\r\n")],{type:"text/csv"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    a.download=((c.meta&&c.meta.course)||"course").replace(/[^\w-]+/g,"_")+"_grades.csv";
+    document.body.appendChild(a);a.click();a.remove();
+  }
+  function csvCell(v){v=String(v==null?"":v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+
+  /* ============ WIZARD ============ */
+  var wizCats=[],wizScale=[],wizMode="new";
+  function openWizard(mode){
+    wizMode=mode;
+    el("wizTitle").textContent=mode==="edit"?"Course setup":"New course";
+    var c=mode==="edit"?state.course:null;
+    el("fTitle").value=c?(c.meta.title||""):"";
+    el("fInst").value=c?(c.meta.inst||""):"";
+    el("fCourse").value=c?(c.meta.course||""):"";
+    el("fTerm").value=c?(c.meta.term||""):"";
+    el("fCRN").value=c?(c.meta.crn||""):"";
+    el("fInstr").value=c?(c.meta.instr||""):"Dr. Sharilyn Rennie";
+    el("fTeams").checked=c?!!c.teams:true;
+    el("fWeighted").checked=c?!!c.weighted:true;
+    wizCats=c?JSON.parse(JSON.stringify(c.categories)):defaultCategories(true);
+    wizScale=c?JSON.parse(JSON.stringify(c.scale||DEFAULT_SCALE)):JSON.parse(JSON.stringify(DEFAULT_SCALE));
+    el("fRoster").value="";el("parsemsg").textContent="";el("wizErr").textContent="";el("fFile").value="";
+    renderWizCats();renderWizScale();renderAttnLink();
+    el("wizard").hidden=false;el("fTitle").focus();
+  }
+  function renderAttnLink(){
+    var courses=attnCourses(),sel=el("fLink");
+    if(!courses.length||wizMode==="edit"){el("linkWrap").style.display="none";return;}
+    el("linkWrap").style.display="";
+    sel.innerHTML='<option value="">Do not link, I will paste below</option>'+courses.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.label)+'</option>';}).join("");
+  }
+  function renderWizCats(){renderCatEditor("wizCatList",wizCats,"wizWsum");}
+  function renderWizScale(){
+    el("wizScale").innerHTML=wizScale.map(function(r,i){
+      return "<div class='fld'><label for='ws"+i+"'>"+esc(r.letter)+" &ge;</label><input type='number' id='ws"+i+"' min='0' max='100' step='0.5' value='"+r.min+"' data-i='"+i+"'></div>";
+    }).join("");
+    el("wizScale").querySelectorAll("input").forEach(function(inp){
+      inp.addEventListener("input",function(){wizScale[+this.getAttribute("data-i")].min=num(this.value)||0;});
+    });
+  }
+  /* shared category editor used by wizard and cat modal */
+  function renderCatEditor(listId,arr,sumId){
+    var host=el(listId);
+    host.innerHTML=arr.map(function(cat,i){
+      return "<div class='catrow-ed'>"+
+        "<div><span class='rowlab'>Category</span><input type='text' value='"+esc(cat.name)+"' data-i='"+i+"' data-k='name'></div>"+
+        "<div><span class='rowlab'>Weight %</span><input type='number' min='0' step='1' value='"+(num(cat.weight)||0)+"' data-i='"+i+"' data-k='weight'></div>"+
+        "<div><span class='rowlab'>Team-scored</span><label class='teamflag'><input type='checkbox' "+(cat.teamScored?"checked":"")+" data-i='"+i+"' data-k='teamScored'> fills team</label></div>"+
+        "<button type='button' class='del' data-i='"+i+"' aria-label='Delete category "+esc(cat.name)+"'>×</button>"+
+      "</div>";
+    }).join("");
+    host.querySelectorAll("input[data-k]").forEach(function(inp){
+      inp.addEventListener("input",function(){
+        var i=+this.getAttribute("data-i"),k=this.getAttribute("data-k");
+        if(k==="teamScored")arr[i][k]=this.checked;
+        else if(k==="weight")arr[i][k]=num(this.value)||0;
+        else arr[i][k]=this.value;
+        updateWsum(arr,sumId);
+      });
+    });
+    host.querySelectorAll(".del").forEach(function(b){
+      b.addEventListener("click",function(){arr.splice(+this.getAttribute("data-i"),1);renderCatEditor(listId,arr,sumId);});
+    });
+    updateWsum(arr,sumId);
+  }
+  function updateWsum(arr,sumId){
+    var t=arr.reduce(function(a,c){return a+(num(c.weight)||0);},0);
+    var node=el(sumId);if(!node)return;
+    node.textContent="Weights total "+t+"%"+(t===100?"":"  (does not need to equal 100)");
+    node.className="wsum "+(t===100?"ok":"warn");
+  }
+  el("wizAddCat").addEventListener("click",function(){wizCats.push({id:uid(),name:"New category",weight:0,teamScored:false});renderWizCats();});
+  el("fFile").addEventListener("change",function(){
+    var f=this.files&&this.files[0];if(!f)return;
+    var rd=new FileReader();rd.onload=function(){el("fRoster").value=rd.result;previewParse();};rd.readAsText(f);
+  });
+  el("fRoster").addEventListener("input",previewParse);
+  el("fLink").addEventListener("change",function(){
+    if(this.value){var r=attnRoster(this.value);el("parsemsg").textContent="Linked roster: "+r.length+" students will be pulled from the Attendance Engine course.";}
+    else previewParse();
+  });
+  function previewParse(){
+    var r=parseRoster(el("fRoster").value);
+    el("parsemsg").textContent=r.length?(r.length+" students parsed."):"";
+  }
+  el("wizCancel").addEventListener("click",function(){el("wizard").hidden=true;});
+  el("wizForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    var title=el("fTitle").value.trim();
+    if(!title){el("wizErr").textContent="Course title is required.";return;}
+    var meta={title:title,inst:el("fInst").value.trim(),course:el("fCourse").value.trim(),
+      term:el("fTerm").value.trim(),crn:el("fCRN").value.trim(),instr:el("fInstr").value.trim()};
+    var teams=el("fTeams").checked,weighted=el("fWeighted").checked;
+    if(wizMode==="edit"){
+      var c=state.course;c.meta=meta;c.teams=teams;c.weighted=weighted;c.categories=wizCats;c.scale=wizScale;
+      // reconcile: drop assessments whose category was deleted
+      var ids={};wizCats.forEach(function(k){ids[k.id]=1;});
+      c.assessments=(c.assessments||[]).filter(function(a){return ids[a.catId];});
+      var label=(meta.course||meta.title);state.index.forEach(function(x){if(x.id===state.current)x.label=label;});
+      saveCourse();saveIndex();el("wizard").hidden=true;render();return;
+    }
+    /* new course */
+    var roster=[];
+    var link=el("fLink").value;
+    if(link)roster=attnRoster(link);
+    if(!roster.length)roster=parseRoster(el("fRoster").value);
+    var id=uid();
+    var rosterTeams=[];roster.forEach(function(r){if(r.team&&rosterTeams.indexOf(r.team)<0)rosterTeams.push(r.team);});
+    var teamNames=rosterTeams.length?rosterTeams:TEAM_NAMES.slice();
+    var course={meta:meta,teams:teams,weighted:weighted,
+      teamNames:teamNames,categories:wizCats,scale:wizScale,
+      assessments:[],students:newStudentsFrom(roster)};
+    write(PFX+id,course);
+    state.index.push({id:id,label:(meta.course||meta.title)});
+    state.current=id;saveIndex();loadCourse(id);state.tab="active";
+    el("wizard").hidden=true;render();
+  });
+  el("btnNew").addEventListener("click",function(){openWizard("new");});
+  el("btnSetup").addEventListener("click",function(){if(!state.course){openWizard("new");return;}openWizard("edit");});
+
+  /* ============ CATEGORIES MODAL ============ */
+  var edCats=[];
+  el("btnCats").addEventListener("click",function(){
+    if(!state.course)return;
+    edCats=JSON.parse(JSON.stringify(state.course.categories));
+    renderCatEditor("edCatList",edCats,"edWsum");
+    el("catModal").hidden=false;el("edCatList").querySelector("input").focus();
+  });
+  el("edAddCat").addEventListener("click",function(){edCats.push({id:uid(),name:"New category",weight:0,teamScored:false});renderCatEditor("edCatList",edCats,"edWsum");});
+  el("catCancel").addEventListener("click",function(){el("catModal").hidden=true;});
+  el("catForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    state.course.categories=edCats;
+    var ids={};edCats.forEach(function(k){ids[k.id]=1;});
+    state.course.assessments=(state.course.assessments||[]).filter(function(a){return ids[a.catId];});
+    saveCourse();el("catModal").hidden=true;render();
+  });
+
+  /* ============ ADD COLUMN MODAL ============ */
+  el("btnAddAsmt").addEventListener("click",function(){
+    if(!state.course)return;
+    var cats=state.course.categories||[];
+    if(!cats.length){alert("Add a category first under Categories & weights.");return;}
+    el("aCat").innerHTML=cats.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>';}).join("");
+    el("aName").value="";el("aMax").value="100";el("aDate").value="";el("asmtErr").textContent="";
+    el("asmtModal").hidden=false;el("aName").focus();
+  });
+  el("asmtCancel").addEventListener("click",function(){el("asmtModal").hidden=true;});
+  el("asmtForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    var name=el("aName").value.trim();var max=num(el("aMax").value);
+    if(!name){el("asmtErr").textContent="Name is required.";return;}
+    if(max==null||max<=0){el("asmtErr").textContent="Max points must be greater than zero.";return;}
+    state.course.assessments.push({id:uid(),catId:el("aCat").value,name:name,max:max,date:el("aDate").value||""});
+    saveCourse();el("asmtModal").hidden=true;render();
+  });
+
+  /* close overlays on Escape and backdrop */
+  document.querySelectorAll(".overlay").forEach(function(ov){
+    ov.addEventListener("mousedown",function(e){if(e.target===ov)ov.hidden=true;});
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"){document.querySelectorAll(".overlay:not([hidden])").forEach(function(ov){ov.hidden=true;});}
+  });
+
+  /* ---------- boot ---------- */
+  loadIndex();
+  if(state.current&&read(PFX+state.current)){loadCourse(state.current);render();}
+  else if(state.index.length){loadCourse(state.index[0].id);render();}
+  else {render();openWizard("new");}
+
+  /* ---------- iframe height-sender (Kajabi / GitHub Pages) ---------- */
+  function postHeight(){
+    var h=document.documentElement.scrollHeight;
+    try{parent.postMessage({type:"grade-engine-height",id:"grade-engine",height:h},"*");}catch(e){}
+  }
+  window.addEventListener("load",postHeight);
+  window.addEventListener("resize",postHeight);
+  if(window.ResizeObserver){new ResizeObserver(postHeight).observe(document.body);}
+})();
+</script>
+</body>
+</html>
