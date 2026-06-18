@@ -42,6 +42,8 @@
   th,td{border-right:1px solid var(--navy);border-bottom:1px solid var(--navy);padding:0;}
   thead th{position:sticky;top:0;z-index:3;background:var(--navy);color:#fff;font-weight:600;font-size:11px;text-align:center;padding:6px 4px;border-top:1px solid var(--navy);}
   thead tr.catrow th{background:var(--navy-deep);font-size:11px;letter-spacing:.03em;border-bottom:1px solid var(--gold);}
+  .addrat{appearance:none;margin-left:7px;font:inherit;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;border:1px solid var(--gold);background:transparent;color:#f7efdc;cursor:pointer;vertical-align:middle;white-space:nowrap;}
+  .addrat:hover{background:var(--gold);color:var(--navy-deep);} .addrat:focus-visible{outline:3px solid #fff;outline-offset:1px;}
   thead th .al{display:block;font-size:12px;font-weight:700;} thead th .am{display:block;font-size:10px;opacity:.85;font-weight:500;}
   tbody th,tbody td{background:#fff;}
   tbody tr:nth-child(even) th,tbody tr:nth-child(even) td{background:#fbfbfa;}
@@ -108,7 +110,7 @@
   .del{appearance:none;border:1px solid var(--terra-dark);color:var(--terra-dark);background:#fff;border-radius:6px;width:30px;height:30px;font-size:15px;font-weight:800;cursor:pointer;line-height:1;}
   .del:hover{background:#f6e9e2;} .del:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
   .wsum{font-size:12px;font-weight:700;margin:8px 0 0;} .wsum.ok{color:var(--navy);} .wsum.warn{color:var(--terra-dark);}
-  @media print{@page{size:landscape;margin:0.35in;}body{padding:0;background:#fff;}.tabs,.coursebar,.toolbar .btn,.toolbar .switch,.legend,.actcell,a.skip{display:none!important;}.scroll{max-height:none;overflow:visible;border:none;}thead th,tfoot th,tfoot td{position:static;}.c0,.c1{position:static;}.scorein{color:var(--navy);}.overlay{display:none!important;}}
+  @media print{@page{size:landscape;margin:0.35in;}body{padding:0;background:#fff;}.tabs,.coursebar,.toolbar .btn,.toolbar .switch,.legend,.actcell,.addrat,a.skip{display:none!important;}.scroll{max-height:none;overflow:visible;border:none;}thead th,tfoot th,tfoot td{position:static;}.c0,.c1{position:static;}.scorein{color:var(--navy);}.overlay{display:none!important;}}
 </style>
 </head>
 <body>
@@ -565,7 +567,8 @@ Marsh, Eleanor [C]"></textarea>
       var cat=(c.categories||[]).filter(function(x){return x.id===id;})[0]||{};
       var wlbl=weighted?" · "+(num(cat.weight)||0)+"%":"";
       var tbl=cat.kind==="tbl"?" · iRAT+tRAT":"";
-      cat1+="<th colspan='"+sp.map[id]+"' scope='colgroup'>"+esc(cat.name)+wlbl+tbl+"</th>";
+      var addbtn=cat.kind==="tbl"?" <button type='button' class='addrat' data-addrat='"+id+"' title='Add a RAT session to "+esc(cat.name)+"' aria-label='Add a RAT session to "+esc(cat.name)+"'>+ session</button>":"";
+      cat1+="<th colspan='"+sp.map[id]+"' scope='colgroup'>"+esc(cat.name)+wlbl+tbl+addbtn+"</th>";
     });
     if(weighted){cat1+="<th class='weightcol' rowspan='2' scope='col'>Final</th><th class='weightcol' rowspan='2' scope='col'>Grade</th>";}
     cat1+="<th rowspan='2' scope='col'>Actions</th></tr>";
@@ -636,6 +639,14 @@ Marsh, Eleanor [C]"></textarea>
   }
 
   /* ---------- grid interactions ---------- */
+  /* "+ session" button on a TBL category header adds a RAT session (iRAT 30 / tRAT 10) in one click */
+  el("thead").addEventListener("click",function(e){
+    var b=e.target.closest?e.target.closest("[data-addrat]"):null;if(!b)return;
+    var catId=b.getAttribute("data-addrat");
+    var n=catAssessments(catId).filter(function(a){return a.kind==="tbl";}).length+1;
+    state.course.assessments.push({id:uid(),catId:catId,name:"TBL "+n,kind:"tbl",iMax:30,tMax:10,bonus:false,bMax:0,date:""});
+    saveCourse();render();
+  });
   function studentById(id){return state.course.students.filter(function(s){return s.id===id;})[0];}
   function catById(id){return (state.course.categories||[]).filter(function(c){return c.id===id;})[0];}
   function isTeamScored(catId){var c=catById(catId);return !!(state.course.teams&&c&&c.teamScored);}
@@ -907,6 +918,10 @@ Marsh, Eleanor [C]"></textarea>
     var course={meta:meta,teams:teams,weighted:weighted,
       teamNames:teamNames,categories:wizCats,scale:wizScale,
       assessments:[],students:newStudentsFrom(roster)};
+    /* seed each TBL category with a first RAT session so the iRAT / tRAT / Total columns show right away */
+    (course.categories||[]).forEach(function(cat){
+      if(cat.kind==="tbl"){course.assessments.push({id:uid(),catId:cat.id,name:"TBL 1",kind:"tbl",iMax:30,tMax:10,bonus:false,bMax:0,date:""});}
+    });
     write(PFX+id,course);
     state.index.push({id:id,label:(meta.course||meta.title)});
     state.current=id;saveIndex();loadCourse(id);state.tab="active";
