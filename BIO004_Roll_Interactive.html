@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIO 004 Interactive Roll &amp; Teams &middot; CRN 60099</title>
+<style>
+  :root{--navy:#1E3D4C;--navy-deep:#142a36;--navy-tint:#EDF1F3;--gold:#B8924A;--terra:#C2734D;--terra-dark:#A0522D;--white:#fff;--offwhite:#FAFAF9;--gray:#6b6b6b;}
+  *{box-sizing:border-box;}
+  body{font-family:'DM Sans',-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--navy);background:var(--offwhite);margin:0;padding:20px;}
+  a.skip{position:absolute;left:-999px;} a.skip:focus{left:12px;top:12px;background:var(--navy);color:#fff;padding:8px 12px;border-radius:6px;z-index:50;}
+  .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--terra-dark);font-weight:600;margin:0 0 4px;}
+  h1{font-size:23px;font-weight:800;margin:0;color:var(--navy);}
+  .sub{color:var(--terra-dark);font-weight:600;font-size:14px;margin:2px 0;}
+  .meta{font-size:12.5px;margin:2px 0 14px;}
+  .site-header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:12px;border-bottom:1px solid rgba(30,61,76,.16);}
+  .site-header .logo{height:54px;width:auto;flex:0 0 auto;}
+  .site-header .idblock{min-width:240px;}
+  .site-header .idblock p,.site-header .idblock h1{margin-top:0;}
+  .site-header .idblock .meta{margin-bottom:0;}
+  .tabs{display:flex;gap:6px;border-bottom:2px solid var(--navy);flex-wrap:wrap;}
+  .tab{appearance:none;border:1px solid var(--navy);border-bottom:none;background:var(--white);color:var(--navy);font:inherit;font-weight:600;font-size:14px;padding:9px 16px;border-radius:8px 8px 0 0;cursor:pointer;position:relative;top:2px;}
+  .tab[aria-selected="true"]{background:var(--navy);color:#fff;}
+  .tab:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:14px 0 6px;}
+  .tally{font-size:13px;font-weight:600;margin:0;} .tally .p{color:var(--navy);} .tally .a{color:var(--terra-dark);} .tally .u{color:var(--gray);}
+  .box{display:inline-block;min-width:1.4em;text-align:center;}
+  .btn{appearance:none;border:1px solid var(--navy);background:var(--white);color:var(--navy);font:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;}
+  .btn:hover{background:var(--navy-tint);} .btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .btn.primary{background:var(--navy);color:#fff;} .btn.primary:hover{background:var(--navy-deep);}
+  .legend{font-size:11px;color:var(--gray);margin-left:auto;}
+  .teambar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:8px 0 12px;padding:11px 13px;border:1px solid var(--gold);border-radius:8px;background:var(--white);}
+  .teambar .tlabel{font-size:12px;font-weight:700;color:var(--terra-dark);text-transform:uppercase;letter-spacing:.05em;}
+  .tedit{display:inline-flex;align-items:center;gap:6px;}
+  .sw{width:15px;height:15px;border-radius:4px;border:1px solid rgba(0,0,0,.25);flex:0 0 auto;}
+  .tname-in{font:inherit;font-size:12.5px;font-weight:600;color:var(--navy);border:1px solid #ccc;border-radius:5px;padding:3px 6px;width:8.5em;}
+  .tname-in:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+  .tcount{font-size:12px;font-weight:800;color:var(--gray);min-width:1.1em;text-align:center;}
+  .teambar .spacer{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;}
+  .panel[hidden]{display:none;}
+  .scroll{max-height:72vh;overflow:auto;border:1px solid var(--navy);border-radius:8px;background:#fff;}
+  table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;min-width:880px;}
+  caption{text-align:left;font-size:12.5px;color:var(--terra-dark);font-weight:600;padding:8px 10px;}
+  th,td{border-right:1px solid var(--navy);border-bottom:1px solid var(--navy);padding:0;}
+  thead th{position:sticky;top:0;z-index:3;background:var(--navy);color:#fff;font-weight:600;font-size:11px;text-align:center;padding:6px 4px;border-top:1px solid var(--navy);}
+  thead th .dl{display:block;font-size:13px;} thead th .dd{display:block;font-size:10px;opacity:.85;}
+  tbody th,tbody td{background:#fff;}
+  tbody tr:nth-child(even) th,tbody tr:nth-child(even) td{background:#fbfbfa;}
+  .c0{position:sticky;left:0;z-index:2;width:46px;min-width:46px;text-align:center;font-size:12px;font-weight:600;}
+  .c1{position:sticky;left:46px;z-index:2;min-width:188px;text-align:left;padding:6px 10px;white-space:nowrap;font-weight:500;}
+  thead .c0,thead .c1{z-index:4;}
+  td.code{font-family:'Courier New',monospace;font-weight:700;text-align:center;background:var(--navy-tint)!important;padding:6px 8px;letter-spacing:.04em;}
+  .conf{font-size:9px;color:var(--terra-dark);font-weight:700;}
+  td.teamwrap{padding:2px 4px;min-width:118px;}
+  .teamsel{font:inherit;font-size:12px;font-weight:600;width:100%;min-width:108px;padding:5px 6px;border:1px solid var(--navy);border-radius:6px;background:var(--white);color:var(--navy);cursor:pointer;}
+  .teamsel:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+  th.day{width:56px;min-width:56px;}
+  td.cellwrap{padding:0;}
+  .chk{display:flex;align-items:center;justify-content:center;width:100%;min-width:50px;height:34px;border:none;background:transparent;cursor:pointer;font:inherit;}
+  .chk:focus-visible{outline:3px solid var(--gold);outline-offset:-3px;}
+  .chk .mark{font-size:19px;font-weight:800;line-height:1;}
+  .chk[data-state="1"]{background:var(--navy-tint);} .chk[data-state="1"] .mark::before{content:"\2713";color:var(--navy);}
+  .chk[data-state="2"]{background:#f6e9e2;} .chk[data-state="2"] .mark::before{content:"\2715";color:var(--terra-dark);}
+  @media (hover:hover){.chk:hover{background:#eef3f5;}}
+  td.actcell{padding:3px 6px;white-space:nowrap;text-align:center;}
+  .mini{appearance:none;font:inherit;font-size:11px;font-weight:700;padding:4px 9px;border-radius:5px;cursor:pointer;border:1px solid var(--navy);background:#fff;color:var(--navy);}
+  .mini+.mini{margin-left:5px;}
+  .mini.drop{border-color:var(--terra-dark);color:var(--terra-dark);} .mini.drop:hover{background:#f6e9e2;}
+  .mini.enroll{border-color:var(--gold);color:#7a5e1f;} .mini.enroll:hover{background:#f7efdc;}
+  .mini.restore{border-color:var(--navy);} .mini.restore:hover{background:var(--navy-tint);}
+  .mini:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+  .empty{padding:18px;text-align:center;color:var(--gray);font-style:italic;}
+  .help{font-size:11.5px;color:var(--gray);margin-top:12px;line-height:1.5;max-width:78ch;} .help b{color:var(--terra-dark);}
+  body.tbl-off .teamcol{display:none;} body.tbl-off .teambar{display:none;}
+  .switch{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--navy);cursor:pointer;}
+  .switch input{width:16px;height:16px;accent-color:var(--navy);cursor:pointer;}
+  @media (prefers-reduced-motion:no-preference){.chk{transition:background 120ms ease;}}
+  @media print{@page{size:landscape;margin:0.35in;}body{padding:0;background:#fff;}.tabs,.toolbar .btn,.legend,.teambar .spacer,.actcell,a.skip{display:none!important;}.scroll{max-height:none;overflow:visible;border:none;}thead th{position:static;}.c0,.c1{position:static;}.chk{height:26px;}}
+</style>
+</head>
+<body>
+<a href="#main" class="skip">Skip to roll sheet</a>
+<header class="site-header"><svg class="logo" viewBox="40 10 125 148" role="img" aria-label="Human Anatomy logo" focusable="false"><g transform="translate(0,18)"><g transform="translate(60,0) rotate(8 0 130)"><circle cx="0" cy="20" r="10" fill="#1E3D4C"/><path d="M0,32 C-10,32 -16,36 -16,42 C-16,55 -13,68 -11,82 C-10,100 -12,118 -14,130 L14,130 C12,118 10,100 11,82 C13,68 16,55 16,42 C16,36 10,32 0,32 Z" fill="#1E3D4C"/></g><g transform="translate(100,0)"><circle cx="0" cy="10" r="11" fill="#C2734D"/><path d="M0,22 C-11,22 -17,26 -17,34 C-17,52 -14,70 -12,86 C-11,108 -13,122 -15,132 L15,132 C13,122 11,108 12,86 C14,70 17,52 17,34 C17,26 11,22 0,22 Z" fill="#C2734D"/></g><g transform="translate(140,0) rotate(-8 0 130)"><circle cx="0" cy="20" r="10" fill="#B8924A"/><path d="M0,32 C-10,32 -16,36 -16,42 C-16,55 -13,68 -11,82 C-10,100 -12,118 -14,130 L14,130 C12,118 10,100 11,82 C13,68 16,55 16,42 C16,36 10,32 0,32 Z" fill="#B8924A"/></g></g></svg><div class="idblock"><p class="eyebrow">BIO 004 &middot; Human Anatomy &middot; Solano Community College</p><h1>Interactive Roll &amp; Teams</h1><p class="sub">Summer 2026 Intensive &middot; CRN 60099 &middot; Weeks 1&ndash;2 (Mon&ndash;Thu)</p><p class="meta" id="metaLine">Instructor: Dr. Sharilyn Rennie</p></div></header>
+
+<div class="tabs" role="tablist" aria-label="Roll sheets">
+  <button class="tab" id="tab-en" role="tab" aria-selected="true" aria-controls="panel-en" tabindex="0">Enrolled (<span id="cEn">0</span>)</button>
+  <button class="tab" id="tab-wl" role="tab" aria-selected="false" aria-controls="panel-wl" tabindex="-1">Wait List (<span id="cWl">0</span>)</button>
+  <button class="tab" id="tab-dr" role="tab" aria-selected="false" aria-controls="panel-dr" tabindex="-1">Dropped / No-show (<span id="cDr">0</span>)</button>
+</div>
+
+<div class="toolbar">
+  <p class="tally" aria-live="polite">Present: <span class="box p" id="tP">0</span> &nbsp; Absent: <span class="box a" id="tA">0</span> &nbsp; Unmarked: <span class="box u" id="tU">0</span></p>
+  <label class="switch" title="Show or hide team features"><input type="checkbox" id="tblToggle" checked> Team-based (TBL)</label>
+  <button type="button" class="btn primary" id="addBtn">+ Add student</button>
+  <button type="button" class="btn" id="resetBtn">Clear attendance</button>
+  <button type="button" class="btn" onclick="window.print()">Print</button>
+  <span class="legend">Cell: 1&times;=<b>&#10003; here</b>, 2&times;=<b>&#10005; absent</b>, 3&times;=blank</span>
+</div>
+
+<main id="main">
+<section class="panel" id="panel-en" role="tabpanel" aria-labelledby="tab-en">
+  <div class="teambar" aria-label="TBL teams">
+    <span class="tlabel">Edit team names</span>
+    <span class="tedit"><span class="sw" id="sw0"></span><input class="tname-in" data-team="0" maxlength="18" aria-label="Team 1 name"><b class="tcount" id="tc0">0</b></span>
+    <span class="tedit"><span class="sw" id="sw1"></span><input class="tname-in" data-team="1" maxlength="18" aria-label="Team 2 name"><b class="tcount" id="tc1">0</b></span>
+    <span class="tedit"><span class="sw" id="sw2"></span><input class="tname-in" data-team="2" maxlength="18" aria-label="Team 3 name"><b class="tcount" id="tc2">0</b></span>
+    <span class="tedit"><span class="sw" id="sw3"></span><input class="tname-in" data-team="3" maxlength="18" aria-label="Team 4 name"><b class="tcount" id="tc3">0</b></span>
+    <span class="tedit"><span class="sw" id="sw4"></span><input class="tname-in" data-team="4" maxlength="18" aria-label="Team 5 name"><b class="tcount" id="tc4">0</b></span>
+    <span class="tedit"><span class="sw" id="sw5"></span><input class="tname-in" data-team="5" maxlength="18" aria-label="Team 6 name"><b class="tcount" id="tc5">0</b></span>
+    <span class="spacer"><button type="button" class="btn" id="autoBtn">Auto-assign&hellip;</button><button type="button" class="btn" id="clearTeamsBtn">Clear teams</button></span>
+  </div>
+  <div class="scroll">
+    <table>
+      <caption>Enrolled &mdash; pick a team to color the name; click a day to mark attendance; <b>No-show</b> drops a student</caption>
+      <thead><tr id="enHead"></tr></thead>
+      <tbody id="enBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel" id="panel-wl" role="tabpanel" aria-labelledby="tab-wl" hidden>
+  <div class="scroll">
+    <table>
+      <caption>Wait List &mdash; <b>&rarr; Enroll</b> moves a student to Enrolled (then assign a team there); <b>No-show</b> drops them</caption>
+      <thead><tr id="wlHead"></tr></thead>
+      <tbody id="wlBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel" id="panel-dr" role="tabpanel" aria-labelledby="tab-dr" hidden>
+  <div class="scroll">
+    <table>
+      <caption>Dropped / No-show &mdash; date each student was removed; <b>Restore</b> puts them back</caption>
+      <thead><tr><th class="c0">#</th><th class="c1">Student Name</th><th>From</th><th>Date dropped</th><th>Action</th></tr></thead>
+      <tbody id="drBody"></tbody>
+    </table>
+  </div>
+</section>
+</main>
+
+<p class="help">
+  <b>Add / drop:</b> <b>+ Add student</b> inserts a name (it files alphabetically). <b>No-show</b> on any row drops that student to the Dropped tab with today&rsquo;s date; <b>Restore</b> returns them. <b>&rarr; Enroll</b> on the wait list promotes a student to Enrolled, where you can pick their team.<br>
+  <b>Teams:</b> rename the 6 teams above (colors fixed, AA-contrast checked); pick a team per student to highlight their name; <b>Auto-assign</b> splits Enrolled into balanced teams.<br>
+  <b>Wait list codes:</b> each waitlisted student keeps their pre-assigned add code. Reserve codes: JABAMG, LLQGVW, MPPW1W, OAXWIC, PWBMU4, SAVUBH, TOS9XM, UWIHGZ, YFBW18, ZH4TP2.<br>
+  <b>[C]</b> = FERPA confidential / directory hold. Everything saves in this browser.
+</p>
+
+<script>
+(function(){
+  var SEED={"enrolled": [{"name": "Addison, Tobias", "conf": false}, {"name": "Alvarado De La Cruz, Xiomara", "conf": false}, {"name": "Anderson, Sidney", "conf": false}, {"name": "Falk, Malia", "conf": false}, {"name": "Felix, Lizette", "conf": false}, {"name": "Garcia, Emely", "conf": false}, {"name": "Godinez Alvarado, Hemma", "conf": false}, {"name": "Greenwood, Chanel", "conf": false}, {"name": "Guevara, Daisy", "conf": false}, {"name": "Guizar, Samantha", "conf": true}, {"name": "Harris, Andrea", "conf": false}, {"name": "Horna, Brianna", "conf": false}, {"name": "Jones, Damiyah", "conf": false}, {"name": "Kaur, Harbeen", "conf": false}, {"name": "Lea, Isabella", "conf": false}, {"name": "Magno, Aaliyah", "conf": false}, {"name": "Mcintyre, Shelby", "conf": false}, {"name": "Oregel, Ylana", "conf": false}, {"name": "Panush, Tyler", "conf": false}, {"name": "Valle, Alejandra", "conf": false}, {"name": "Watson, Aaliyah", "conf": false}, {"name": "Welsh, Mikayla", "conf": false}, {"name": "Wenceslao, Araceli", "conf": false}], "waitlist": [{"name": "Villicana Cervantes, Lizette", "conf": true, "code": "07CHJ0", "pos": 1}, {"name": "Marin, Alexandra", "conf": false, "code": "4MFFEV", "pos": 2}, {"name": "Patindol, Bianca", "conf": false, "code": "4TJRF6", "pos": 3}, {"name": "Vazquez, Justino", "conf": true, "code": "5BD7S3", "pos": 4}, {"name": "Martinez Gaitan, Brenda", "conf": true, "code": "6QSDPJ", "pos": 5}, {"name": "Thurston, Hannah", "conf": false, "code": "7V4QQC", "pos": 6}, {"name": "Nguyen, Jasmine", "conf": true, "code": "BKYFIB", "pos": 7}, {"name": "Garcia Casanova, Bertha", "conf": false, "code": "BMDKWC", "pos": 8}, {"name": "Lynch, Marissa", "conf": false, "code": "BSGH9Q", "pos": 9}, {"name": "Cancino, Roxjanjanea", "conf": false, "code": "C3ASL3", "pos": 10}, {"name": "Salindong, Elian", "conf": false, "code": "DFY2JI", "pos": 11}, {"name": "Castro, Jazlyn", "conf": false, "code": "EZUOKZ", "pos": 12}, {"name": "Vazquez, Manuel", "conf": false, "code": "F1JP7Q", "pos": 13}, {"name": "Flanagan, Morgan", "conf": false, "code": "FTS8IY", "pos": 14}, {"name": "Espino, Kayla Erika", "conf": false, "code": "G5V1RH", "pos": 15}, {"name": "Torres, Yareli", "conf": false, "code": "GHXQSP", "pos": 16}, {"name": "Cacuyog, Sophia", "conf": false, "code": "GW47WS", "pos": 17}, {"name": "Robles, Tania", "conf": false, "code": "GZBU0T", "pos": 18}, {"name": "Tran, Bryant", "conf": false, "code": "HZS0OM", "pos": 19}, {"name": "Miller, Alana", "conf": false, "code": "I87018", "pos": 20}]}, COLORS=[{"bg": "#1E3D4C", "fg": "#FFFFFF"}, {"bg": "#8A6A2F", "fg": "#FFFFFF"}, {"bg": "#A0522D", "fg": "#FFFFFF"}, {"bg": "#2C6E6A", "fg": "#FFFFFF"}, {"bg": "#6E3A52", "fg": "#FFFFFF"}, {"bg": "#3E6B8C", "fg": "#FFFFFF"}], DEFNAMES=["Femur", "Scapula", "Cranium", "Patella", "Sternum", "Mandible"], DAYS=["Mon 6/15", "Tue 6/16", "Wed 6/17", "Thu 6/18", "Mon 6/22", "Tue 6/23", "Wed 6/24", "Thu 6/25"], DH=[["M", "6/15"], ["T", "6/16"], ["W", "6/17"], ["R", "6/18"], ["M", "6/22"], ["T", "6/23"], ["W", "6/24"], ["R", "6/25"]];
+  var KEY='bio004_60099_state_v5';
+  var state=load(); if(state.tbl===undefined)state.tbl=true;
+
+  function load(){
+    try{var s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.students)return s;}catch(e){}
+    var students=[],i=0;
+    SEED.enrolled.forEach(function(s){students.push(mk(s,'enrolled','s'+(i++)));});
+    SEED.waitlist.forEach(function(s){students.push(mk(s,'waitlist','s'+(i++)));});
+    return {students:students,teamNames:DEFNAMES.slice(),tbl:true};
+  }
+  function mk(s,status,uid){return {uid:uid,name:s.name,conf:!!s.conf,code:s.code||'',pos:(s.pos||null),status:status,prev:null,team:null,att:{},dropped:null,manual:false};}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+  function getU(uid){for(var k=0;k<state.students.length;k++)if(state.students[k].uid===uid)return state.students[k];return null;}
+  function esc(t){return (t+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function word(s){return s==='1'?'present':s==='2'?'absent':'unmarked';}
+  function nameHtml(st){var n=esc(st.name);if(st.conf)n+=' <sup class="conf" title="FERPA confidential / directory hold">[C]</sup>';return n;}
+  function byName(a,b){return a.name.toLowerCase().localeCompare(b.name.toLowerCase());}
+  function byPos(a,b){return (a.pos||999)-(b.pos||999)||byName(a,b);}
+  function lst(status,cmp){return state.students.filter(function(s){return s.status===status;}).sort(cmp);}
+  function today(){var d=new Date();return ('0'+(d.getMonth()+1)).slice(-2)+'/'+('0'+d.getDate()).slice(-2)+'/'+d.getFullYear();}
+
+  // ---- headers ----
+  function dayThs(){var h='';for(var j=0;j<DH.length;j++){h+='<th class="day"><span class="dl">'+DH[j][0]+'</span><span class="dd">'+DH[j][1]+'</span></th>';}return h;}
+  document.getElementById('enHead').innerHTML='<th class="c0">#</th><th class="c1">Student Name</th><th class="teamcol">Team</th>'+dayThs()+'<th>Action</th>';
+  document.getElementById('wlHead').innerHTML='<th class="c0">Pos</th><th class="c1">Student Name</th><th>Add Code</th>'+dayThs()+'<th>Action</th>';
+
+  function attCells(st){var h='';for(var j=0;j<DAYS.length;j++){var s=st.att[j]||'0';h+='<td class="cellwrap"><button type="button" class="chk" data-uid="'+st.uid+'" data-day="'+j+'" data-state="'+s+'" aria-label="'+esc(st.name)+', '+DAYS[j]+': '+word(s)+'"><span class="mark" aria-hidden="true"></span></button></td>';}return h;}
+  function teamSel(st){var o='<option value="">— team —</option>';for(var i=0;i<COLORS.length;i++){o+='<option value="'+i+'"'+(st.team===i?' selected':'')+' style="background:'+COLORS[i].bg+';color:'+COLORS[i].fg+';">'+esc(state.teamNames[i])+'</option>';}var stl='';if(st.team!=null)stl=' style="background:'+COLORS[st.team].bg+';color:'+COLORS[st.team].fg+';"';return '<select class="teamsel" data-uid="'+st.uid+'"'+stl+' aria-label="Team for '+esc(st.name)+'">'+o+'</select>';}
+
+  function renderEn(){
+    var arr=lst('enrolled',byName),h='';
+    arr.forEach(function(st,idx){var ns='';if(st.team!=null)ns=' style="background:'+COLORS[st.team].bg+';color:'+COLORS[st.team].fg+';"';
+      h+='<tr data-uid="'+st.uid+'"><th scope="row" class="c0">'+(idx+1)+'</th><td class="c1"'+ns+'>'+nameHtml(st)+'</td><td class="teamwrap">'+teamSel(st)+'</td>'+attCells(st)+'<td class="actcell"><button type="button" class="mini drop" data-uid="'+st.uid+'" title="Mark no-show &amp; drop">No-show</button></td></tr>';});
+    document.getElementById('enBody').innerHTML=h||'<tr><td class="empty" colspan="12">No enrolled students.</td></tr>';
+  }
+  function renderWl(){
+    var arr=lst('waitlist',byPos),h='';
+    arr.forEach(function(st){h+='<tr data-uid="'+st.uid+'"><th scope="row" class="c0">'+(st.pos||'')+'</th><td class="c1">'+nameHtml(st)+'</td><td class="code">'+esc(st.code||'')+'</td>'+attCells(st)+'<td class="actcell"><button type="button" class="mini enroll" data-uid="'+st.uid+'" title="Move to Enrolled">&rarr; Enroll</button><button type="button" class="mini drop" data-uid="'+st.uid+'" title="Mark no-show &amp; drop">No-show</button></td></tr>';});
+    document.getElementById('wlBody').innerHTML=h||'<tr><td class="empty" colspan="12">No waitlisted students.</td></tr>';
+  }
+  function renderDr(){
+    var arr=lst('dropped',function(a,b){return (b.dropped||'').localeCompare(a.dropped||'')||byName(a,b);}),h='';
+    arr.forEach(function(st){h+='<tr data-uid="'+st.uid+'"><th scope="row" class="c0"></th><td class="c1">'+nameHtml(st)+'</td><td>'+(st.prev==='waitlist'?'Wait List':'Enrolled')+'</td><td>'+esc(st.dropped||'')+'</td><td class="actcell"><button type="button" class="mini restore" data-uid="'+st.uid+'" title="Restore to course">Restore</button></td></tr>';});
+    document.getElementById('drBody').innerHTML=h||'<tr><td class="empty" colspan="5">No dropped students.</td></tr>';
+  }
+  function counts(){
+    document.getElementById('cEn').textContent=lst('enrolled').length;
+    document.getElementById('cWl').textContent=lst('waitlist').length;
+    document.getElementById('cDr').textContent=lst('dropped').length;
+    var c=COLORS.map(function(){return 0;});
+    state.students.forEach(function(s){if(s.status!=='dropped'&&s.team!=null)c[s.team]++;});
+    c.forEach(function(v,i){var el=document.getElementById('tc'+i);if(el)el.textContent=v;});
+  }
+  function renderAll(){renderEn();renderWl();renderDr();counts();updateTally();}
+
+  // ---- actions ----
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    if(b.classList.contains('chk')){cycle(b);return;}
+    var uid=b.getAttribute('data-uid');
+    if(b.classList.contains('drop')){drop(uid);}
+    else if(b.classList.contains('enroll')){enroll(uid);}
+    else if(b.classList.contains('restore')){restore(uid);}
+  });
+  document.addEventListener('change',function(e){if(e.target.classList.contains('teamsel'))setTeam(e.target.getAttribute('data-uid'),e.target.value);});
+
+  function cycle(btn){var st=getU(btn.getAttribute('data-uid')),day=btn.getAttribute('data-day');var ns=(((+ (st.att[day]||'0'))+1)%3)+'';if(ns==='0')delete st.att[day];else st.att[day]=ns;btn.setAttribute('data-state',ns);btn.setAttribute('aria-label',st.name+', '+DAYS[day]+': '+word(ns));save();updateTally();}
+  function setTeam(uid,v){var st=getU(uid);st.team=(v===''?null:(+v));save();renderEn();counts();}
+  function drop(uid){var st=getU(uid);if(!confirm('Are you sure you want to do this?\n\nThis marks '+st.name+' as a NO-SHOW, drops them from the course, and moves them to the Dropped / No-show tab (dated today). You can Restore them later.'))return;st.prev=st.status;st.status='dropped';st.dropped=today();save();renderAll();}
+  function enroll(uid){var st=getU(uid);st.prev='waitlist';st.status='enrolled';save();renderAll();selectTabById('tab-en');alert(st.name+' moved to Enrolled.'+(state.tbl?' Pick their team from the Team dropdown on their row.':''));}
+  function restore(uid){var st=getU(uid);st.status=st.prev||'enrolled';st.dropped=null;save();renderAll();}
+
+  document.getElementById('addBtn').addEventListener('click',function(){
+    var raw=prompt('Add a student. Type the name as  Last, First');
+    if(raw===null)return;var nm=raw.trim();if(!nm)return;
+    var act=activeStatus();var status=(act==='waitlist')?'waitlist':'enrolled';
+    var pos=null;if(status==='waitlist'){pos=0;state.students.forEach(function(s){if(s.pos>pos)pos=s.pos;});pos++;}
+    state.students.push({uid:'m'+Date.now(),name:nm,conf:false,code:'',pos:pos,status:status,prev:null,team:null,att:{},dropped:null,manual:true});
+    save();renderAll();
+  });
+
+  document.getElementById('autoBtn').addEventListener('click',function(){
+    var n=prompt('Split Enrolled students into how many teams? (2-'+COLORS.length+')','5');
+    if(n===null)return;n=parseInt(n,10);if(isNaN(n)||n<2){alert('Enter 2 to '+COLORS.length);return;}if(n>COLORS.length)n=COLORS.length;
+    var arr=lst('enrolled',byName);
+    for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var x=arr[i];arr[i]=arr[j];arr[j]=x;}
+    arr.forEach(function(st,idx){st.team=idx%n;});save();renderEn();counts();
+  });
+  document.getElementById('clearTeamsBtn').addEventListener('click',function(){
+    if(!confirm('Are you sure you want to do this?\n\nThis will clear ALL team assignments. This cannot be undone.'))return;
+    state.students.forEach(function(s){s.team=null;});save();renderEn();counts();
+  });
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    var st=activeStatus();if(st==='dropped'){alert('Nothing to clear on the Dropped tab.');return;}
+    var nm=(st==='enrolled'?'Enrolled':'Wait List');
+    if(!confirm('Are you sure you want to do this?\n\nThis will erase ALL attendance marks on the '+nm+' sheet. This cannot be undone.'))return;
+    state.students.forEach(function(s){if(s.status===st)s.att={};});save();renderAll();
+  });
+
+  // ---- team name inputs ----
+  for(var i=0;i<COLORS.length;i++){var sw=document.getElementById('sw'+i);if(sw)sw.style.background=COLORS[i].bg;}
+  var inputs=document.querySelectorAll('.tname-in');
+  inputs.forEach(function(inp){var i=+inp.getAttribute('data-team');inp.value=state.teamNames[i];
+    inp.addEventListener('input',function(){state.teamNames[i]=inp.value.trim()||DEFNAMES[i];save();renderEn();});});
+
+  // ---- tabs ----
+  var tabs=Array.prototype.slice.call(document.querySelectorAll('[role=tab]'));
+  function selectTab(tab){tabs.forEach(function(t){var sel=t===tab;t.setAttribute('aria-selected',sel?'true':'false');t.tabIndex=sel?0:-1;document.getElementById(t.getAttribute('aria-controls')).hidden=!sel;});updateTally();}
+  function selectTabById(id){var t=document.getElementById(id);if(t)selectTab(t);}
+  tabs.forEach(function(tab,i){tab.addEventListener('click',function(){selectTab(tab);});
+    tab.addEventListener('keydown',function(e){var ni=null;if(e.key==='ArrowRight'||e.key==='ArrowDown')ni=(i+1)%tabs.length;else if(e.key==='ArrowLeft'||e.key==='ArrowUp')ni=(i-1+tabs.length)%tabs.length;else if(e.key==='Home')ni=0;else if(e.key==='End')ni=tabs.length-1;if(ni!=null){e.preventDefault();tabs[ni].focus();selectTab(tabs[ni]);}});});
+  function activePanel(){return document.querySelector('.panel:not([hidden])');}
+  function activeStatus(){var p=activePanel().id;return p==='panel-en'?'enrolled':p==='panel-wl'?'waitlist':'dropped';}
+  function updateTally(){var p=0,a=0,u=0;activePanel().querySelectorAll('.chk').forEach(function(b){var s=b.getAttribute('data-state');if(s==='1')p++;else if(s==='2')a++;else u++;});document.getElementById('tP').textContent=p;document.getElementById('tA').textContent=a;document.getElementById('tU').textContent=u;}
+
+  var tblBox=document.getElementById('tblToggle');
+  function applyTbl(){document.body.classList.toggle('tbl-off',!state.tbl);tblBox.checked=!!state.tbl;}
+  tblBox.addEventListener('change',function(){state.tbl=tblBox.checked;save();applyTbl();});
+  applyTbl();
+  renderAll();
+})();
+(function(){function sh(){parent.postMessage({frameId:window.name||'bio004-roll',height:document.documentElement.scrollHeight},'*');}window.addEventListener('load',sh);window.addEventListener('resize',sh);if(window.ResizeObserver)new ResizeObserver(sh).observe(document.body);})();
+</script>
+</body>
+</html>
