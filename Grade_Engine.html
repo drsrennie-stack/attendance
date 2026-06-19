@@ -42,6 +42,7 @@
   th,td{border-right:1px solid var(--navy);border-bottom:1px solid var(--navy);padding:0;}
   thead th{position:sticky;top:0;z-index:3;background:var(--navy);color:#fff;font-weight:600;font-size:11px;text-align:center;padding:6px 4px;border-top:1px solid var(--navy);}
   thead tr.catrow th{background:var(--navy-deep);font-size:11px;letter-spacing:.03em;border-bottom:1px solid var(--gold);}
+  thead th.sessgrp{background:#274a5b;font-weight:700;border-bottom:1px solid var(--gold);}
   .addrat{appearance:none;margin-left:7px;font:inherit;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;border:1px solid var(--gold);background:transparent;color:#f7efdc;cursor:pointer;vertical-align:middle;white-space:nowrap;}
   .addrat:hover{background:var(--gold);color:var(--navy-deep);} .addrat:focus-visible{outline:3px solid #fff;outline-offset:1px;}
   thead th .al{display:block;font-size:12px;font-weight:700;} thead th .am{display:block;font-size:10px;opacity:.85;font-weight:500;}
@@ -107,6 +108,7 @@
   .catrow-ed input:focus-visible,.catrow-ed select:focus-visible,.asmtrow-ed input:focus-visible,.asmtrow-ed select:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
   .rowlab{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--terra-dark);display:block;margin-bottom:2px;}
   .teamflag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--navy);}
+  .tblnote{display:block;font-size:10.5px;font-weight:600;color:var(--terra-dark);line-height:1.35;}
   .del{appearance:none;border:1px solid var(--terra-dark);color:var(--terra-dark);background:#fff;border-radius:6px;width:30px;height:30px;font-size:15px;font-weight:800;cursor:pointer;line-height:1;}
   .del:hover{background:#f6e9e2;} .del:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
   .wsum{font-size:12px;font-weight:700;margin:8px 0 0;} .wsum.ok{color:var(--navy);} .wsum.warn{color:var(--terra-dark);}
@@ -307,37 +309,46 @@ Marsh, Eleanor [C]"></textarea>
 
   function defaultCategories(teams){
     return [
-      {id:uid(),name:"TBL (RAT)",kind:"tbl",weight:45,teamScored:false},
+      {id:uid(),name:"TBL (RAT)",kind:"tbl",weight:45,teamScored:true},
       {id:uid(),name:"Lab Quizzes",weight:10,teamScored:false},
-      {id:uid(),name:"Lab Practicals",weight:20,teamScored:false},
-      {id:uid(),name:"Lecture Exams",weight:20,teamScored:false},
-      {id:uid(),name:"Cumulative Final",weight:20,teamScored:false}
+      {id:uid(),name:"Lab Practicals",weight:15,teamScored:false},
+      {id:uid(),name:"Lecture Exams",weight:15,teamScored:false},
+      {id:uid(),name:"Cumulative Final",weight:15,teamScored:false}
     ];
   }
 
   /* ---------- roster parsing ---------- */
+  function truthyFlag(v){v=(v||"").trim().toLowerCase();return v==="y"||v==="yes"||v==="true"||v==="1"||v==="c"||v==="confidential"||v==="hold";}
+  function findCol(cols,names){for(var i=0;i<cols.length;i++){for(var j=0;j<names.length;j++){if(cols[i]===names[j])return i;}}return -1;}
   function parseRoster(text){
-    var out=[],lines=text.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean);
+    var out=[];
+    text=String(text||"").replace(/^﻿/,""); /* strip BOM from exported CSVs */
+    var lines=text.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean);
     if(!lines.length) return out;
-    var first=lines[0].toLowerCase();
-    var hasHeader=/(^|,)\s*(name|last\s*name|first\s*name)\s*(,|$)/.test(first);
+    var hdr=splitCsv(lines[0]).map(function(c){return c.trim().toLowerCase();});
+    var iName=findCol(hdr,["name","student name","full name","student"]);
+    var iLast=findCol(hdr,["last name","last","surname","family name"]);
+    var iFirst=findCol(hdr,["first name","first","given name","given"]);
+    var iTeam=findCol(hdr,["team"]);
+    var iConf=findCol(hdr,["confidential","ferpa","directory hold","hold","restricted"]);
+    var iStatus=findCol(hdr,["status"]);
+    var hasHeader=(iName>=0)||(iLast>=0&&iFirst>=0);
     if(hasHeader){
-      var cols=lines[0].split(",").map(function(c){return c.trim().toLowerCase();});
-      var iName=cols.indexOf("name"), iLast=cols.indexOf("last name"), iFirst=cols.indexOf("first name");
-      var iTeam=cols.indexOf("team"), iConf=cols.indexOf("confidential");
       for(var r=1;r<lines.length;r++){
         var f=splitCsv(lines[r]); if(!f.length) continue;
+        if(iStatus>=0){var st=(f[iStatus]||"").trim().toLowerCase();if(st==="dropped"||st==="noshow"||st==="no-show"||st==="drop")continue;}
         var name="";
-        if(iName>=0) name=f[iName]||"";
-        else if(iLast>=0&&iFirst>=0) name=(f[iLast]||"")+", "+(f[iFirst]||"");
-        name=name.trim(); if(!name) continue;
-        var conf=iConf>=0 ? /^(y|yes|true|1|c)$/i.test((f[iConf]||"").trim()) : false;
+        if(iName>=0) name=(f[iName]||"").trim();
+        else name=((f[iLast]||"")+", "+(f[iFirst]||"")).trim();
+        if(!name||name===",") continue;
+        var conf=iConf>=0?truthyFlag(f[iConf]):false;
         if(/\[c\]\s*$/i.test(name)){conf=true;name=name.replace(/\[c\]\s*$/i,"").trim();}
         out.push({name:name,team:iTeam>=0?(f[iTeam]||"").trim():"",conf:conf});
       }
     } else {
       for(var i=0;i<lines.length;i++){
         var raw=lines[i],conf=false;
+        if(/^(name|student name|status|last name)\b/i.test(raw)) continue; /* skip a stray header line */
         if(/\[c\]\s*$/i.test(raw)){conf=true;raw=raw.replace(/\[c\]\s*$/i,"").trim();}
         out.push({name:raw,team:"",conf:conf});
       }
@@ -542,9 +553,10 @@ Marsh, Eleanor [C]"></textarea>
       if(!as.length){out.push({type:"empty",catId:cat.id,cat:cat});}
       as.forEach(function(a){
         if(a.kind==="tbl"){
+          var tFill=!!(teams&&cat.teamScored); /* only tRAT (and bonus) fill the team; iRAT is always individual */
           out.push({type:"score",cat:cat,unit:a,key:a.id+"_i",label:a.name+" iRAT",max:num(a.iMax)||0,team:false});
-          out.push({type:"score",cat:cat,unit:a,key:a.id+"_t",label:a.name+" tRAT",max:num(a.tMax)||0,team:!!teams});
-          if(a.bonus)out.push({type:"score",cat:cat,unit:a,key:a.id+"_b",label:a.name+" Bonus",max:num(a.bMax)||0,team:!!teams});
+          out.push({type:"score",cat:cat,unit:a,key:a.id+"_t",label:a.name+" tRAT",max:num(a.tMax)||0,team:tFill});
+          if(a.bonus)out.push({type:"score",cat:cat,unit:a,key:a.id+"_b",label:a.name+" Bonus",max:num(a.bMax)||0,team:tFill});
           out.push({type:"total",cat:cat,unit:a,label:a.name+" Total"});
         } else {
           out.push({type:"score",cat:cat,unit:null,key:a.id,label:a.name,max:num(a.max)||0,team:!!(teams&&cat.teamScored)});
@@ -557,30 +569,55 @@ Marsh, Eleanor [C]"></textarea>
   }
   function catSpans(cols){var m={},order=[];cols.forEach(function(col){if(!(col.catId||col.cat.id in m)){}var id=col.cat.id;if(m[id]==null){m[id]=0;order.push(id);}m[id]++;});return {map:m,order:order};}
 
+  /* header builder. When TBL sessions exist, uses 3 tiers: category, session (groups iRAT/tRAT/Total), part. */
+  function buildHead(cols,sp,teams,weighted){
+    var hasSessions=cols.some(function(c){return c.unit;});
+    var rs=hasSessions?3:2;
+    var fixed="<th class='c0' rowspan='"+rs+"' scope='col'>#</th><th class='c1' rowspan='"+rs+"' scope='col'>Student</th>"+(teams?"<th class='teamcol' rowspan='"+rs+"' scope='col'>Team</th>":"");
+    var tail=(weighted?"<th class='weightcol' rowspan='"+rs+"' scope='col'>Final</th><th class='weightcol' rowspan='"+rs+"' scope='col'>Grade</th>":"")+"<th rowspan='"+rs+"' scope='col'>Actions</th>";
+    /* tier 1: categories */
+    var r1="<tr class='catrow'>"+fixed;
+    sp.order.forEach(function(id){
+      var cat=catById(id)||{};
+      var wlbl=weighted?" · "+(num(cat.weight)||0)+"%":"";
+      var addbtn=cat.kind==="tbl"?" <button type='button' class='addrat' data-addrat='"+id+"' title='Add a RAT session to "+esc(cat.name)+"' aria-label='Add a RAT session to "+esc(cat.name)+"'>+ session</button>":"";
+      r1+="<th colspan='"+sp.map[id]+"' scope='colgroup'>"+esc(cat.name)+wlbl+addbtn+"</th>";
+    });
+    r1+=tail+"</tr>";
+    if(!hasSessions){
+      var r2="<tr>";
+      cols.forEach(function(col){
+        if(col.type==="empty")r2+="<th class='asmt'><span class='am' style='font-style:italic'>add column</span></th>";
+        else r2+="<th class='asmt' scope='col'><span class='al'>"+esc(col.label)+"</span><span class='am'>/"+col.max+"</span></th>";
+      });
+      return r1+r2+"</tr>";
+    }
+    /* tier 2: session groups + simple columns; tier 3: parts */
+    var r2="<tr>",r3="<tr>";
+    for(var i=0;i<cols.length;i++){
+      var col=cols[i];
+      if(col.type==="empty"){r2+="<th class='asmt' rowspan='2'><span class='am' style='font-style:italic'>add column</span></th>";continue;}
+      if(col.unit){
+        var uid2=col.unit.id,parts=[],j=i;
+        while(j<cols.length&&cols[j].unit&&cols[j].unit.id===uid2){parts.push(cols[j]);j++;}
+        var maxTot=(num(col.unit.iMax)||0)+(num(col.unit.tMax)||0)+(col.unit.bonus?(num(col.unit.bMax)||0):0);
+        r2+="<th class='asmt sessgrp' colspan='"+parts.length+"' scope='colgroup'>"+esc(col.unit.name)+" <span class='am'>Total = "+maxTot+"</span></th>";
+        parts.forEach(function(p){
+          if(p.type==="total")r3+="<th class='asmt tbltot' scope='col' title='Record this in Canvas'><span class='al'>Total</span><span class='am'>Canvas</span></th>";
+          else {var short=p.label.indexOf(col.unit.name)===0?p.label.slice(col.unit.name.length).trim():p.label;
+            r3+="<th class='asmt' scope='col'><span class='al'>"+esc(short)+"</span><span class='am'>/"+p.max+"</span></th>";}
+        });
+        i=j-1;continue;
+      }
+      r2+="<th class='asmt' rowspan='2' scope='col'><span class='al'>"+esc(col.label)+"</span><span class='am'>/"+col.max+"</span></th>";
+    }
+    return r1+r2+"</tr>"+r3+"</tr>";
+  }
+
   function renderGrid(list){
     var c=state.course, teams=c.teams, weighted=c.weighted, cols=buildColumns();
     var sp=catSpans(cols);
-    /* header row 1: category groups */
-    var cat1="<tr class='catrow'><th class='c0' rowspan='2' scope='col'>#</th><th class='c1' rowspan='2' scope='col'>Student</th>";
-    if(teams) cat1+="<th class='teamcol' rowspan='2' scope='col'>Team</th>";
-    sp.order.forEach(function(id){
-      var cat=(c.categories||[]).filter(function(x){return x.id===id;})[0]||{};
-      var wlbl=weighted?" · "+(num(cat.weight)||0)+"%":"";
-      var tbl=cat.kind==="tbl"?" · iRAT+tRAT":"";
-      var addbtn=cat.kind==="tbl"?" <button type='button' class='addrat' data-addrat='"+id+"' title='Add a RAT session to "+esc(cat.name)+"' aria-label='Add a RAT session to "+esc(cat.name)+"'>+ session</button>":"";
-      cat1+="<th colspan='"+sp.map[id]+"' scope='colgroup'>"+esc(cat.name)+wlbl+tbl+addbtn+"</th>";
-    });
-    if(weighted){cat1+="<th class='weightcol' rowspan='2' scope='col'>Final</th><th class='weightcol' rowspan='2' scope='col'>Grade</th>";}
-    cat1+="<th rowspan='2' scope='col'>Actions</th></tr>";
-    /* header row 2: individual columns */
-    var head2="<tr>";
-    cols.forEach(function(col){
-      if(col.type==="empty"){head2+="<th class='asmt'><span class='am' style='font-style:italic'>add column</span></th>";}
-      else if(col.type==="total"){head2+="<th class='asmt tbltot' scope='col' title='Record this in Canvas'><span class='al'>"+esc(col.label)+"</span><span class='am'>Canvas</span></th>";}
-      else {head2+="<th class='asmt' scope='col'><span class='al'>"+esc(col.label)+"</span><span class='am'>/"+col.max+"</span></th>";}
-    });
-    head2+="</tr>";
-    el("thead").innerHTML=cat1+head2;
+    el("thead").innerHTML=buildHead(cols,sp,teams,weighted);
 
     if(!list.length){el("tbody").innerHTML='<tr><td class="empty" colspan="60">No students on this tab.</td></tr>';el("tfoot").innerHTML="";return;}
 
@@ -832,16 +869,19 @@ Marsh, Eleanor [C]"></textarea>
     var host=el(listId);
     host.innerHTML=arr.map(function(cat,i){
       var isTbl=cat.kind==="tbl";
+      var teamCell=isTbl
+        ? "<div><span class='rowlab'>tRAT team fill</span><label class='teamflag'><input type='checkbox' "+(cat.teamScored?"checked":"")+" data-i='"+i+"' data-k='teamScored'> tRAT fills team</label><span class='tblnote'>iRAT stays individual</span></div>"
+        : "<div><span class='rowlab'>Team-scored</span><label class='teamflag'><input type='checkbox' "+(cat.teamScored?"checked":"")+" data-i='"+i+"' data-k='teamScored'> fills team</label></div>";
       return "<div class='catrow-ed'>"+
         "<div><span class='rowlab'>Category</span><input type='text' value='"+esc(cat.name)+"' data-i='"+i+"' data-k='name'></div>"+
         "<div><span class='rowlab'>Type</span><select data-i='"+i+"' data-k='kind'><option value='simple'"+(isTbl?"":" selected")+">Simple columns</option><option value='tbl'"+(isTbl?" selected":"")+">TBL (iRAT+tRAT)</option></select></div>"+
         "<div><span class='rowlab'>Weight %</span><input type='number' min='0' step='1' value='"+(num(cat.weight)||0)+"' data-i='"+i+"' data-k='weight'></div>"+
-        "<div><span class='rowlab'>Team-scored</span><label class='teamflag'"+(isTbl?" style='opacity:.45'":"")+"><input type='checkbox' "+(cat.teamScored?"checked":"")+(isTbl?" disabled":"")+" data-i='"+i+"' data-k='teamScored'> fills team</label></div>"+
+        teamCell+
         "<button type='button' class='del' data-i='"+i+"' aria-label='Delete category "+esc(cat.name)+"'>×</button>"+
       "</div>";
     }).join("");
     host.querySelectorAll("input[data-k],select[data-k]").forEach(function(inp){
-      inp.addEventListener(inp.tagName==="SELECT"?"change":"input",function(){
+      inp.addEventListener((inp.tagName==="SELECT"||inp.type==="checkbox")?"change":"input",function(){
         var i=+this.getAttribute("data-i"),k=this.getAttribute("data-k");
         if(k==="teamScored")arr[i][k]=this.checked;
         else if(k==="weight")arr[i][k]=num(this.value)||0;

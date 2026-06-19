@@ -130,6 +130,7 @@
   <button type="button" class="btn" id="setupBtn">Course setup</button>
   <button type="button" class="btn primary" id="newCourseBtn">+ New course</button>
   <button type="button" class="btn" id="exportBtn">Export CSV</button>
+  <button type="button" class="btn" id="exportGradeBtn" title="Download a file you can upload into the TBL Grade Engine">Export for Grade Engine</button>
   <button type="button" class="btn ghost" id="deleteCourseBtn">Delete course</button>
 </div>
 
@@ -532,6 +533,24 @@
     var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
     var url=URL.createObjectURL(blob);var a=document.createElement('a');
     var fn=((state.meta.course||state.meta.title||'attendance')+(state.meta.crn?('_'+state.meta.crn):'')).replace(/[^a-z0-9]+/gi,'_')+'_'+today().replace(/\//g,'-')+'.csv';
+    a.href=url;a.download=fn;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},1500);
+  });
+
+  // ---------- export for the TBL Grade Engine (roster baked into the file) ----------
+  $('exportGradeBtn').addEventListener('click',function(){
+    if(!state){alert('Create a course first.');return;}
+    var payload={source:'attendance-engine',exported:today(),meta:state.meta,
+      teamNames:state.teamNames,
+      students:state.students.map(function(s){return {name:s.name,team:s.team,conf:!!s.conf,status:s.status,code:s.code||''};})};
+    var json=JSON.stringify(payload).replace(/</g,'\\u003c'); // keep it safe inside a script tag
+    var doc='<!doctype html><html lang="en"><head><meta charset="utf-8">'+
+      '<title>'+esc(state.meta.course||state.meta.title||'Roster')+' — roster for Grade Engine</title></head><body>'+
+      '<p style="font-family:sans-serif;max-width:60ch">This file carries the roster, teams, and confidential flags from the Attendance Engine. '+
+      'Upload it in the TBL Grade Engine under Course setup to build a gradebook from this class. You can keep it for your records.</p>'+
+      '<script type="application/json" id="attendance-data">'+json+'<\/script></body></html>';
+    var blob=new Blob([doc],{type:'text/html;charset=utf-8;'});
+    var url=URL.createObjectURL(blob);var a=document.createElement('a');
+    var fn=((state.meta.course||state.meta.title||'roster')+(state.meta.crn?('_'+state.meta.crn):'')).replace(/[^a-z0-9]+/gi,'_')+'_for_grade_engine.html';
     a.href=url;a.download=fn;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},1500);
   });
 
