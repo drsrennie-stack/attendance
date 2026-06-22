@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B1530; --navy-deep:#060A18; --navy-tint:#EAECEF;
+    --gold:#C9A14A; --terra:#8B3A2E; --terra-dark:#8B3A2E;
+    --gray:#6B7180; --white:#FFFFFF; --offwhite:#FFFFFF;
+    --rest-shadow:0 1px 3px rgba(0,0,0,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0; padding:0;}
+  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:var(--navy); background:var(--offwhite); line-height:1.5; -webkit-font-smoothing:antialiased;}
+  .skip-link{position:absolute; left:-999px; top:0; background:var(--navy); color:#fff; padding:10px 16px; z-index:100; border-radius:0 0 6px 0;}
+  .skip-link:focus{left:0;}
+  .wrap{max-width:880px; margin:0 auto; padding:28px 24px 70px;}
+  a{color:inherit;}
+  :focus-visible{outline:3px solid var(--gold); outline-offset:2px; box-shadow:0 0 0 6px var(--navy-deep);}
+
+  .backlink{margin:0 0 10px;}
+  .backlink a{font-weight:700; font-size:13px; color:var(--terra-dark); text-decoration:none;}
+  .backlink a:hover{text-decoration:underline;}
+  .brandbar{display:flex; align-items:center; gap:14px; text-decoration:none; padding-bottom:16px; margin-bottom:16px; border-bottom:.5px solid rgba(11,21,48,.10);}
+  .brandbar svg{height:44px; width:auto; display:block;}
+  .brandbar .bt{display:flex; flex-direction:column; gap:2px;}
+  .brandbar .bt .t{font-size:21px; font-weight:800; letter-spacing:-.02em; color:var(--navy); line-height:1;}
+  .brandbar .bt .t .a{color:var(--terra);}
+  .brandbar .bt .s{font-size:10.5px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--navy); opacity:.72;}
+  .eyebrow{font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--terra-dark); margin:0 0 6px;}
+  h1{font-weight:800; color:var(--navy); font-size:30px; margin:0 0 6px; line-height:1.1;}
+  .privacy{font-weight:600; font-size:13px; color:var(--navy); background:var(--navy-tint); border-left:4px solid var(--terra-dark); border-radius:0 8px 8px 0; padding:10px 14px; margin:12px 0 22px;}
+
+  .card{background:var(--white); border:1px solid var(--navy-tint); border-radius:10px; padding:16px 18px; box-shadow:var(--rest-shadow); margin-bottom:18px;}
+  .card h2{font-weight:600; color:var(--terra-dark); font-size:15px; text-transform:uppercase; letter-spacing:.04em; margin:0 0 12px;}
+  .row{display:flex; flex-wrap:wrap; gap:14px 18px; align-items:flex-end;}
+  .field{display:flex; flex-direction:column; gap:4px;}
+  .field label{font-size:12px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--navy);}
+  .field input{font-family:inherit; font-size:15px; color:var(--navy); border:1px solid var(--navy); border-radius:6px; padding:7px 10px; background:var(--white);}
+  textarea{font-family:inherit; font-size:14px; color:var(--navy); border:1px solid var(--navy); border-radius:6px; padding:9px 11px; width:100%; min-height:90px; resize:vertical; background:var(--white);}
+  .btn{font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; border-radius:6px; padding:9px 16px; border:1px solid var(--navy); background:var(--navy); color:#fff; transition:background 160ms ease, transform 160ms ease;}
+  .btn:hover{background:var(--navy-deep); transform:translateY(-1px);}
+  .btn.secondary{background:var(--white); color:var(--navy);}
+  .btn.secondary:hover{background:var(--navy-tint);}
+  .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center;}
+  .note{font-size:13px; color:var(--terra-dark); font-weight:600;}
+
+  .summary{display:flex; gap:20px; flex-wrap:wrap; margin-bottom:6px;}
+  .stat{display:flex; flex-direction:column; line-height:1.1;}
+  .stat .num{font-weight:800; font-size:24px; color:var(--navy);}
+  .stat .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--terra-dark); font-weight:700; margin-top:2px;}
+
+  .roster{display:flex; flex-direction:column; gap:8px;}
+  .rrow{display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; border-bottom:1px solid var(--navy-tint); padding:6px 0;}
+  .rname{font-weight:600; font-size:15px; color:var(--navy);}
+  .seg{display:inline-flex; border:1px solid var(--navy); border-radius:7px; overflow:hidden;}
+  .seg button{font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; border:none; background:var(--white); color:var(--navy); padding:7px 11px; border-left:1px solid var(--navy-tint);}
+  .seg button:first-child{border-left:none;}
+  .seg button[aria-pressed="true"][data-s="P"]{background:var(--navy); color:#fff;}
+  .seg button[aria-pressed="true"][data-s="L"]{background:var(--gold); color:var(--navy-deep);}
+  .seg button[aria-pressed="true"][data-s="A"]{background:var(--terra-dark); color:#fff;}
+  .seg button[aria-pressed="true"][data-s="E"]{background:var(--gray); color:#fff;}
+  .empty{color:var(--gray); font-weight:600; font-size:14px; padding:8px 0;}
+
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important;} }
+  @media (max-width:560px){ .rrow{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to attendance</a>
+<div class="wrap">
+
+  <a class="brandbar" href="https://drsrennie-stack.github.io/Anatomy-Lab-Exam-Set-up-room-prep/" target="_top" aria-label="Course portal, home">
+    <svg viewBox="40 10 125 148" role="img" aria-hidden="true" focusable="false"><g transform="translate(0,18)"><g transform="translate(60,0) rotate(8 0 130)"><circle cx="0" cy="20" r="10" fill="#0B1530"/><path d="M 0,32 C -10,32 -16,36 -16,42 C -16,55 -13,68 -11,82 C -10,100 -12,118 -14,130 L 14,130 C 12,118 10,100 11,82 C 13,68 16,55 16,42 C 16,36 10,32 0,32 Z" fill="#0B1530"/></g><g transform="translate(100,0)"><circle cx="0" cy="10" r="11" fill="#8B3A2E"/><path d="M 0,22 C -11,22 -17,26 -17,34 C -17,52 -14,70 -12,86 C -11,108 -13,122 -15,132 L 15,132 C 13,122 11,108 12,86 C 14,70 17,52 17,34 C 17,26 11,22 0,22 Z" fill="#8B3A2E"/></g><g transform="translate(140,0) rotate(-8 0 130)"><circle cx="0" cy="20" r="10" fill="#C9A14A"/><path d="M 0,32 C -10,32 -16,36 -16,42 C -16,55 -13,68 -11,82 C -10,100 -12,118 -14,130 L 14,130 C 12,118 10,100 11,82 C 13,68 16,55 16,42 C 16,36 10,32 0,32 Z" fill="#C9A14A"/></g></g></svg>
+    <span class="bt"><span class="t">Human <span class="a">Anatomy</span></span><span class="s">BIO 004 &middot; Solano Community College</span></span>
+  </a>
+
+  <header>
+    <p class="backlink"><a href="https://drsrennie-stack.github.io/Anatomy-Lab-Exam-Set-up-room-prep/bio004-course-hub.html" target="_top">&larr; Course hub</a></p>
+    <p class="eyebrow">BIO 004 &middot; Human Anatomy</p>
+    <h1>Attendance</h1>
+    <p class="privacy">Names live only in this browser tab for this session. Nothing is saved in the browser. Export to CSV to keep a record, then close the tab and the roster is gone.</p>
+  </header>
+
+  <main id="main">
+    <section class="card" aria-label="Session and roster">
+      <h2>Session</h2>
+      <div class="row">
+        <div class="field"><label for="section">Section</label><input type="text" id="section" placeholder="e.g., BIO 004 - 01" autocomplete="off"></div>
+        <div class="field"><label for="date">Date</label><input type="date" id="date"></div>
+      </div>
+      <div class="field" style="margin-top:14px;">
+        <label for="roster">Roster (one student per line)</label>
+        <textarea id="roster" placeholder="Paste or type one name per line, then Load roster"></textarea>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn" id="loadBtn">Load roster</button>
+        <button type="button" class="btn secondary" id="allPresentBtn">Mark all present</button>
+        <button type="button" class="btn secondary" id="clearBtn">Clear</button>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Attendance">
+      <h2>Mark attendance</h2>
+      <div class="summary" aria-live="polite">
+        <div class="stat"><span class="num" id="cP">0</span><span class="lbl">Present</span></div>
+        <div class="stat"><span class="num" id="cL">0</span><span class="lbl">Late</span></div>
+        <div class="stat"><span class="num" id="cA">0</span><span class="lbl">Absent</span></div>
+        <div class="stat"><span class="num" id="cE">0</span><span class="lbl">Excused</span></div>
+        <div class="stat"><span class="num" id="cU">0</span><span class="lbl">Unmarked</span></div>
+        <div class="stat"><span class="num" id="cT">0</span><span class="lbl">Total</span></div>
+      </div>
+      <div class="roster" id="rosterList"><p class="empty">Load a roster above to begin.</p></div>
+      <div class="actions">
+        <button type="button" class="btn" id="exportBtn">Export CSV</button>
+        <span class="note" id="msg"></span>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var students=[]; // [{name, status}] session-only, never persisted
+  var STATUSES=[["P","Present"],["L","Late"],["A","Absent"],["E","Excused"]];
+  var listEl=document.getElementById("rosterList");
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+  // default date = today
+  (function(){ var d=new Date(); var iso=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); document.getElementById("date").value=iso; })();
+
+  function render(){
+    if(!students.length){ listEl.innerHTML='<p class="empty">Load a roster above to begin.</p>'; counts(); return; }
+    listEl.innerHTML="";
+    students.forEach(function(st,i){
+      var row=document.createElement("div"); row.className="rrow";
+      var seg=STATUSES.map(function(p){
+        var on=st.status===p[0];
+        return '<button type="button" data-i="'+i+'" data-s="'+p[0]+'" aria-pressed="'+(on?"true":"false")+'" aria-label="'+esc(st.name)+' '+p[1]+'">'+p[1]+'</button>';
+      }).join("");
+      row.innerHTML='<span class="rname">'+esc(st.name)+'</span><span class="seg" role="group" aria-label="Status for '+esc(st.name)+'">'+seg+'</span>';
+      listEl.appendChild(row);
+    });
+    counts();
+  }
+  function counts(){
+    var c={P:0,L:0,A:0,E:0,U:0};
+    students.forEach(function(s){ c[s.status||"U"]++; });
+    document.getElementById("cP").textContent=c.P;
+    document.getElementById("cL").textContent=c.L;
+    document.getElementById("cA").textContent=c.A;
+    document.getElementById("cE").textContent=c.E;
+    document.getElementById("cU").textContent=c.U;
+    document.getElementById("cT").textContent=students.length;
+  }
+  listEl.addEventListener("click",function(e){
+    var b=e.target.closest("button[data-i]"); if(!b) return;
+    var i=+b.getAttribute("data-i"), s=b.getAttribute("data-s");
+    students[i].status = (students[i].status===s) ? "" : s; // toggle off if same
+    render();
+  });
+
+  document.getElementById("loadBtn").addEventListener("click",function(){
+    var lines=document.getElementById("roster").value.split("\n").map(function(x){return x.trim();}).filter(Boolean);
+    students=lines.map(function(n){ return {name:n, status:""}; });
+    document.getElementById("msg").textContent=students.length?(students.length+" students loaded."):"";
+    render();
+  });
+  document.getElementById("allPresentBtn").addEventListener("click",function(){ students.forEach(function(s){ s.status="P"; }); render(); });
+  document.getElementById("clearBtn").addEventListener("click",function(){
+    if(students.length && !window.confirm("Clear the roster and all marks?")) return;
+    students=[]; document.getElementById("roster").value=""; document.getElementById("msg").textContent="Cleared."; render();
+  });
+
+  document.getElementById("exportBtn").addEventListener("click",function(){
+    if(!students.length){ document.getElementById("msg").textContent="Load a roster first."; return; }
+    var section=document.getElementById("section").value||"", date=document.getElementById("date").value||"";
+    var map={P:"Present",L:"Late",A:"Absent",E:"Excused","":"Unmarked"};
+    var rows=[["Section","Date","Name","Status"]];
+    students.forEach(function(s){ rows.push([section,date,s.name,map[s.status||""]]); });
+    var csv=rows.map(function(r){ return r.map(function(c){ c=String(c); return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c; }).join(","); }).join("\r\n");
+    var fn=("attendance-"+(section||"section")+"-"+(date||"date")).replace(/[^a-z0-9]+/gi,"-").toLowerCase();
+    var blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8;"});
+    var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fn+".csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+    document.getElementById("msg").textContent="Exported "+students.length+" rows.";
+  });
+
+  render();
+})();
+</script>
+
+<script>
+(function(){
+  function sendHeight(){ try{ parent.postMessage({ id:"attendance", height:document.documentElement.scrollHeight }, "*"); }catch(e){} }
+  window.addEventListener("load", sendHeight); window.addEventListener("resize", sendHeight);
+  if(window.ResizeObserver){ new ResizeObserver(sendHeight).observe(document.body); }
+})();
+</script>
+</body>
+</html>
