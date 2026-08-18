@@ -48,12 +48,11 @@
     font-family:'Plus Jakarta Sans','DM Sans',sans-serif;font-weight:600;font-size:14px;
     padding:10px 16px 9px;border-radius:9px 9px 0 0;cursor:pointer;position:relative;top:1px;line-height:1.25;text-align:left;}
   .ctab .cmeet{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.05em;margin-left:6px;
-    padding:2px 5px;border-radius:3px;border:1px solid var(--navy);vertical-align:1px;}
+    padding:2px 5px;border-radius:3px;border:1px solid currentColor;vertical-align:1px;}
   .ctab .ccount{font-weight:800;font-size:12px;opacity:.85;}
-  .ctab[aria-selected="true"]{font-weight:800;box-shadow:inset 0 -5px 0 var(--navy);padding-bottom:13px;}
-  .ctab[aria-selected="false"]{color:#3b5b68;}
-  .ctab:hover{box-shadow:inset 0 -5px 0 rgba(30,61,76,.35);}
-  .ctab[aria-selected="true"]:hover{box-shadow:inset 0 -5px 0 var(--navy);}
+  .ctab[aria-selected="true"]{font-weight:800;box-shadow:inset 0 -5px 0 currentColor;padding-bottom:13px;}
+  .ctab[aria-selected="false"]{font-weight:600;}
+  .ctab:hover{box-shadow:inset 0 -5px 0 currentColor;}
   .ctab:focus-visible{outline:3px solid var(--focus);outline-offset:2px;z-index:2;}
   .classempty{font-size:12px;color:var(--gray);font-style:italic;padding:10px 2px;}
 
@@ -519,9 +518,14 @@ var COLORS=[
 var MAXTEAMS=COLORS.length;
 var DEFNAMES=["Femur","Scapula","Cranium","Patella","Sternum","Mandible","Humerus","Clavicle"];
 var CLASSCOLORS=[
-  {name:"White",bg:"#FFFFFF"},{name:"Light yellow",bg:"#FBF3D0"},{name:"Light grey",bg:"#EDEDEC"},
-  {name:"Light blue",bg:"#EDF1F3"},{name:"Light terra",bg:"#F6E9E2"},{name:"Light teal",bg:"#E3EEEC"},
-  {name:"Light plum",bg:"#F0E7EC"},{name:"Light slate",bg:"#E8EEF3"}
+  {name:"White",        bg:"#FFFFFF", fg:"#1E3D4C"},
+  {name:"Light yellow", bg:"#FBF3D0", fg:"#1E3D4C"},
+  {name:"Light grey",   bg:"#EDEDEC", fg:"#1E3D4C"},
+  {name:"Light blue",   bg:"#EDF1F3", fg:"#1E3D4C"},
+  {name:"Light terra",  bg:"#F6E9E2", fg:"#1E3D4C"},
+  {name:"Dark navy",    bg:"#0C1D26", fg:"#FFFFFF"},
+  {name:"Light plum",   bg:"#F0E7EC", fg:"#1E3D4C"},
+  {name:"Light slate",  bg:"#E8EEF3", fg:"#1E3D4C"}
 ];
 var DOW=[["Sun","U"],["Mon","M"],["Tue","T"],["Wed","W"],["Thu","R"],["Fri","F"],["Sat","S"]];
 
@@ -1085,7 +1089,7 @@ function paintClassTabs(){
     var on=!!(state&&c.id===state.id);
     return "<button type='button' class='ctab' role='tab' data-cid='"+esc(c.id)+"'"+
       " aria-selected='"+(on?"true":"false")+"' tabindex='"+(on?"0":"-1")+"' aria-controls='main'"+
-      " style='background:"+col.bg+"'"+
+      " style='background:"+col.bg+";color:"+(col.fg||"#1E3D4C")+"'"+
       " title='"+esc(c.label)+"'>"+esc(shortLabel(rec,c.label))+
       (meet?("<span class='cmeet'>"+esc(meet)+"</span>"):"")+
       " <span class='ccount'>("+n+")</span></button>";

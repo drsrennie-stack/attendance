@@ -26,7 +26,7 @@ Standard applied: **WCAG 2.2**. Floor is AA. AAA targeted where achievable witho
 | 1.1.1 Non-text Content | A | Pass | Logo SVG has `role="img"` and `aria-label`. Attendance glyphs are CSS `::before` content behind `aria-hidden="true"`; the real state is in each button's accessible name. The class color chip is decorative and carries a `title`, never the only cue. |
 | 1.3.1 Info and Relationships | A | Pass | Semantic `header` / `main` / `section`. Tables use `thead` / `tbody`, `scope="col"` and `scope="row"`, and a `caption`. Dialogs use `fieldset` / `legend`. Every control has a `label for` + `id`, a wrapping `label`, or an explicit `aria-label`. |
 | 1.3.2 Meaningful Sequence | A | Pass | DOM order matches visual order. |
-| 1.4.1 Use of Color | A | Pass | A duplicate team position is flagged by a doubled border weight, a `title`, a note appended to the accessible name, and a live-region message, not by the terra fill alone. Class tabs are colored *and* labelled with the section name, AM/PM/EVE chip, and head count, and the selected tab is bold with a navy underline, so the tab tints are supplementary only. Attendance uses four distinct glyphs, check, en dash, cross, and empty, each with its own fill, never color alone. Lecture and lab are distinguished by the text sub-headers **Lec** and **Lab**, not by color. Wait-list status uses the letter **W**, not color. Enrollment status is a pull-down whose selected option is text ("Enrolled", "Wait list", "Dropped", "No-show"). Class identity is a color chip *and* the course name, AM/PM tag, and page title. |
+| 1.4.1 Use of Color | A | Pass | A duplicate team position is flagged by a doubled border weight, a `title`, a note appended to the accessible name, and a live-region message, not by the terra fill alone. Class tabs are colored *and* labelled with the section name, AM/PM/EVE chip, and head count, and the selected tab is bold with an underline drawn in the tab's own text color, so the tab colors are supplementary only. Each class color carries a matching foreground, so the Dark navy tab renders white text, a white underline, and a white AM/PM chip rather than inheriting navy. Attendance uses four distinct glyphs, check, en dash, cross, and empty, each with its own fill, never color alone. Lecture and lab are distinguished by the text sub-headers **Lec** and **Lab**, not by color. Wait-list status uses the letter **W**, not color. Enrollment status is a pull-down whose selected option is text ("Enrolled", "Wait list", "Dropped", "No-show"). Class identity is a color chip *and* the course name, AM/PM tag, and page title. |
 | 1.4.3 Contrast (Minimum) | AA | Pass | See section 3. Lowest text pair is 4.73:1. |
 | 1.4.6 Contrast (Enhanced) | AAA | Partial | 14 of 18 text pairs reach 7:1. Four sit between 4.73:1 and 6.09:1 on locked palette tokens. See section 6. |
 | 1.4.4 Resize Text | AA | Pass | No maximum-scale lock; `-webkit-text-size-adjust:100%`. Layout reflows at 200 percent zoom. |
@@ -85,7 +85,9 @@ Ratios computed from the sRGB relative-luminance formula. Text judged at 4.5:1 (
 | Class tab label, white tab | `#1E3D4C` on `#FFFFFF` | 11.49:1 | AAA |
 | Class tab label, light yellow tab | `#1E3D4C` on `#FBF3D0` | 10.31:1 | AAA |
 | Class tab label, light grey tab | `#1E3D4C` on `#EDEDEC` | 9.81:1 | AAA |
-| Class tab label, worst of the eight tints | `#1E3D4C` on `#F0E7EC` | 9.49:1 | AAA |
+| Class tab label, worst of the seven light tints | `#1E3D4C` on `#F0E7EC` | 9.49:1 | AAA |
+| Class tab label, Dark navy tab | `#FFFFFF` on `#0C1D26` | 17.22:1 | AAA |
+| Dark navy tab against the page | `#0C1D26` on `#FAFAF9` | 16.49:1 | Pass |
 | Duplicate team position | `#A0522D` on `#F6E9E2` | 4.73:1 | AA |
 | Add code cell | `#1E3D4C` on `#EDF1F3` | 10.11:1 | AAA |
 | **W** wait-list badge | `#7A5E1F` on `#F7EFDC` | 5.32:1 | AA |

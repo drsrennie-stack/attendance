@@ -40,7 +40,7 @@ Your sections are **tabs across the top**, in your colors: Class 1 white, Class 
 
 Each tab is a complete roll sheet in its own right. Set up teams per class and assign students to them independently; nothing is shared between sections except the file they live in.
 
-Colors are chosen per class in Class setup, from eight light tints. They are a supplementary cue only: every tab is also labelled, so the sheet works fine in greyscale or for a colorblind reader.
+Colors are chosen per class in Class setup: seven light tints plus **Dark navy**, a near-black tab that draws its label in white. Each color carries its own text color, so a dark tab stays readable and its selected underline and AM/PM chip switch to white with it. Color is a supplementary cue only: every tab is also labelled, so the sheet works fine in greyscale or for a colorblind reader.
 
 ## The two views
 
