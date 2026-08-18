@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Course Engine &middot; Attendance, Teams &amp; Roster</title>
+<style>
+  :root{
+    --navy:#1E3D4C;--navy-deep:#142a36;--navy-tint:#EDF1F3;
+    --gold:#B8924A;--gold-deep:#7A5E1F;--focus:#9A7833;
+    --terra:#C2734D;--terra-dark:#A0522D;
+    --white:#FFFFFF;--offwhite:#FAFAF9;--gray:#565656;
+    --accent:#1E3D4C;
+    --rest-shadow:0 1px 3px rgba(0,0,0,0.08);
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--navy);background:var(--offwhite);margin:0;padding:20px;line-height:1.45;}
+
+  a.skip{position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden;}
+  a.skip:focus{left:12px;top:12px;width:auto;height:auto;background:var(--navy);color:#fff;padding:9px 14px;border-radius:6px;z-index:200;font-weight:700;font-size:13px;}
+
+  .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--terra-dark);font-weight:600;margin:0 0 4px;}
+  h1{font-family:'Plus Jakarta Sans','DM Sans',sans-serif;font-size:23px;font-weight:800;margin:0;color:var(--navy);letter-spacing:-.01em;}
+  .sub{font-family:'Plus Jakarta Sans','DM Sans',sans-serif;color:var(--terra-dark);font-weight:600;font-size:15px;margin:3px 0 0;}
+  .meta{font-size:12.5px;margin:3px 0 0;color:var(--navy);}
+
+  .site-header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 14px;padding-bottom:13px;border-bottom:1px solid rgba(30,61,76,.18);}
+  .site-header .logo{height:54px;width:auto;flex:0 0 auto;}
+  .site-header .idblock{min-width:240px;}
+  .classchip{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px;border:1px solid rgba(0,0,0,.3);}
+  .classchip[hidden]{display:none;}
+  body.has-accent .site-header{border-bottom-color:rgba(30,61,76,.18);}
+
+  .notice{margin:0 0 12px;padding:10px 13px;border:1px solid var(--terra-dark);border-left-width:4px;border-radius:8px;background:var(--white);font-size:12.5px;font-weight:600;color:var(--terra-dark);box-shadow:var(--rest-shadow);}
+  .notice[hidden]{display:none;}
+  .notice.ok{border-color:var(--navy);color:var(--navy);background:var(--navy-tint);}
+  .notice .x{float:right;appearance:none;border:none;background:transparent;font:inherit;font-size:15px;font-weight:800;color:inherit;cursor:pointer;line-height:1;padding:0 2px;}
+  .notice .x:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+
+  .classbar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 14px;margin:0 0 0;}
+  .clabel{font-size:11px;font-weight:700;color:var(--terra-dark);text-transform:uppercase;letter-spacing:.06em;}
+  .courseSel{font:inherit;font-size:13px;font-weight:700;padding:6px 9px;border:1px solid var(--navy);border-radius:6px;background:var(--white);color:var(--navy);cursor:pointer;}
+  .courseSel:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .cbtns{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;padding-bottom:4px;}
+  .classtabs{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end;}
+  .ctab{appearance:none;border:1px solid var(--navy);border-bottom:none;color:var(--navy);
+    font-family:'Plus Jakarta Sans','DM Sans',sans-serif;font-weight:600;font-size:14px;
+    padding:10px 16px 9px;border-radius:9px 9px 0 0;cursor:pointer;position:relative;top:1px;line-height:1.25;text-align:left;}
+  .ctab .cmeet{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.05em;margin-left:6px;
+    padding:2px 5px;border-radius:3px;border:1px solid var(--navy);vertical-align:1px;}
+  .ctab .ccount{font-weight:800;font-size:12px;opacity:.85;}
+  .ctab[aria-selected="true"]{font-weight:800;box-shadow:inset 0 -5px 0 var(--navy);padding-bottom:13px;}
+  .ctab[aria-selected="false"]{color:#3b5b68;}
+  .ctab:hover{box-shadow:inset 0 -5px 0 rgba(30,61,76,.35);}
+  .ctab[aria-selected="true"]:hover{box-shadow:inset 0 -5px 0 var(--navy);}
+  .ctab:focus-visible{outline:3px solid var(--focus);outline-offset:2px;z-index:2;}
+  .classempty{font-size:12px;color:var(--gray);font-style:italic;padding:10px 2px;}
+
+  .btn{appearance:none;border:1px solid var(--navy);background:var(--white);color:var(--navy);font:inherit;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:6px;cursor:pointer;min-height:32px;}
+  .btn:hover{background:var(--navy-tint);}
+  .btn:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .btn.primary{background:var(--navy);color:#fff;} .btn.primary:hover{background:var(--navy-deep);}
+  .btn.ghost{border-color:var(--terra-dark);color:var(--terra-dark);} .btn.ghost:hover{background:#f6e9e2;}
+  .btn[disabled]{opacity:.5;cursor:not-allowed;}
+
+  .views{display:flex;gap:6px;border-bottom:2px solid var(--navy);flex-wrap:wrap;margin:0;border-top:2px solid var(--navy);padding-top:10px;}
+  .vtab{appearance:none;border:1px solid var(--navy);border-bottom:none;background:var(--white);color:var(--navy);font-family:'Plus Jakarta Sans','DM Sans',sans-serif;font-weight:600;font-size:14.5px;padding:10px 18px;border-radius:8px 8px 0 0;cursor:pointer;position:relative;top:2px;}
+  .vtab[aria-selected="true"]{background:var(--navy);color:#fff;}
+  .vtab:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 0;border-bottom:1px solid var(--navy);}
+  .tab{appearance:none;border:1px solid var(--navy);border-bottom:none;background:var(--white);color:var(--navy);font:inherit;font-weight:600;font-size:13px;padding:7px 14px;border-radius:7px 7px 0 0;cursor:pointer;position:relative;top:1px;}
+  .tab[aria-selected="true"]{background:var(--navy-tint);color:var(--navy);font-weight:800;box-shadow:inset 0 -4px 0 var(--terra-dark);}
+  .tab:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+
+  .view[hidden]{display:none;}
+
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:13px 0 8px;}
+  .tally{font-size:13px;font-weight:700;margin:0;}
+  .tally .box{display:inline-block;min-width:1.5em;text-align:center;}
+  .tally .p{color:var(--navy);} .tally .r{color:var(--terra-dark);} .tally .a{color:var(--terra-dark);} .tally .u{color:var(--gray);}
+  .legend{font-size:11.5px;color:var(--gray);margin-left:auto;}
+  .legend b{color:var(--terra-dark);}
+  .switch{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--navy);cursor:pointer;}
+  .switch input{width:17px;height:17px;accent-color:var(--navy);cursor:pointer;}
+  .fldinline{display:inline-flex;align-items:center;gap:7px;}
+  .fldinline[hidden]{display:none;}
+
+  .teambar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:10px 0 12px;padding:11px 13px;border:1px solid var(--gold);border-radius:8px;background:var(--white);box-shadow:var(--rest-shadow);}
+  .tlabel{font-size:11px;font-weight:700;color:var(--terra-dark);text-transform:uppercase;letter-spacing:.06em;}
+  .tedit{display:inline-flex;align-items:center;gap:6px;}
+  .tedit[hidden]{display:none;}
+  .sw{width:15px;height:15px;border-radius:4px;border:1px solid rgba(0,0,0,.25);flex:0 0 auto;}
+  .tname-in{font:inherit;font-size:12.5px;font-weight:600;color:var(--navy);border:1px solid #7C8990;border-radius:5px;padding:4px 6px;width:8.5em;background:#fff;}
+  .tname-in:focus-visible{outline:3px solid var(--focus);outline-offset:1px;}
+  .tcount{font-size:12px;font-weight:800;color:var(--gray);min-width:1.1em;text-align:center;}
+  .teambar .spacer{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;}
+
+  .scroll{max-height:72vh;overflow:auto;border:1px solid var(--navy);border-radius:8px;background:#fff;box-shadow:var(--rest-shadow);}
+  table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;min-width:820px;}
+  caption{text-align:left;font-size:12.5px;color:var(--terra-dark);font-weight:600;padding:9px 10px;}
+  caption b{color:var(--navy);}
+  th,td{border-right:1px solid var(--navy);border-bottom:1px solid var(--navy);padding:0;}
+  thead th{position:sticky;top:0;z-index:3;background:var(--navy);color:#fff;font-weight:600;font-size:11px;text-align:center;padding:6px 5px;border-top:1px solid var(--navy);}
+  thead th .dl{display:block;font-size:13px;}
+  thead th .ampm{display:inline-block;font-size:9px;font-weight:700;margin-left:3px;letter-spacing:.04em;vertical-align:top;}
+  thead th .dd{display:block;font-size:10px;opacity:.9;}
+  tbody th,tbody td{background:#fff;}
+  tbody tr:nth-child(even) th,tbody tr:nth-child(even) td{background:#fbfbfa;}
+  .c0{position:sticky;left:0;z-index:2;width:46px;min-width:46px;text-align:center;font-size:12px;font-weight:600;}
+  .c1{position:sticky;left:46px;z-index:2;min-width:200px;text-align:left;padding:6px 10px;white-space:nowrap;font-weight:500;}
+  thead .c0,thead .c1{z-index:4;}
+  .conf{font-size:9px;color:var(--terra-dark);font-weight:700;}
+  .wflag{display:inline-block;font-size:9.5px;font-weight:800;line-height:1;padding:2px 4px;margin-left:5px;border-radius:3px;border:1px solid var(--gold-deep);color:var(--gold-deep);background:#F7EFDC;vertical-align:middle;}
+  .empty{padding:20px;text-align:center;color:var(--gray);font-style:italic;}
+
+  th.day{width:58px;min-width:58px;}
+  th.day.daygrp{width:76px;min-width:76px;border-bottom:1px solid var(--gold);}
+  th.part{width:38px;min-width:38px;font-size:10px;font-weight:700;letter-spacing:.03em;background:#27505f;}
+  .chk{min-width:34px;}
+  td.cellwrap .chk{min-width:52px;}
+  td.cellwrap.labcell{border-left:1px dotted rgba(255,255,255,.001);}
+  body.split-on td.cellwrap .chk{min-width:34px;}
+  td.cellwrap{padding:0;}
+  .chk{display:flex;align-items:center;justify-content:center;width:100%;min-width:52px;height:36px;border:none;background:transparent;cursor:pointer;font:inherit;}
+  .chk:focus-visible{outline:3px solid var(--focus);outline-offset:-3px;}
+  .chk .mark{font-size:19px;font-weight:800;line-height:1;}
+  .chk[data-state="1"]{background:var(--navy-tint);} .chk[data-state="1"] .mark::before{content:"\2713";color:var(--navy);}
+  .chk[data-state="3"]{background:#FBF3E7;} .chk[data-state="3"] .mark::before{content:"\2013";color:var(--terra-dark);font-size:22px;}
+  .chk[data-state="2"]{background:#f6e9e2;} .chk[data-state="2"] .mark::before{content:"\2715";color:var(--terra-dark);}
+  @media (hover:hover){.chk:hover{background:#e6eef1;}}
+  td.code{font-family:'Courier New',monospace;font-weight:700;text-align:center;background:var(--navy-tint)!important;padding:6px 8px;letter-spacing:.04em;}
+
+  td.teamwrap{padding:2px 4px;min-width:120px;}
+  td.seatwrap{padding:2px 4px;min-width:64px;width:64px;}
+  th.seatcol{width:64px;min-width:64px;}
+  .seatsel{font:inherit;font-size:12px;font-weight:700;width:100%;min-width:54px;padding:5px 4px;border:1px solid var(--navy);border-radius:6px;background:var(--white);color:var(--navy);cursor:pointer;text-align:center;}
+  .seatsel:focus-visible{outline:3px solid var(--focus);outline-offset:1px;}
+  .seatsel[disabled]{opacity:.45;cursor:not-allowed;background:#f4f5f5;}
+  .seatsel.dup{border-color:var(--terra-dark);border-width:2px;background:#f6e9e2;color:var(--terra-dark);}
+  .teamsel{font:inherit;font-size:12px;font-weight:600;width:100%;min-width:108px;padding:5px 6px;border:1px solid var(--navy);border-radius:6px;background:var(--white);color:var(--navy);cursor:pointer;}
+  .teamsel:focus-visible{outline:3px solid var(--focus);outline-offset:1px;}
+
+  td.statussel{padding:2px 4px;min-width:134px;}
+  .statuspick{font:inherit;font-size:12px;font-weight:700;width:100%;min-width:126px;padding:5px 6px;border:1px solid var(--navy);border-radius:6px;background:var(--white);color:var(--navy);cursor:pointer;}
+  .statuspick:focus-visible{outline:3px solid var(--focus);outline-offset:1px;}
+  .statuspick.isdrop{border-color:var(--terra-dark);color:var(--terra-dark);background:#f6e9e2;}
+  .statuspick.iswait{border-color:var(--gold-deep);color:var(--gold-deep);background:#F7EFDC;}
+
+  td.datewrap{text-align:center;font-size:12px;padding:4px 6px;white-space:nowrap;}
+  td.histwrap{padding:5px 8px;min-width:210px;font-size:11.5px;}
+  td.histwrap summary{cursor:pointer;font-weight:700;color:var(--terra-dark);}
+  td.histwrap summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px;}
+  ul.log{margin:6px 0 0;padding:0 0 0 16px;}
+  ul.log li{margin:0 0 3px;line-height:1.4;}
+  ul.log .when{font-weight:700;color:var(--navy);}
+  ul.log .what{color:var(--terra-dark);font-weight:600;}
+  td.actcell{padding:4px 6px;white-space:nowrap;text-align:center;}
+  .mini{appearance:none;font:inherit;font-size:11px;font-weight:700;padding:5px 9px;border-radius:5px;cursor:pointer;border:1px solid var(--terra-dark);background:#fff;color:var(--terra-dark);min-height:28px;}
+  .mini:hover{background:#f6e9e2;}
+  .mini:focus-visible{outline:3px solid var(--focus);outline-offset:1px;}
+
+  .help{font-size:11.5px;color:var(--gray);margin-top:14px;line-height:1.6;max-width:82ch;}
+  .help b{color:var(--terra-dark);}
+  .ferpa{margin-top:12px;padding:11px 13px;border:1px solid var(--navy);border-left-width:4px;border-radius:8px;background:var(--white);font-size:11.5px;color:var(--navy);max-width:82ch;line-height:1.6;}
+  .ferpa b{color:var(--terra-dark);}
+
+  body.no-teams .teamcol{display:none;} body.no-teams .teambar{display:none;}
+
+  @media (prefers-reduced-motion:no-preference){.chk{transition:background 120ms ease;}}
+
+  .overlay{position:fixed;inset:0;background:rgba(20,42,54,.58);display:flex;align-items:flex-start;justify-content:center;padding:28px 16px;overflow:auto;z-index:100;}
+  .overlay[hidden]{display:none;}
+  .dialog{background:var(--white);border:1px solid var(--navy);border-radius:12px;max-width:800px;width:100%;padding:22px 24px 24px;box-shadow:0 12px 40px rgba(0,0,0,.25);}
+  .dialog.narrow{max-width:520px;}
+  .dialog h2{font-family:'Plus Jakarta Sans','DM Sans',sans-serif;font-size:19px;font-weight:800;color:var(--navy);margin:0 0 3px;}
+  .dialog .lead{font-size:12.5px;color:var(--gray);margin:0 0 16px;}
+  .dialog p.body{font-size:13.5px;margin:0 0 16px;line-height:1.55;}
+  fieldset{border:1px solid rgba(30,61,76,.25);border-radius:9px;margin:0 0 16px;padding:12px 14px;}
+  legend{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--terra-dark);padding:0 6px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 14px;}
+  .fld{display:flex;flex-direction:column;gap:3px;}
+  .fld label{font-size:11.5px;font-weight:700;color:var(--navy);}
+  .fld input[type=text],.fld input[type=date],.fld input[type=number],.fld select,.dialog textarea{font:inherit;font-size:13px;padding:8px;border:1px solid #7C8990;border-radius:6px;color:var(--navy);background:#fff;width:100%;}
+  .fld input:focus-visible,.dialog textarea:focus-visible,.fld select:focus-visible{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--navy);}
+  .dialog input::placeholder,.dialog textarea::placeholder{color:#6d7679;font-style:italic;opacity:1;}
+  .dialog textarea{min-height:92px;resize:vertical;font-family:'Courier New',monospace;font-size:12px;}
+  .dow{display:flex;flex-wrap:wrap;gap:6px;}
+  .dowchip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border:1px solid #7C8990;border-radius:20px;padding:6px 12px;cursor:pointer;user-select:none;background:#fff;}
+  .dowchip input{accent-color:var(--navy);width:15px;height:15px;}
+  .dowchip:focus-within{outline:3px solid var(--focus);outline-offset:1px;}
+  .radiorow{display:flex;flex-direction:column;gap:7px;}
+  .radiorow label{display:flex;align-items:flex-start;gap:8px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;}
+  .radiorow input{accent-color:var(--navy);width:16px;height:16px;margin-top:2px;flex:0 0 auto;}
+  .radiorow .rnote{display:block;font-weight:400;font-size:11.5px;color:var(--gray);}
+  .filewrap{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12px;}
+  .hint{font-size:11px;color:var(--gray);margin:5px 0 0;line-height:1.5;}
+  .hint b{color:var(--terra-dark);}
+  .parsemsg{font-size:11.5px;font-weight:700;color:var(--navy-deep);margin:6px 0 0;}
+  .dialog .actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:8px;}
+  .err{color:var(--terra-dark);font-size:12.5px;font-weight:700;margin:0 0 8px;}
+
+  @media print{
+    @page{size:landscape;margin:0.35in;}
+    body{padding:0;background:#fff;}
+    .views,.coursebar,.tabs,.toolbar .btn,.toolbar .switch,.toolbar .fldinline,.legend,.teambar .spacer,.actcell,a.skip,.notice,.help,.ferpa{display:none!important;}
+    .scroll{max-height:none;overflow:visible;border:none;box-shadow:none;}
+    thead th{position:static;} .c0,.c1{position:static;}
+    .chk{height:26px;}
+    .overlay{display:none!important;}
+    td.histwrap details{display:block;} td.histwrap summary{display:none;}
+  }
+</style>
+</head>
+<body>
+<a href="#main" class="skip">Skip to the roll sheet</a>
+
+<header class="site-header">
+  <svg class="logo" viewBox="40 10 125 148" role="img" aria-label="Human Anatomy logo" focusable="false"><g transform="translate(0,18)"><g transform="translate(60,0) rotate(8 0 130)"><circle cx="0" cy="20" r="10" fill="#1E3D4C"/><path d="M0,32 C-10,32 -16,36 -16,42 C-16,55 -13,68 -11,82 C-10,100 -12,118 -14,130 L14,130 C12,118 10,100 11,82 C13,68 16,55 16,42 C16,36 10,32 0,32 Z" fill="#1E3D4C"/></g><g transform="translate(100,0)"><circle cx="0" cy="10" r="11" fill="#C2734D"/><path d="M0,22 C-11,22 -17,26 -17,34 C-17,52 -14,70 -12,86 C-11,108 -13,122 -15,132 L15,132 C13,122 11,108 12,86 C14,70 17,52 17,34 C17,26 11,22 0,22 Z" fill="#C2734D"/></g><g transform="translate(140,0) rotate(-8 0 130)"><circle cx="0" cy="20" r="10" fill="#B8924A"/><path d="M0,32 C-10,32 -16,36 -16,42 C-16,55 -13,68 -11,82 C-10,100 -12,118 -14,130 L14,130 C12,118 10,100 11,82 C13,68 16,55 16,42 C16,36 10,32 0,32 Z" fill="#B8924A"/></g></g></svg>
+  <div class="idblock">
+    <p class="eyebrow"><span class="classchip" id="classChip" hidden></span><span id="hEyebrow">Course Engine</span></p>
+    <h1 id="hTitle">Attendance, Teams &amp; Roster</h1>
+    <p class="sub" id="hSub">No class loaded</p>
+    <p class="meta" id="hMeta">Set up a class to begin.</p>
+  </div>
+</header>
+
+<p class="notice" id="notice" role="status" aria-live="polite" hidden><button type="button" class="x" id="noticeX" aria-label="Dismiss message">&times;</button><span id="noticeText"></span></p>
+
+<div class="classbar">
+  <div class="classtabs" id="classTabs" role="tablist" aria-label="Classes"></div>
+  <span class="cbtns">
+    <button type="button" class="btn primary" id="btnNew">+ New class</button>
+    <button type="button" class="btn" id="btnSetup">Class setup</button>
+    <button type="button" class="btn" id="btnDup" title="Copy this class's schedule and team setup into another section">Duplicate</button>
+    <button type="button" class="btn" id="btnBackup" title="Download every class in one file">Backup all</button>
+    <button type="button" class="btn" id="btnRestore" title="Load a backup file">Restore</button>
+    <button type="button" class="btn ghost" id="btnDelete">Delete class</button>
+  </span>
+</div>
+
+<div class="views" role="tablist" aria-label="Course Engine views">
+  <button type="button" class="vtab" id="vtab-att" role="tab" aria-selected="true" aria-controls="view-att" tabindex="0">Attendance</button>
+  <button type="button" class="vtab" id="vtab-ros" role="tab" aria-selected="false" aria-controls="view-ros" tabindex="-1">Roster &amp; Status</button>
+</div>
+
+<main id="main">
+
+<section class="view" id="view-att" role="tabpanel" aria-labelledby="vtab-att">
+  <div class="toolbar">
+    <p class="tally" id="attTally" aria-live="polite">Present: <span class="box p" id="tP">0</span> &nbsp; Partial: <span class="box r" id="tR">0</span> &nbsp; Absent: <span class="box a" id="tA">0</span> &nbsp; Unmarked: <span class="box u" id="tU">0</span></p>
+    <label class="switch" title="Show or hide the team column"><input type="checkbox" id="tblToggle"> Team-based (TBL)</label>
+    <label class="switch" title="Hide waitlisted students from the roll sheet once the class is full"><input type="checkbox" id="wlToggle" checked> Show wait list</label>
+    <button type="button" class="btn primary" id="btnAddStudentAtt">+ Add student</button>
+    <button type="button" class="btn" id="btnImportAtt">Import roster&hellip;</button>
+    <button type="button" class="btn" id="btnExportAtt">Export attendance CSV</button>
+    <button type="button" class="btn" id="btnClearAtt">Clear attendance</button>
+    <button type="button" class="btn" id="btnPrintAtt">Print</button>
+    <span class="legend">Click a cell to cycle: <b>&#10003; present</b>, <b>&ndash; partial</b>, <b>&#10005; absent</b>, blank</span>
+  </div>
+
+  <div class="teambar">
+    <span class="tlabel">Team names</span>
+    <span class="tedit" id="ts0"><span class="sw" id="sw0"></span><input class="tname-in" data-team="0" maxlength="18" aria-label="Name for team 1"><b class="tcount" id="tc0">0</b></span>
+    <span class="tedit" id="ts1"><span class="sw" id="sw1"></span><input class="tname-in" data-team="1" maxlength="18" aria-label="Name for team 2"><b class="tcount" id="tc1">0</b></span>
+    <span class="tedit" id="ts2"><span class="sw" id="sw2"></span><input class="tname-in" data-team="2" maxlength="18" aria-label="Name for team 3"><b class="tcount" id="tc2">0</b></span>
+    <span class="tedit" id="ts3"><span class="sw" id="sw3"></span><input class="tname-in" data-team="3" maxlength="18" aria-label="Name for team 4"><b class="tcount" id="tc3">0</b></span>
+    <span class="tedit" id="ts4"><span class="sw" id="sw4"></span><input class="tname-in" data-team="4" maxlength="18" aria-label="Name for team 5"><b class="tcount" id="tc4">0</b></span>
+    <span class="tedit" id="ts5"><span class="sw" id="sw5"></span><input class="tname-in" data-team="5" maxlength="18" aria-label="Name for team 6"><b class="tcount" id="tc5">0</b></span>
+    <span class="tedit" id="ts6"><span class="sw" id="sw6"></span><input class="tname-in" data-team="6" maxlength="18" aria-label="Name for team 7"><b class="tcount" id="tc6">0</b></span>
+    <span class="tedit" id="ts7"><span class="sw" id="sw7"></span><input class="tname-in" data-team="7" maxlength="18" aria-label="Name for team 8"><b class="tcount" id="tc7">0</b></span>
+    <span class="spacer"><button type="button" class="btn" id="btnClearTeams">Clear teams</button></span>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <caption id="attCap">Class list. Click a day cell to mark attendance.</caption>
+      <thead id="attHead"></thead>
+      <tbody id="attBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="view" id="view-ros" role="tabpanel" aria-labelledby="vtab-ros" hidden>
+  <div class="tabs" role="tablist" aria-label="Roster sheets">
+    <button type="button" class="tab" id="tab-list" role="tab" aria-selected="true" aria-controls="panel-ros" tabindex="0">Class list (<span id="cList">0</span>)</button>
+    <button type="button" class="tab" id="tab-exit" role="tab" aria-selected="false" aria-controls="panel-ros" tabindex="-1">Dropped / No-show (<span id="cExit">0</span>)</button>
+  </div>
+  <div class="toolbar">
+    <p class="tally" id="rosTally" aria-live="polite"></p>
+    <button type="button" class="btn primary" id="btnAddStudentRos">+ Add student</button>
+    <button type="button" class="btn" id="btnImportRos">Import roster&hellip;</button>
+    <button type="button" class="btn" id="btnExportRos">Export roster &amp; history CSV</button>
+    <button type="button" class="btn" id="btnPrintRos">Print</button>
+    <span class="fldinline" id="drpFilterWrap" hidden><label class="clabel" for="drpFilter">Show</label>
+      <select id="drpFilter" class="courseSel" style="min-width:13em">
+        <option value="all">Drops and no-shows</option>
+        <option value="drop">Drops only</option>
+        <option value="noshow">No-shows only</option>
+      </select></span>
+    <span class="legend"><b>W</b> = on the wait list &nbsp; <b>[C]</b> = FERPA confidential</span>
+  </div>
+  <div id="panel-ros" role="tabpanel" aria-labelledby="tab-list">
+    <div class="scroll">
+      <table>
+        <caption id="rosCap"></caption>
+        <thead><tr id="rosHead"></tr></thead>
+        <tbody id="rosBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<p class="help">
+  <b>One file, every class.</b> Pick a section from the <b>Class</b> menu. The roll sheet, the teams, and the roster all follow that one choice. Each class carries its own accent color and its own <b>AM</b> or <b>PM</b> tag, so on days you teach two sections there is no way to mark the wrong sheet.<br>
+  <b>Two sheets per class.</b> The <b>Class list</b> holds everyone currently in the section, enrolled or waitlisted. Waitlisted students are marked <b>W</b>; the W disappears the moment you enroll them, and the promotion is dated in their history. The <b>Dropped / No-show</b> sheet holds everyone who left, filterable to drops only or no-shows only.<br>
+  <b>One pull-down moves people.</b> On <b>Roster &amp; Status</b>, change a student's Status menu. Wait list to Enrolled happens right away. Dropped and No-show open a short dialog so the effective date and reason are recorded, and every change stays in that student's history.<br>
+  <b>Marking attendance.</b> Click a cell to cycle: <b>&#10003;</b> present, <b>&ndash;</b> partial, <b>&#10005;</b> absent, then blank. Use the dash when a student was there for part of the session. If you want to record <em>which</em> part they missed, turn on <b>Separate lecture and lab attendance</b> in Class setup and each day gets its own <b>Lec</b> and <b>Lab</b> mark.<br>
+  <b>Teams (TBL):</b> set how many teams a class uses in Class setup, rename them in the team bar, then pick each student's team from the pull-down on their row. Team colors are fixed and contrast-checked.<br>
+  <b>Backup all</b> downloads every class as one file. Storage is per browser and per web address, so back up before clearing browser data or moving to another computer.
+</p>
+
+<p class="ferpa">
+  <b>This is an attendance sheet, not a gradebook.</b> No scores, points, or grades are stored here. Grades stay in Canvas. What this file keeps is a roster, attendance marks, team assignments, and dated enrollment status changes, and it keeps all of it in this browser only. Nothing is sent to a server. Students flagged <b>[C]</b> are marked FERPA confidential / directory hold. Treat exported CSV files as student records: they belong on college-managed storage, not in personal cloud folders or email.
+</p>
+</main>
+
+<!-- ===================== CLASS SETUP ===================== -->
+<div class="overlay" id="ovSetup" hidden>
+  <form class="dialog" id="setupForm" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+    <h2 id="setupTitle">New class</h2>
+    <p class="lead">Set a section up once. Everything below can be changed later.</p>
+
+    <fieldset>
+      <legend>Class identity</legend>
+      <div class="grid">
+        <div class="fld"><label for="fTitle">Course title</label><input type="text" id="fTitle" placeholder="Human Physiology"></div>
+        <div class="fld"><label for="fInst">Institution</label><input type="text" id="fInst" placeholder="Yuba College"></div>
+        <div class="fld"><label for="fCourse">Course &amp; section</label><input type="text" id="fCourse" placeholder="BIOL 005 T/R"></div>
+        <div class="fld"><label for="fTerm">Term</label><input type="text" id="fTerm" placeholder="Fall 2026"></div>
+        <div class="fld"><label for="fCrn">CRN / section #</label><input type="text" id="fCrn" placeholder="optional"></div>
+        <div class="fld"><label for="fInstr">Instructor</label><input type="text" id="fInstr" placeholder="Dr. Sharilyn Rennie"></div>
+        <div class="fld"><label for="fColor">Class color</label><select id="fColor"></select></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Meeting schedule</legend>
+      <div class="grid">
+        <div class="fld"><label for="fStart">First class date</label><input type="date" id="fStart"></div>
+        <div class="fld"><label for="fWeeks">Number of weeks</label><input type="number" id="fWeeks" min="1" max="24" value="16"></div>
+        <div class="fld"><label for="fMeet">AM or PM</label><select id="fMeet">
+          <option value="">Not specified</option><option value="AM">AM</option><option value="PM">PM</option><option value="EVE">EVE</option>
+        </select></div>
+        <div class="fld"><label for="fTime">Exact time (optional)</label><input type="text" id="fTime" placeholder="9:30 to 11:20"></div>
+      </div>
+      <div class="fld" style="margin-top:11px"><label id="dowLabel">Meeting days</label>
+        <div class="dow" id="dowWrap" role="group" aria-labelledby="dowLabel">
+          <label class="dowchip"><input type="checkbox" value="1">Mon</label>
+          <label class="dowchip"><input type="checkbox" value="2">Tue</label>
+          <label class="dowchip"><input type="checkbox" value="3">Wed</label>
+          <label class="dowchip"><input type="checkbox" value="4">Thu</label>
+          <label class="dowchip"><input type="checkbox" value="5">Fri</label>
+          <label class="dowchip"><input type="checkbox" value="6">Sat</label>
+          <label class="dowchip"><input type="checkbox" value="0">Sun</label>
+        </div>
+      </div>
+      <div class="fld" style="margin-top:11px"><label for="fSkip">No-class dates (holidays and campus closures)</label>
+        <input type="text" id="fSkip" placeholder="2026-09-07, 2026-11-11, 2026-11-25"></div>
+      <p class="parsemsg" id="dayPreview" aria-live="polite"></p>
+      <p class="hint">List any holidays or campus closures under <b>No-class dates</b>, separated by commas, and no attendance column is generated for them. Set <b>AM</b>, <b>PM</b>, or <b>EVE</b> when you teach two sections on the same weekdays. It shows on every day column, in the class menu, in the header, and on your exports, so the two roll sheets can never be confused. An online class with no meeting days is fine: leave the days unchecked and the roster still works.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Teams</legend>
+      <div class="grid">
+        <div class="fld"><label class="switch" style="margin-top:16px"><input type="checkbox" id="fTbl"> Team-based (TBL) class</label></div>
+        <div class="fld"><label class="switch" style="margin-top:16px"><input type="checkbox" id="fSplit"> Separate lecture and lab attendance</label></div>
+        <div class="fld"><label for="fTeamCount">Number of teams in this class</label><input type="number" id="fTeamCount" min="2" max="8" value="6"></div>
+        <div class="fld"><label for="fSeatCount">Positions per team</label><input type="number" id="fSeatCount" min="2" max="12" value="6"></div>
+      </div>
+      <p class="hint">Turn on <b>Separate lecture and lab attendance</b> when a class meets for both in one day and students can attend one without the other. Each class day then gets two marks, <b>Lec</b> and <b>Lab</b>, so a partial day is recorded accurately instead of being forced to all-present or all-absent. Each class keeps its own team names, and the team pull-down on a student's row lists only the number of teams you set here. Beside Team is a <b>Pos</b> pull-down for the student's position within that team; set how many positions a team has above, usually the same as the number of members. If two students on one team land on the same position, the Pos cell is flagged so you can catch it. The switch can be toggled any time from the toolbar.</p>
+    </fieldset>
+
+    <fieldset id="rosterFs">
+      <legend>Roster import (optional)</legend>
+      <div class="grid">
+        <div class="fld">
+          <label for="fEnFile">Class list (enrolled)</label>
+          <div class="filewrap"><input type="file" id="fEnFile" accept=".xlsx,.csv,.txt,.html,.htm"> <span id="fEnMsg" class="parsemsg"></span></div>
+          <textarea id="fEnPaste" placeholder="...or paste names, one per line:&#10;Addison, Tobias&#10;Anderson, Sidney [C]"></textarea>
+        </div>
+        <div class="fld">
+          <label for="fWlFile">Wait list (optional)</label>
+          <div class="filewrap"><input type="file" id="fWlFile" accept=".xlsx,.csv,.txt"> <span id="fWlMsg" class="parsemsg"></span></div>
+          <textarea id="fWlPaste" placeholder="...or paste the wait list, one per line:&#10;Marin, Alexandra, 4MFFEV&#10;Patindol, Bianca, 4TJRF6"></textarea>
+        </div>
+      </div>
+      <p class="hint">You can skip this and import later from either toolbar. Excel (<b>.xlsx</b>) and CSV files with headers are auto-detected: <b>Name</b>, or <b>Last Name</b> plus <b>First Name</b>, and optional <b>Add Code</b>, <b>Position</b>, <b>Team</b>, <b>Confidential</b>. No headers? One per line as <b>Last, First</b>, or <b>Last, First, CODE</b> for wait-list rows. Add <b>[C]</b> after a name to flag FERPA confidential / directory hold.</p>
+    </fieldset>
+
+    <p class="err" id="setupErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn" id="setupCancel">Cancel</button>
+      <button type="submit" class="btn primary" id="setupSave">Save class</button>
+    </div>
+  </form>
+</div>
+
+<!-- ===================== IMPORT ROSTER ===================== -->
+<div class="overlay" id="ovImport" hidden>
+  <form class="dialog" id="importForm" role="dialog" aria-modal="true" aria-labelledby="importTitle">
+    <h2 id="importTitle">Import a roster</h2>
+    <p class="lead">Adds names to the class you have open. Anyone already on the roster is skipped, so re-importing an updated list is safe and never creates duplicates.</p>
+    <fieldset>
+      <legend id="impTargetLab">Add these students to</legend>
+      <div class="radiorow" role="radiogroup" aria-labelledby="impTargetLab">
+        <label><input type="radio" name="impTarget" value="waitlist" checked> <span>Wait list<span class="rnote">Keeps add codes and wait-list position, and marks each row with a W</span></span></label>
+        <label><input type="radio" name="impTarget" value="enrolled"> <span>Enrolled<span class="rnote">The active class list</span></span></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Where the names come from</legend>
+      <div class="fld">
+        <label for="impFile">Upload a file</label>
+        <div class="filewrap"><input type="file" id="impFile" accept=".xlsx,.csv,.txt,.html,.htm"></div>
+        <p class="hint">Excel (<b>.xlsx</b>), CSV, or a saved attendance page. The first worksheet is read. Headers are auto-detected: <b>Name</b>, or <b>Last Name</b> plus <b>First Name</b>, and optional <b>Add Code</b>, <b>Position</b>, <b>Team</b>, <b>Confidential</b>.</p>
+      </div>
+      <div class="fld" style="margin-top:11px">
+        <label for="impPaste">Or paste names, one per line</label>
+        <textarea id="impPaste" placeholder="Addison, Tobias&#10;Anderson, Sidney [C]&#10;Marin, Alexandra, 4MFFEV"></textarea>
+      </div>
+      <p class="parsemsg" id="impMsg" aria-live="polite"></p>
+    </fieldset>
+    <p class="err" id="impErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn" id="impCancel">Cancel</button>
+      <button type="submit" class="btn primary" id="impSave">Add students</button>
+    </div>
+  </form>
+</div>
+
+<!-- ===================== STATUS CHANGE ===================== -->
+<div class="overlay" id="ovStatus" hidden>
+  <form class="dialog narrow" id="statusForm" role="dialog" aria-modal="true" aria-labelledby="statusTitle">
+    <h2 id="statusTitle">Change status</h2>
+    <p class="lead" id="statusLead"></p>
+    <fieldset>
+      <legend id="statusRlegend">Reason</legend>
+      <div class="radiorow" id="statusReasons"></div>
+      <div class="fld" style="margin-top:10px" id="statusOtherWrap" hidden>
+        <label for="statusOther">Describe the reason</label>
+        <input type="text" id="statusOther" placeholder="Type the reason to record">
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Effective date</legend>
+      <div class="fld"><label for="statusDate">Date this took effect</label><input type="date" id="statusDate"></div>
+      <p class="hint">Defaults to today. Set it back when you are recording something that happened earlier, for example a drop you only learned about days later.</p>
+    </fieldset>
+    <p class="err" id="statusErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn" id="statusCancel">Cancel</button>
+      <button type="submit" class="btn primary" id="statusSave">Record change</button>
+    </div>
+  </form>
+</div>
+
+<!-- ===================== ADD STUDENT ===================== -->
+<div class="overlay" id="ovAdd" hidden>
+  <form class="dialog narrow" id="addForm" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+    <h2 id="addTitle">Add a student</h2>
+    <p class="lead">Files the student into the roster in alphabetical order.</p>
+    <fieldset>
+      <legend>Student</legend>
+      <div class="fld"><label for="addName">Name, as Last, First</label><input type="text" id="addName" placeholder="Rennie, Sharilyn"></div>
+      <div class="fld" style="margin-top:10px"><label for="addCode">Add code (optional)</label><input type="text" id="addCode" placeholder="4MFFEV"></div>
+      <div class="fld" style="margin-top:10px"><label id="addStatusLab">Add to</label>
+        <div class="radiorow" role="radiogroup" aria-labelledby="addStatusLab">
+          <label><input type="radio" name="addStatus" value="enrolled" checked> <span>Enrolled</span></label>
+          <label><input type="radio" name="addStatus" value="waitlist"> <span>Wait list<span class="rnote">Marked with a W until you enroll them</span></span></label>
+        </div>
+      </div>
+      <label class="switch" style="margin-top:12px"><input type="checkbox" id="addConf"> FERPA confidential / directory hold</label>
+    </fieldset>
+    <p class="err" id="addErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn" id="addCancel">Cancel</button>
+      <button type="submit" class="btn primary" id="addSave">Add student</button>
+    </div>
+  </form>
+</div>
+
+<!-- ===================== CONFIRM ===================== -->
+<div class="overlay" id="ovConfirm" hidden>
+  <div class="dialog narrow" role="alertdialog" aria-modal="true" aria-labelledby="confTitle" aria-describedby="confBody">
+    <h2 id="confTitle">Are you sure?</h2>
+    <p class="body" id="confBody"></p>
+    <div class="actions">
+      <button type="button" class="btn" id="confCancel">Cancel</button>
+      <button type="button" class="btn ghost" id="confOk">Yes, do it</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="restoreFile" accept=".json,application/json" hidden aria-hidden="true" tabindex="-1">
+
+<script>
+(function(){
+"use strict";
+
+/* ===================== constants ===================== */
+var COLORS=[
+  {bg:"#1E3D4C",fg:"#FFFFFF"},{bg:"#7A5E1F",fg:"#FFFFFF"},{bg:"#A0522D",fg:"#FFFFFF"},
+  {bg:"#0C1D26",fg:"#FFFFFF"},{bg:"#61304A",fg:"#FFFFFF"},{bg:"#33607E",fg:"#FFFFFF"},
+  {bg:"#6B4423",fg:"#FFFFFF"},{bg:"#4A4A6A",fg:"#FFFFFF"}
+];
+var MAXTEAMS=COLORS.length;
+var DEFNAMES=["Femur","Scapula","Cranium","Patella","Sternum","Mandible","Humerus","Clavicle"];
+var CLASSCOLORS=[
+  {name:"White",bg:"#FFFFFF"},{name:"Light yellow",bg:"#FBF3D0"},{name:"Light grey",bg:"#EDEDEC"},
+  {name:"Light blue",bg:"#EDF1F3"},{name:"Light terra",bg:"#F6E9E2"},{name:"Light teal",bg:"#E3EEEC"},
+  {name:"Light plum",bg:"#F0E7EC"},{name:"Light slate",bg:"#E8EEF3"}
+];
+var DOW=[["Sun","U"],["Mon","M"],["Tue","T"],["Wed","W"],["Thu","R"],["Fri","F"],["Sat","S"]];
+
+var IDX="course_engine_index_v1",CUR="course_engine_current_v1",PFX="course_engine_course_",MIG="course_engine_migrated_v1";
+var L_ATTN_IDX="attn_engine_index_v1",L_ATTN_PFX="attn_engine_course_";
+var L_GRD_IDX="grade_engine_index_v1",L_GRD_PFX="grade_engine_course_";
+
+/* ===================== helpers ===================== */
+var $=function(id){return document.getElementById(id);};
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+function p2(n){return (n<10?"0":"")+n;}
+function todayISO(){var d=new Date();return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());}
+function fmtDate(iso){
+  if(!iso)return "";
+  var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if(m)return (+m[2])+"/"+(+m[3])+"/"+m[1];
+  var o=/^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(iso);
+  if(o)return (+o[1])+"/"+(+o[2])+"/"+o[3];
+  return iso;
+}
+function toISO(any){
+  if(!any)return "";
+  if(/^\d{4}-\d{2}-\d{2}/.test(any))return String(any).slice(0,10);
+  var o=/^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(any);
+  return o?(o[3]+"-"+p2(+o[1])+"-"+p2(+o[2])):"";
+}
+var uidN=0;
+function uid(p){uidN++;return (p||"s")+Date.now().toString(36)+uidN.toString(36)+Math.floor(Math.random()*1296).toString(36);}
+function norm(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"");}
+function lastName(n){var p=String(n).split(",");return (p[0]||n).trim().toLowerCase();}
+function byName(a,b){return lastName(a.name).localeCompare(lastName(b.name))||String(a.name).localeCompare(String(b.name));}
+function byPos(a,b){return ((a.pos==null?9999:a.pos)-(b.pos==null?9999:b.pos))||byName(a,b);}
+function statusLabel(s){return s==="enrolled"?"Enrolled":s==="waitlist"?"Wait List":"Dropped";}
+
+/* ===================== storage ===================== */
+var storageOK=true;
+var STORE_WARN="This page cannot save to browser storage here. Your work stays on screen but is lost when the page reloads. If this page is embedded in Canvas or Kajabi, open it in its own browser tab instead, then use Backup all to keep a copy.";
+function jget(k,f){try{var v=localStorage.getItem(k);if(v==null)return f;var q=JSON.parse(v);return q==null?f:q;}catch(e){return f;}}
+function jset(k,v){
+  try{localStorage.setItem(k,JSON.stringify(v));return true;}
+  catch(e){if(storageOK){storageOK=false;notice(STORE_WARN,false);}return false;}
+}
+function jdel(k){try{localStorage.removeItem(k);}catch(e){}}
+function getIndex(){var a=jget(IDX,[]);return Array.isArray(a)?a:[];}
+function setIndex(a){jset(IDX,a);}
+function loadCourseRec(id){return jget(PFX+id,null);}
+function saveCourseRec(c){if(c&&c.id)jset(PFX+c.id,c);}
+
+/* ===================== app state ===================== */
+var state=null;
+var rosTab="list";
+
+/* ===================== notices ===================== */
+var noticeTimer=null;
+function notice(msg,ok){
+  var n=$("notice");
+  $("noticeText").textContent=msg;
+  n.className="notice"+(ok?" ok":"");
+  n.hidden=false;
+  if(noticeTimer)clearTimeout(noticeTimer);
+  if(ok)noticeTimer=setTimeout(function(){n.hidden=true;},6000);
+}
+$("noticeX").addEventListener("click",function(){$("notice").hidden=true;});
+
+/* ===================== overlays ===================== */
+var lastFocus=null;
+function openOv(id,focusId){
+  lastFocus=document.activeElement;
+  $(id).hidden=false;
+  setTimeout(function(){
+    var f=focusId?$(focusId):null;
+    if(f&&f.focus)f.focus();
+    else{var el=$(id).querySelector("input,select,textarea,button");if(el)el.focus();}
+  },20);
+}
+function closeOv(id){
+  $(id).hidden=true;
+  if(lastFocus&&lastFocus.focus){try{lastFocus.focus();}catch(e){}}
+}
+document.addEventListener("keydown",function(e){
+  var ovs=Array.prototype.slice.call(document.querySelectorAll(".overlay:not([hidden])"));
+  if(!ovs.length)return;
+  var ov=ovs[ovs.length-1];
+  if(e.key==="Escape"){e.preventDefault();dismissOv(ov);return;}
+  if(e.key!=="Tab")return;
+  var f=Array.prototype.filter.call(
+    ov.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])'),
+    function(el){return el.offsetParent!==null||el===document.activeElement;});
+  if(!f.length)return;
+  var first=f[0],last=f[f.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+});
+function dismissOv(ov){
+  ov.hidden=true;
+  if(ov.id==="ovStatus"){statusCtx=null;renderRos();}
+  if(lastFocus&&lastFocus.focus){try{lastFocus.focus();}catch(e){}}
+}
+document.querySelectorAll(".overlay").forEach(function(ov){
+  ov.addEventListener("mousedown",function(e){if(e.target===ov)dismissOv(ov);});
+});
+
+var confirmCb=null;
+function askConfirm(title,body,okLabel,cb){
+  $("confTitle").textContent=title;
+  $("confBody").textContent=body;
+  $("confOk").textContent=okLabel||"Yes, do it";
+  confirmCb=cb;
+  openOv("ovConfirm","confCancel");
+}
+$("confCancel").addEventListener("click",function(){confirmCb=null;closeOv("ovConfirm");});
+$("confOk").addEventListener("click",function(){var cb=confirmCb;confirmCb=null;closeOv("ovConfirm");if(cb)cb();});
+
+/* ===================== schedule ===================== */
+function parseSkip(text){
+  var out=[];
+  String(text||"").split(/[,;\n]+/).forEach(function(t){
+    var iso=toISO(t.trim());
+    if(iso&&out.indexOf(iso)<0)out.push(iso);
+  });
+  return out;
+}
+function genDays(startStr,weekdays,weeks,skip){
+  var out=[],skipped=(skip||[]);
+  if(!startStr||!weekdays||!weekdays.length||!weeks)return out;
+  var d=new Date(startStr+"T00:00:00");
+  if(isNaN(d.getTime()))return out;
+  for(var i=0;i<weeks*7;i++){
+    var dt=new Date(d.getTime()+i*86400000),dw=dt.getDay();
+    var iso0=dt.getFullYear()+"-"+p2(dt.getMonth()+1)+"-"+p2(dt.getDate());
+    if(weekdays.indexOf(dw)>=0&&skipped.indexOf(iso0)<0){
+      out.push({dl:DOW[dw][1],dd:(dt.getMonth()+1)+"/"+dt.getDate(),
+        full:DOW[dw][0]+" "+(dt.getMonth()+1)+"/"+dt.getDate()+"/"+dt.getFullYear(),
+        iso:dt.getFullYear()+"-"+p2(dt.getMonth()+1)+"-"+p2(dt.getDate())});
+    }
+  }
+  return out;
+}
+function days(){return (state&&state.days)||[];}
+function meetTag(){var sc=(state&&state.schedule)||{};return sc.meet||"";}
+function meetFull(){var sc=(state&&state.schedule)||{};return [sc.time,sc.meet].filter(Boolean).join(" ");}
+function dayFull(d){var t=meetTag();return d.full+(t?(" "+t):"");}
+
+/* ===================== CSV / roster parsing ===================== */
+function parseCSV(text){
+  var rows=[],row=[],cur="",q=false,i,c;
+  text=String(text||"").replace(/^﻿/,"").replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  for(i=0;i<text.length;i++){c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
+    else{if(c==='"')q=true;else if(c===","){row.push(cur);cur="";}else if(c==="\n"){row.push(cur);rows.push(row);row=[];cur="";}else cur+=c;}
+  }
+  if(cur!==""||row.length){row.push(cur);rows.push(row);}
+  return rows.filter(function(r){return r.some(function(x){return String(x||"").trim()!=="";});});
+}
+function findCol(header,names){
+  for(var i=0;i<header.length;i++){var h=header[i].trim().toLowerCase();
+    for(var j=0;j<names.length;j++){if(h===names[j])return i;}}
+  return -1;
+}
+function truthy(v){v=String(v||"").trim().toLowerCase();return v==="y"||v==="yes"||v==="true"||v==="1"||v==="c"||v==="confidential"||v==="hold";}
+function parseRoster(text){
+  text=String(text||"").trim();
+  return text?parseRosterRows(parseCSV(text)):[];
+}
+function headerCols(row){
+  var header=row.map(function(x){return String(x).trim().toLowerCase();});
+  return {
+    ni:findCol(header,["student name","name","full name","student"]),
+    li:findCol(header,["last name","last","surname","family name"]),
+    fi:findCol(header,["first name","first","given name","given"]),
+    ci:findCol(header,["add code","permission number","permission code","reg code","registration code","code"]),
+    ti:findCol(header,["team"]),
+    cf:findCol(header,["confidential","ferpa","directory hold","hold","restricted"]),
+    pi:findCol(header,["position","waitlist position","wait list position","rank","pos","order"]),
+    si:findCol(header,["status","registration status","enrollment status","reg status"])
+  };
+}
+function parseRosterRows(rows){
+  if(!rows||!rows.length)return [];
+  /* Find the header row. College exports such as a Banner "Summary Class List" put a
+     block of course information above the roster, so the header is rarely row 1. */
+  var hIdx=-1,H=null,limit=Math.min(rows.length,60),k;
+  for(k=0;k<limit;k++){
+    var c=headerCols(rows[k]);
+    if(c.ni>=0||(c.li>=0&&c.fi>=0)){hIdx=k;H=c;break;}
+  }
+  var hasHeader=(hIdx>=0);
+  if(!hasHeader)H={ni:-1,li:-1,fi:-1,ci:-1,ti:-1,cf:-1,pi:-1,si:-1};
+  var ni=H.ni,li=H.li,fi=H.fi,ci=H.ci,ti=H.ti,cf=H.cf,pi=H.pi,si=H.si;
+  var data=hasHeader?rows.slice(hIdx+1):rows;
+  var out=[];
+  data.forEach(function(r){
+    var nm="",code="",team="";
+    if(hasHeader){
+      if(si>=0){
+        var sv=String(r[si]||"").trim().toLowerCase();
+        if(sv&&/(^|[^a-z])(drop|dropped|delete|deleted|withdraw|withdrawn|no-?show|cancel|cancelled|canceled)([^a-z]|$)/.test(sv))return;
+      }
+      if(ni>=0)nm=String(r[ni]||"").trim();
+      else{var l=String(r[li]||"").trim(),f=String(r[fi]||"").trim();nm=(l&&f)?(l+", "+f):(l||f);}
+      if(ci>=0)code=String(r[ci]||"").trim();
+      if(ti>=0)team=String(r[ti]||"").trim();
+    } else {
+      var parts=r.map(function(x){return String(x||"").trim();});
+      while(parts.length&&parts[parts.length-1]==="")parts.pop();
+      if(parts.length>=3)code=parts.pop();
+      nm=parts.join(", ");
+    }
+    if(!nm||nm===",")return;
+    if(/^(total|totals|summary|enrollment|wait ?list|cross ?list|maximum|actual|remaining|course information|student name)$/i.test(nm))return;
+    var conf=false;
+    if(/\[c\]/i.test(nm)||/\[confidential\]/i.test(nm)){conf=true;nm=nm.replace(/\s*\[c\]/ig,"").replace(/\s*\[confidential\]/ig,"").trim();}
+    if(hasHeader&&cf>=0&&truthy(r[cf]))conf=true;
+    var pos=null;
+    if(hasHeader&&pi>=0){var pv=parseInt(String(r[pi]||"").trim(),10);if(!isNaN(pv))pos=pv;}
+    out.push({name:nm,conf:conf,code:code,pos:pos,team:team});
+  });
+  return out;
+}
+function parseSavedHtml(htmlText){
+  var out=[],doc;
+  try{doc=new DOMParser().parseFromString(htmlText,"text/html");}catch(e){return out;}
+  if(!doc)return out;
+  var blob=doc.getElementById("attendance-data")||doc.querySelector('script[type="application/json"]');
+  if(blob&&blob.textContent.trim()){
+    try{
+      var data=JSON.parse(blob.textContent);
+      var st=data.students||(data.course&&data.course.students);
+      var tn=data.teamNames||(data.course&&data.course.teamNames)||[];
+      if(Array.isArray(st)){
+        st.filter(function(x){return x&&x.status!=="dropped";}).forEach(function(x){
+          var t=(typeof x.team==="number"&&tn[x.team]!=null)?tn[x.team]:(typeof x.team==="string"?x.team:"");
+          out.push({name:x.name,team:t,conf:!!x.conf,code:x.code||"",pos:x.pos||null});
+        });
+        if(out.length)return out;
+      }
+    }catch(e){}
+  }
+  var bodies=[];
+  ["attBody","enBody","wlBody","rosBody"].forEach(function(id){var b=doc.getElementById(id);if(b)bodies.push(b);});
+  if(bodies.length){
+    bodies.forEach(function(tb){scrapeRows(tb.querySelectorAll("tr"),out);});
+    if(out.length)return out;
+  }
+  var tables=doc.querySelectorAll("table");
+  for(var i=0;i<tables.length&&!out.length;i++)scrapeRows(tables[i].querySelectorAll("tr"),out);
+  return out;
+}
+function scrapeRows(rows,out){
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    var cell=r.querySelector("td.c1")||r.querySelector(".c1")||r.querySelector("td");
+    if(!cell)continue;
+    var conf=!!cell.querySelector(".conf")||/\[c\]/i.test(cell.textContent);
+    var nm=cell.textContent.replace(/\[c\]/ig,"").replace(/\bW\b\s*$/,"").replace(/\s+/g," ").trim();
+    if(!nm||/^(#|pos|student name|name)$/i.test(nm))continue;
+    var team="";
+    var sel=r.querySelector("select.teamsel")||r.querySelector("select");
+    if(sel){
+      var opt=sel.querySelector("option[selected]");
+      if(!opt&&sel.selectedIndex>=0)opt=sel.options[sel.selectedIndex];
+      if(opt){var t=String(opt.textContent||"").trim();if(t&&!/^\(?\s*no team\s*\)?$/i.test(t)&&t!=="–"&&t!=="—")team=t;}
+    }
+    out.push({name:nm,team:team,conf:conf,code:"",pos:null});
+  }
+}
+
+/* ===================== Excel (.xlsx) reading, no libraries ===================== */
+function u16(d,o){return d[o]|(d[o+1]<<8);}
+function u32(d,o){return (d[o]|(d[o+1]<<8)|(d[o+2]<<16)|(d[o+3]<<24))>>>0;}
+function unzipEntries(buf){
+  var d=new Uint8Array(buf),eocd=-1,i;
+  for(i=d.length-22;i>=0&&i>=d.length-66000;i--){if(u32(d,i)===0x06054b50){eocd=i;break;}}
+  if(eocd<0)throw new Error("not a zip");
+  var count=u16(d,eocd+10),cd=u32(d,eocd+16),out={},pp=cd;
+  for(var k=0;k<count;k++){
+    if(u32(d,pp)!==0x02014b50)break;
+    var method=u16(d,pp+10),csize=u32(d,pp+20),nl=u16(d,pp+28),el=u16(d,pp+30),cl=u16(d,pp+32),lho=u32(d,pp+42);
+    var name=new TextDecoder("utf-8").decode(d.subarray(pp+46,pp+46+nl));
+    var lnl=u16(d,lho+26),lel=u16(d,lho+28),start=lho+30+lnl+lel;
+    out[name]={method:method,data:d.subarray(start,start+csize)};
+    pp+=46+nl+el+cl;
+  }
+  return out;
+}
+function entryText(e){
+  if(!e)return Promise.resolve("");
+  if(e.method===0)return Promise.resolve(new TextDecoder("utf-8").decode(e.data));
+  if(typeof DecompressionStream==="undefined")return Promise.reject(new Error("no DecompressionStream"));
+  return new Response(new Blob([e.data.slice()]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text();
+}
+function xtags(node,name){return node.getElementsByTagNameNS?node.getElementsByTagNameNS("*",name):node.getElementsByTagName(name);}
+function xdoc(xml){return new DOMParser().parseFromString(xml,"application/xml");}
+function colIndexOf(ref){
+  var m=/^([A-Za-z]+)/.exec(ref||"");
+  if(!m)return -1;
+  var t=m[1].toUpperCase(),n=0;
+  for(var i=0;i<t.length;i++)n=n*26+(t.charCodeAt(i)-64);
+  return n-1;
+}
+function readXlsxRows(buf){
+  var files;
+  try{files=unzipEntries(buf);}catch(e){return Promise.reject(e);}
+  return entryText(files["xl/workbook.xml"]).then(function(wb){
+    return entryText(files["xl/_rels/workbook.xml.rels"]).then(function(rels){
+      var target=null,key=null;
+      try{
+        var sh=xtags(xdoc(wb),"sheet")[0];
+        var rid=sh&&(sh.getAttribute("r:id")||sh.getAttribute("id"));
+        if(rid&&rels){
+          var rl=xtags(xdoc(rels),"Relationship");
+          for(var i=0;i<rl.length;i++){if(rl[i].getAttribute("Id")===rid){target=rl[i].getAttribute("Target");break;}}
+        }
+      }catch(e){}
+      if(target){
+        target=String(target).replace(/^\//,"").replace(/^\.\//,"");
+        if(files[target])key=target;
+        else if(files["xl/"+target])key="xl/"+target;
+      }
+      if(!key&&files["xl/worksheets/sheet1.xml"])key="xl/worksheets/sheet1.xml";
+      if(!key){for(var k in files){if(/^xl\/worksheets\/.+\.xml$/.test(k)){key=k;break;}}}
+      if(!key)throw new Error("no worksheet");
+      return Promise.all([entryText(files[key]),entryText(files["xl/sharedStrings.xml"])]);
+    });
+  }).then(function(res){
+    var shared=[];
+    if(res[1]){
+      var sis=xtags(xdoc(res[1]),"si");
+      for(var i=0;i<sis.length;i++){
+        var ts=xtags(sis[i],"t"),v="";
+        for(var j=0;j<ts.length;j++){
+          var pn=ts[j].parentNode;
+          if(pn&&String(pn.nodeName).replace(/^.*:/,"")==="rPh")continue;
+          v+=ts[j].textContent;
+        }
+        shared.push(v);
+      }
+    }
+    var rs=xtags(xdoc(res[0]),"row"),rows=[];
+    for(var r=0;r<rs.length;r++){
+      var cs=xtags(rs[r],"c"),row=[];
+      for(var c=0;c<cs.length;c++){
+        var cell=cs[c],t=cell.getAttribute("t"),idx=colIndexOf(cell.getAttribute("r")),val="";
+        if(idx<0)idx=row.length;
+        if(t==="s"){var vv=xtags(cell,"v")[0];val=vv?(shared[parseInt(vv.textContent,10)]||""):"";}
+        else if(t==="inlineStr"){var its=xtags(cell,"t");for(var q=0;q<its.length;q++)val+=its[q].textContent;}
+        else{var v2=xtags(cell,"v")[0];val=v2?v2.textContent:"";}
+        while(row.length<idx)row.push("");
+        row[idx]=val;
+      }
+      if(row.some(function(x){return String(x).trim()!=="";}))rows.push(row);
+    }
+    return rows;
+  });
+}
+function readRosterFile(file,cb){
+  var nm=String(file.name||"").toLowerCase();
+  if(/\.xlsx$/.test(nm)||/spreadsheetml/i.test(file.type||"")){
+    var rd=new FileReader();
+    rd.onerror=function(){cb([],"Could not read that file.");};
+    rd.onload=function(){
+      readXlsxRows(rd.result)
+        .then(function(rows){cb(parseRosterRows(rows),null);})
+        .catch(function(){cb([],"Could not read that Excel file here. Open it in Excel, choose Save As, pick CSV, and upload that instead.");});
+    };
+    rd.readAsArrayBuffer(file);
+    return;
+  }
+  if(/\.xls$/.test(nm)){cb([],"Old .xls files are not supported. In Excel choose Save As and pick .xlsx or CSV.");return;}
+  var rd2=new FileReader();
+  rd2.onerror=function(){cb([],"Could not read that file.");};
+  rd2.onload=function(){
+    var text=String(rd2.result||"");
+    var isHtml=/\.html?$/.test(nm)||/<\s*(html|table|tr|body)[\s>]/i.test(text.slice(0,4000));
+    cb(isHtml?parseSavedHtml(text):parseRoster(text),null);
+  };
+  rd2.readAsText(file);
+}
+
+/* ===================== student records ===================== */
+function mkStudent(s,status,when){
+  var d=when||todayISO();
+  return {uid:uid(status.charAt(0)),name:s.name,conf:!!s.conf,code:s.code||"",
+    pos:(s.pos==null?null:s.pos),status:status,team:null,seat:null,att:{},lab:{},
+    since:d,reason:"",dropKind:null,
+    log:[{d:d,a:"Added to roster",r:"",to:status}]};
+}
+function teamIndexFor(course,name){
+  if(!name)return null;
+  var i;
+  for(i=0;i<course.teamNames.length;i++){if(norm(course.teamNames[i])===norm(name))return i;}
+  var limit=Math.max(2,Math.min(MAXTEAMS,course.teamCount||6));
+  for(i=0;i<limit;i++){if(norm(course.teamNames[i])===norm(DEFNAMES[i])){course.teamNames[i]=name;return i;}}
+  return null;
+}
+function blankCourse(){
+  return {id:uid("c"),meta:{},schedule:{start:"",weeks:16,weekdays:[],meet:"",time:"",skip:[]},days:[],
+    tbl:false,split:false,hideWl:false,teamNames:DEFNAMES.slice(),teamCount:6,seatCount:6,color:0,students:[]};
+}
+function padTeams(arr){
+  var out=(arr||[]).slice(0,MAXTEAMS);
+  while(out.length<MAXTEAMS)out.push(DEFNAMES[out.length]);
+  return out;
+}
+function teamCount(){return Math.max(2,Math.min(MAXTEAMS,(state&&state.teamCount)||6));}
+function seatCount(){return Math.max(2,Math.min(12,(state&&state.seatCount)||6));}
+function courseLabel(m,sc){
+  sc=sc||{};
+  return [m.course||m.title,sc.meet||"",(m.crn?("CRN "+m.crn):""),m.term].filter(Boolean).join(" · ").trim()||"Untitled class";
+}
+
+/* ===================== selectors ===================== */
+function students(){return state?state.students:[];}
+function byStatus(st){return students().filter(function(s){return s.status===st;});}
+function onList(){return students().filter(function(s){return s.status!=="dropped";}).sort(byName);}
+function rollList(){
+  return students().filter(function(s){
+    if(s.status==="dropped")return false;
+    if(s.status==="waitlist"&&state&&state.hideWl)return false;
+    return true;
+  }).sort(byName);
+}
+function getU(u){var a=students();for(var i=0;i<a.length;i++){if(a[i].uid===u)return a[i];}return null;}
+function persist(){if(state)saveCourseRec(state);}
+
+/* ===================== migration from the two old engines ===================== */
+function migrate(){
+  if(jget(MIG,false))return 0;
+  var existing=getIndex(),made=[],gradeRosterOnly=false;
+
+  var attIdx=jget(L_ATTN_IDX,[]);
+  if(Array.isArray(attIdx)){
+    attIdx.forEach(function(row){
+      if(!row||!row.id)return;
+      var old=jget(L_ATTN_PFX+row.id,null);
+      if(!old)return;
+      var c=blankCourse(),m=old.meta||{};
+      c.meta={title:m.title||"",institution:m.institution||m.inst||"",course:m.course||"",term:m.term||"",crn:m.crn||"",instructor:m.instructor||m.instr||""};
+      c.schedule=old.schedule||c.schedule;
+      if(!c.schedule.meet)c.schedule.meet="";
+      if(!c.schedule.time)c.schedule.time="";
+      c.days=Array.isArray(old.days)?old.days:[];
+      c.tbl=!!old.tbl;
+      c.teamNames=padTeams(Array.isArray(old.teamNames)?old.teamNames:[]);
+      c.teamCount=6;
+      c.color=made.length%CLASSCOLORS.length;
+      c.students=(old.students||[]).map(function(s){
+        var st={uid:s.uid||uid("s"),name:s.name,conf:!!s.conf,code:s.code||"",
+          pos:(s.pos==null?null:s.pos),status:s.status||"enrolled",
+          team:(typeof s.team==="number"?s.team:null),att:s.att||{},
+          since:toISO(s.dropped)||"",reason:s.reason||"",dropKind:null,log:[]};
+        if(st.status==="dropped"){
+          var d=toISO(s.dropped)||todayISO();
+          st.since=d;
+          st.dropKind=/no.?show/i.test(s.reason||"")?"noshow":"drop";
+          st.log.push({d:d,a:(/no.?show/i.test(s.reason||"")?"No-show":"Dropped"),r:"",from:"Enrolled",to:"dropped"});
+        }
+        return st;
+      });
+      c._legacy=row.label||"";
+      made.push(c);
+    });
+  }
+
+  /* Grade Engine: bring across the ROSTER ONLY. Scores are never imported, grades stay in Canvas. */
+  var grdIdx=jget(L_GRD_IDX,[]);
+  if(Array.isArray(grdIdx)){
+    grdIdx.forEach(function(row){
+      if(!row||!row.id)return;
+      var old=jget(L_GRD_PFX+row.id,null);
+      if(!old)return;
+      var m=old.meta||{},key=norm(m.course||m.title||row.label),target=null;
+      for(var i=0;i<made.length;i++){
+        var mm=made[i].meta;
+        if(key&&(norm(mm.course)===key||norm(mm.title)===key||norm(made[i]._legacy)===key)){target=made[i];break;}
+      }
+      var fresh=!target;
+      if(fresh){
+        target=blankCourse();
+        target.meta={title:m.title||"",institution:m.inst||m.institution||"",course:m.course||"",term:m.term||"",crn:m.crn||"",instructor:m.instr||m.instructor||""};
+        target.tbl=!!old.teams;
+        target.teamNames=padTeams(Array.isArray(old.teamNames)?old.teamNames:[]);
+        target.color=made.length%CLASSCOLORS.length;
+      }
+      (old.students||[]).forEach(function(gs){
+        if(!gs||!gs.name)return;
+        var match=null;
+        for(var j=0;j<target.students.length;j++){
+          if(norm(target.students[j].name)===norm(gs.name)){match=target.students[j];break;}
+        }
+        if(match){
+          if(match.team==null&&gs.team){var t2=teamIndexFor(target,gs.team);if(t2!=null)match.team=t2;}
+          return;
+        }
+        gradeRosterOnly=true;
+        var st={uid:uid("s"),name:gs.name,conf:!!gs.conf,code:"",pos:null,
+          status:(gs.status==="active"?"enrolled":"dropped"),
+          team:teamIndexFor(target,gs.team),att:{},
+          since:toISO(gs.dropDate)||"",reason:gs.dropReason||"",dropKind:null,log:[]};
+        if(st.status==="dropped"){
+          st.dropKind=/no.?show/i.test(gs.dropReason||"")?"noshow":"drop";
+          if(gs.dropDate)st.log.push({d:toISO(gs.dropDate),a:(st.dropKind==="noshow"?"No-show":"Dropped"),r:"",from:"Enrolled",to:"dropped"});
+        }
+        target.students.push(st);
+      });
+      if(fresh){target._legacy=row.label||"";made.push(target);}
+    });
+  }
+
+  if(!made.length){jset(MIG,true);return 0;}
+  made.forEach(function(c){
+    delete c._legacy;
+    c.students.forEach(function(s){
+      if(!s.since)s.since="";
+      if(!Array.isArray(s.log))s.log=[];
+      if(s.status!=="dropped")s.dropKind=null;
+    });
+    saveCourseRec(c);
+    existing.push({id:c.id,label:courseLabel(c.meta,c.schedule)});
+  });
+  setIndex(existing);
+  jset(MIG,true);
+  migrate.rosterOnly=gradeRosterOnly;
+  return made.length;
+}
+
+/* ===================== chrome ===================== */
+function paintHeader(){
+  if(!state){
+    $("hEyebrow").textContent="Course Engine";
+    $("hTitle").textContent="Attendance, Teams & Roster";
+    $("hSub").textContent="No class loaded";
+    $("hMeta").textContent="Click + New class to set one up.";
+    document.title="Course Engine";
+    return;
+  }
+  var m=state.meta||{};
+  $("hEyebrow").textContent=[m.course,m.institution].filter(Boolean).join("  ·  ")||"Course Engine";
+  $("hTitle").textContent=m.title||"Attendance, Teams & Roster";
+  $("hSub").textContent=[m.term,meetTag(),(m.crn?("CRN "+m.crn):""),(state.tbl?"Team-Based":"")].filter(Boolean).join("  ·  ")||" ";
+  var sc=state.schedule||{};
+  $("hMeta").textContent=[(m.instructor?("Instructor: "+m.instructor):""),sc.time||""].filter(Boolean).join("  ·  ")||" ";
+  document.title=[(m.course||m.title||"Course Engine"),meetTag()].filter(Boolean).join(" ")+" · Course Engine";
+}
+function shortLabel(rec,fallback){
+  var m=(rec&&rec.meta)||{};
+  return m.course||m.title||fallback||"Untitled class";
+}
+function paintClassTabs(){
+  var host=$("classTabs"),idx=getIndex();
+  if(!idx.length){
+    host.innerHTML='<p class="classempty">No classes yet. Click <b>+ New class</b> to set one up.</p>';
+    return;
+  }
+  host.innerHTML=idx.map(function(c){
+    var rec=(state&&c.id===state.id)?state:loadCourseRec(c.id);
+    var col=CLASSCOLORS[((rec&&rec.color)||0)%CLASSCOLORS.length];
+    var n=rec&&Array.isArray(rec.students)
+      ? rec.students.filter(function(x){return x.status!=="dropped";}).length : 0;
+    var meet=(rec&&rec.schedule&&rec.schedule.meet)||"";
+    var on=!!(state&&c.id===state.id);
+    return "<button type='button' class='ctab' role='tab' data-cid='"+esc(c.id)+"'"+
+      " aria-selected='"+(on?"true":"false")+"' tabindex='"+(on?"0":"-1")+"' aria-controls='main'"+
+      " style='background:"+col.bg+"'"+
+      " title='"+esc(c.label)+"'>"+esc(shortLabel(rec,c.label))+
+      (meet?("<span class='cmeet'>"+esc(meet)+"</span>"):"")+
+      " <span class='ccount'>("+n+")</span></button>";
+  }).join("");
+}
+$("classTabs").addEventListener("click",function(e){
+  var b=e.target.closest?e.target.closest(".ctab"):null;
+  if(b)activate(b.getAttribute("data-cid"));
+});
+$("classTabs").addEventListener("keydown",function(e){
+  var tabs=Array.prototype.slice.call($("classTabs").querySelectorAll(".ctab"));
+  if(!tabs.length)return;
+  var i=tabs.indexOf(document.activeElement);
+  if(i<0)return;
+  var ni=null;
+  if(e.key==="ArrowRight"||e.key==="ArrowDown")ni=(i+1)%tabs.length;
+  else if(e.key==="ArrowLeft"||e.key==="ArrowUp")ni=(i-1+tabs.length)%tabs.length;
+  else if(e.key==="Home")ni=0;
+  else if(e.key==="End")ni=tabs.length-1;
+  if(ni!=null){e.preventDefault();activate(tabs[ni].getAttribute("data-cid"));setTimeout(function(){
+    var t=$("classTabs").querySelectorAll(".ctab")[ni];if(t)t.focus();},0);}
+});
+function applyAccent(){
+  var c=state?CLASSCOLORS[(state.color||0)%CLASSCOLORS.length]:null;
+  if(c){
+    document.documentElement.style.setProperty("--accent",c.bg);
+    document.body.classList.add("has-accent");
+    var chip=$("classChip");
+    chip.hidden=false;chip.style.background=c.bg;chip.title="Class color: "+c.name;
+  } else {
+    document.body.classList.remove("has-accent");
+    $("classChip").hidden=true;
+  }
+}
+function applyBodyClasses(){
+  document.body.classList.toggle("no-teams",!(state&&state.tbl));
+  document.body.classList.toggle("split-on",!!(state&&state.split));
+  $("tblToggle").checked=!!(state&&state.tbl);
+  $("wlToggle").checked=!(state&&state.hideWl);
+  var none=!state;
+  ["btnSetup","btnDup","btnDelete","btnAddStudentAtt","btnAddStudentRos","btnImportAtt","btnImportRos",
+   "btnExportAtt","btnExportRos","btnClearAtt","btnClearTeams","tblToggle","wlToggle"].forEach(function(id){
+    var el=$(id);if(el)el.disabled=none;
+  });
+}
+
+/* ===================== attendance sheet ===================== */
+function isSplit(){return !!(state&&state.split);}
+function partName(part){return part==="b"?"lab":"lecture";}
+function dayHeadRows(){
+  var D=days(),t=meetTag(),split=isSplit();
+  var rs=split?2:1;
+  var fixed="<th class='c0' rowspan='"+rs+"' scope='col'>#</th>"+
+            "<th class='c1' rowspan='"+rs+"' scope='col'>Student Name</th>"+
+            "<th class='teamcol' rowspan='"+rs+"' scope='col'>Team</th>"+
+            "<th class='teamcol seatcol' rowspan='"+rs+"' scope='col' title='Position within the team'>Pos</th>";
+  var r1=fixed,r2="";
+  for(var j=0;j<D.length;j++){
+    var lab=esc(D[j].dl)+(t?("<span class='ampm'>"+esc(t)+"</span>"):"");
+    if(split){
+      r1+="<th class='day daygrp' colspan='2' scope='colgroup' title='"+esc(dayFull(D[j]))+"'><span class='dl'>"+lab+
+          "</span><span class='dd'>"+esc(D[j].dd)+"</span></th>";
+      r2+="<th class='part' scope='col' title='Lecture, "+esc(dayFull(D[j]))+"'>Lec</th>"+
+          "<th class='part' scope='col' title='Lab, "+esc(dayFull(D[j]))+"'>Lab</th>";
+    } else {
+      r1+="<th class='day' scope='col' title='"+esc(dayFull(D[j]))+"'><span class='dl'>"+lab+
+          "</span><span class='dd'>"+esc(D[j].dd)+"</span></th>";
+    }
+  }
+  return split?("<tr>"+r1+"</tr><tr>"+r2+"</tr>"):("<tr>"+r1+"</tr>");
+}
+var CYCLE=["0","1","3","2"];
+function attWord(v){return v==="1"?"present":v==="3"?"partial":v==="2"?"absent":"unmarked";}
+function markFor(s,part){return part==="b"?(s.lab||(s.lab={})):s.att;}
+function oneCell(s,j,D,part){
+  var v=markFor(s,part)[j]||"0";
+  var ctx=isSplit()?(", "+partName(part)):"";
+  return "<td class='cellwrap"+(part==="b"?" labcell":"")+"'><button type='button' class='chk' data-uid='"+s.uid+
+    "' data-day='"+j+"' data-part='"+part+"' data-state='"+v+"' aria-label='"+esc(s.name)+", "+esc(dayFull(D[j]))+ctx+": "+attWord(v)+
+    "'><span class='mark' aria-hidden='true'></span></button></td>";
+}
+function attCells(s){
+  var h="",D=days(),split=isSplit();
+  for(var j=0;j<D.length;j++){
+    h+=oneCell(s,j,D,"a");
+    if(split)h+=oneCell(s,j,D,"b");
+  }
+  return h;
+}
+function teamSelect(s){
+  var n=teamCount(),o='<option value="">(no team)</option>',i;
+  for(i=0;i<n;i++)o+='<option value="'+i+'"'+(s.team===i?" selected":"")+">"+esc(state.teamNames[i])+"</option>";
+  if(s.team!=null&&s.team>=n)o+='<option value="'+s.team+'" selected>'+esc(state.teamNames[s.team])+" (retired)</option>";
+  var stl=(s.team!=null&&COLORS[s.team])?(" style=\"background:"+COLORS[s.team].bg+";color:"+COLORS[s.team].fg+";\""):"";
+  return "<select class='teamsel'"+stl+" data-uid='"+s.uid+"' aria-label='Team for "+esc(s.name)+"'>"+o+"</select>";
+}
+function seatCounts(){
+  var m={};
+  students().forEach(function(x){
+    if(x.status==="dropped"||x.team==null||!x.seat)return;
+    var k=x.team+":"+x.seat;
+    m[k]=(m[k]||0)+1;
+  });
+  return m;
+}
+var SEATDUP={};
+function seatSelect(s){
+  var n=seatCount(),o='<option value="">&ndash;</option>',i;
+  for(i=1;i<=n;i++)o+='<option value="'+i+'"'+(s.seat===i?" selected":"")+">"+i+"</option>";
+  if(s.seat!=null&&s.seat>n)o+='<option value="'+s.seat+'" selected>'+s.seat+"</option>";
+  var dup=(s.team!=null&&s.seat&&SEATDUP[s.team+":"+s.seat]>1);
+  var lock=(s.team==null);
+  var ttl=dup
+    ? " title=\"Another student on "+esc(state.teamNames[s.team])+" already has position "+s.seat+".\""
+    : (lock?" title=\"Pick a team first, then a position within it.\"":"");
+  return "<select class='seatsel"+(dup?" dup":"")+"' data-uid='"+s.uid+"'"+(lock?" disabled":"")+ttl+
+    " aria-label='Team position for "+esc(s.name)+(dup?", duplicate position":"")+"'>"+o+"</select>";
+}
+function nameHtml(s){
+  var n=esc(s.name);
+  if(s.conf)n+=' <sup class="conf" title="FERPA confidential / directory hold">[C]</sup>';
+  if(s.status==="waitlist")n+=' <span class="wflag" title="On the wait list">W</span>';
+  return n;
+}
+function renderAtt(){
+  if(!state){$("attHead").innerHTML="";$("attBody").innerHTML="";$("attCap").textContent="";return;}
+  $("attHead").innerHTML=dayHeadRows();
+  $("attCap").textContent="Class list"+(meetTag()?(", "+meetTag()):"")+". Click a cell to mark attendance"+
+    (isSplit()?", lecture and lab marked separately so a partial day is recorded accurately":"")+
+    ". W marks a student still on the wait list. Status changes happen on the Roster & Status tab."+
+    (state.hideWl?("  "+byStatus("waitlist").length+" waitlisted student"+(byStatus("waitlist").length===1?" is":"s are")+" hidden from this sheet."):"");
+  SEATDUP=seatCounts();
+  var span=days().length*(isSplit()?2:1)+4,list=rollList(),h="";
+  list.forEach(function(s,i){
+    var ns=(s.team!=null&&COLORS[s.team])?(" style=\"background:"+COLORS[s.team].bg+";color:"+COLORS[s.team].fg+";\""):"";
+    h+="<tr data-uid='"+s.uid+"'><th scope='row' class='c0'>"+(i+1)+"</th><td class='c1'"+ns+">"+nameHtml(s)+
+       "</td><td class='teamwrap teamcol'>"+teamSelect(s)+"</td><td class='seatwrap teamcol seatcol'>"+seatSelect(s)+"</td>"+attCells(s)+"</tr>";
+  });
+  $("attBody").innerHTML=h||"<tr><td class='empty' colspan='"+span+"'>Nobody on the class list yet. Use <b>Import roster</b> or <b>+ Add student</b>.</td></tr>";
+  var counts=COLORS.map(function(){return 0;});
+  list.forEach(function(s){if(s.team!=null&&counts[s.team]!=null)counts[s.team]++;});
+  counts.forEach(function(v,i){var el=$("tc"+i);if(el)el.textContent=v;});
+  applyTeamCount();syncTeamInputs();updateTally();
+}
+function applyTeamCount(){
+  var n=state?teamCount():6;
+  for(var i=0;i<MAXTEAMS;i++){var el=$("ts"+i);if(el)el.hidden=(i>=n);}
+}
+function updateTally(){
+  var p=0,r=0,a=0,u=0;
+  $("attBody").querySelectorAll(".chk").forEach(function(b){
+    var v=b.getAttribute("data-state");
+    if(v==="1")p++;else if(v==="3")r++;else if(v==="2")a++;else u++;
+  });
+  $("tP").textContent=p;$("tR").textContent=r;$("tA").textContent=a;$("tU").textContent=u;
+}
+function syncTeamInputs(){
+  document.querySelectorAll(".tname-in").forEach(function(inp){
+    var i=+inp.getAttribute("data-team");
+    inp.value=state?state.teamNames[i]:"";
+  });
+}
+for(var ci=0;ci<COLORS.length;ci++){var swE=$("sw"+ci);if(swE)swE.style.background=COLORS[ci].bg;}
+document.querySelectorAll(".tname-in").forEach(function(inp){
+  inp.addEventListener("input",function(){
+    if(!state)return;
+    var i=+inp.getAttribute("data-team");
+    state.teamNames[i]=inp.value.trim()||DEFNAMES[i];
+    persist();renderAtt();renderRos();
+  });
+});
+
+/* ===================== roster sheets ===================== */
+function statusSelect(s){
+  var cur=(s.status==="dropped")?(((s.dropKind||"drop")==="noshow")?"noshow":"dropped"):s.status;
+  var opts=[["enrolled","Enrolled"],["waitlist","Wait list"],["dropped","Dropped"],["noshow","No-show"]];
+  var o=opts.map(function(x){return "<option value='"+x[0]+"'"+(cur===x[0]?" selected":"")+">"+x[1]+"</option>";}).join("");
+  var cls="statuspick"+(s.status==="dropped"?" isdrop":(s.status==="waitlist"?" iswait":""));
+  return "<select class='"+cls+"' data-act='status' data-uid='"+s.uid+"' data-cur='"+cur+"' aria-label='Status for "+esc(s.name)+"'>"+o+"</select>";
+}
+function logHtml(s){
+  if(!s.log||!s.log.length)return "<span class='conf'>No changes recorded</span>";
+  var items=s.log.slice().sort(function(a,b){return String(b.d).localeCompare(String(a.d));}).map(function(e){
+    var bits=[];
+    if(e.r)bits.push(e.r);
+    if(e.from)bits.push("from "+e.from);
+    return "<li><span class='when'>"+esc(fmtDate(e.d))+"</span>: <span class='what'>"+esc(e.a)+"</span>"+
+      (bits.length?(" ("+esc(bits.join(", "))+")"):"")+"</li>";
+  }).join("");
+  return "<details><summary>"+s.log.length+" event"+(s.log.length===1?"":"s")+"</summary><ul class='log'>"+items+"</ul></details>";
+}
+function renderRos(){
+  if(!state){$("rosHead").innerHTML="";$("rosBody").innerHTML="";$("rosTally").textContent="";$("rosCap").textContent="";return;}
+  var isList=(rosTab!=="exit");
+  $("drpFilterWrap").hidden=isList;
+  $("rosHead").innerHTML="<th class='c0' scope='col'>#</th><th class='c1' scope='col'>Student Name</th><th scope='col'>Status</th>"+
+    "<th class='teamcol' scope='col'>Team</th><th class='teamcol seatcol' scope='col' title='Position within the team'>Pos</th>"+
+    "<th scope='col'>Add Code</th><th scope='col'>Since</th>"+
+    (isList?"":"<th scope='col'>Reason</th>")+"<th scope='col'>History</th><th scope='col'>Actions</th>";
+  SEATDUP=seatCounts();
+  var cols=isList?9:10,list;
+  if(isList)list=onList();
+  else{
+    var f=$("drpFilter").value||"all";
+    list=students().filter(function(s){return s.status==="dropped"&&(f==="all"||(s.dropKind||"drop")===f);})
+      .sort(function(a,b){return String(b.since||"").localeCompare(String(a.since||""))||byName(a,b);});
+  }
+  $("rosCap").textContent=isList
+    ? "Class list: everyone currently in the section. W marks a student still on the wait list. Change the Status menu to move someone."
+    : "Dropped and no-show: everyone who has left the section, with the date and reason. Change the Status menu to bring someone back.";
+  var h="";
+  list.forEach(function(s,i){
+    h+="<tr data-uid='"+s.uid+"'>"+
+      "<th scope='row' class='c0'>"+(i+1)+"</th>"+
+      "<td class='c1'>"+nameHtml(s)+"</td>"+
+      "<td class='statussel'>"+statusSelect(s)+"</td>"+
+      "<td class='teamwrap teamcol'>"+teamSelect(s)+"</td>"+
+      "<td class='seatwrap teamcol seatcol'>"+seatSelect(s)+"</td>"+
+      "<td class='code'>"+esc(s.code||"")+"</td>"+
+      "<td class='datewrap'>"+esc(fmtDate(s.since))+"</td>"+
+      (isList?"":"<td class='datewrap'>"+esc(s.reason||"")+"</td>")+
+      "<td class='histwrap'>"+logHtml(s)+"</td>"+
+      "<td class='actcell'><button type='button' class='mini' data-act='remove' data-uid='"+s.uid+"'>Remove</button></td>"+
+      "</tr>";
+  });
+  $("rosBody").innerHTML=h||"<tr><td class='empty' colspan='"+cols+"'>"+
+    (isList?"Nobody on the class list yet. Use <b>Import roster</b> or <b>+ Add student</b>."
+           :"Nobody has dropped or been marked a no-show.")+"</td></tr>";
+  var nEn=byStatus("enrolled").length,nWl=byStatus("waitlist").length,nDr=byStatus("dropped").length;
+  var nNs=students().filter(function(s){return s.status==="dropped"&&(s.dropKind||"drop")==="noshow";}).length;
+  $("cList").textContent=nEn+nWl;
+  $("cExit").textContent=nDr;
+  $("rosTally").textContent=nEn+" enrolled, "+nWl+" wait list, "+(nDr-nNs)+" dropped, "+nNs+" no-show";
+}
+
+function renderAll(){
+  applyBodyClasses();applyAccent();paintHeader();paintClassTabs();renderAtt();renderRos();
+}
+
+/* ===================== view + tab switching ===================== */
+function wireTablist(list,onSelect){
+  list.forEach(function(tab,i){
+    tab.addEventListener("click",function(){onSelect(tab);});
+    tab.addEventListener("keydown",function(e){
+      var ni=null;
+      if(e.key==="ArrowRight"||e.key==="ArrowDown")ni=(i+1)%list.length;
+      else if(e.key==="ArrowLeft"||e.key==="ArrowUp")ni=(i-1+list.length)%list.length;
+      else if(e.key==="Home")ni=0;
+      else if(e.key==="End")ni=list.length-1;
+      if(ni!=null){e.preventDefault();list[ni].focus();onSelect(list[ni]);}
+    });
+  });
+}
+var vtabs=[$("vtab-att"),$("vtab-ros")];
+var vmap={"vtab-att":"view-att","vtab-ros":"view-ros"};
+function selectView(tab){
+  vtabs.forEach(function(t){
+    var on=(t===tab);
+    t.setAttribute("aria-selected",on?"true":"false");
+    t.tabIndex=on?0:-1;
+    $(vmap[t.id]).hidden=!on;
+  });
+  if(tab.id==="vtab-att")updateTally();
+}
+wireTablist(vtabs,selectView);
+
+var rtabs=[$("tab-list"),$("tab-exit")];
+function selectRosTab(tab){
+  rtabs.forEach(function(t){
+    var on=(t===tab);
+    t.setAttribute("aria-selected",on?"true":"false");
+    t.tabIndex=on?0:-1;
+  });
+  $("panel-ros").setAttribute("aria-labelledby",tab.id);
+  rosTab=(tab.id==="tab-exit")?"exit":"list";
+  renderRos();
+}
+wireTablist(rtabs,selectRosTab);
+$("drpFilter").addEventListener("change",renderRos);
+
+/* ===================== grid interactions ===================== */
+document.addEventListener("click",function(e){
+  var b=e.target.closest?e.target.closest("button"):null;
+  if(!b||!state)return;
+  if(b.classList.contains("chk")){cycleCell(b);return;}
+  if(b.getAttribute("data-act")==="remove"){
+    var u=b.getAttribute("data-uid"),s=getU(u);
+    if(!s)return;
+    askConfirm("Remove "+s.name+" from this class?",
+      "This erases the student and everything attached to them: attendance, team, and their whole status history. If you need a record that they were here, use Dropped or No-show instead. This cannot be undone.",
+      "Yes, remove permanently",function(){
+        state.students=students().filter(function(o){return o.uid!==u;});
+        persist();renderAll();notice(s.name+" removed from this class.",true);
+      });
+  }
+});
+function cycleCell(btn){
+  var s=getU(btn.getAttribute("data-uid")),d=btn.getAttribute("data-day"),part=btn.getAttribute("data-part")||"a";
+  if(!s)return;
+  var bag=markFor(s,part);
+  var cur=bag[d]||"0",at=CYCLE.indexOf(cur);
+  var ns=CYCLE[(at<0?0:at+1)%CYCLE.length];
+  if(ns==="0")delete bag[d];else bag[d]=ns;
+  btn.setAttribute("data-state",ns);
+  var ctx=isSplit()?(", "+partName(part)):"";
+  btn.setAttribute("aria-label",s.name+", "+dayFull(days()[d])+ctx+": "+attWord(ns));
+  persist();updateTally();
+}
+document.addEventListener("change",function(e){
+  if(!state)return;
+  var t=e.target;
+  if(t.getAttribute&&t.getAttribute("data-act")==="status"){handleStatusPick(t);return;}
+  if(t.classList&&t.classList.contains("teamsel")){
+    var s=getU(t.getAttribute("data-uid"));
+    if(!s)return;
+    s.team=(t.value===""?null:(+t.value));
+    if(s.team==null)s.seat=null;
+    persist();renderAtt();renderRos();
+    return;
+  }
+  if(t.classList&&t.classList.contains("seatsel")){
+    var st2=getU(t.getAttribute("data-uid"));
+    if(!st2)return;
+    st2.seat=(t.value===""?null:(+t.value));
+    persist();renderAtt();renderRos();
+    if(st2.seat&&st2.team!=null&&SEATDUP[st2.team+":"+st2.seat]>1){
+      notice("Heads up: "+state.teamNames[st2.team]+" now has more than one student at position "+st2.seat+".",false);
+    }
+  }
+});
+
+/* ===================== status changes ===================== */
+var statusCtx=null;
+var REASONS={
+  drop:[["Withdrew","The student withdrew themselves"],["Stopped attending","Quit coming without formally withdrawing"],["Administrative drop","Dropped by the college or the instructor"],["Other","Type your own reason"]],
+  noshow:[["Never attended","Registered but never came to a single session"],["Other","Type your own reason"]],
+  restore:[["Returned to class","The student came back"],["Drop entered in error","The drop should not have been recorded"],["Administrative reinstatement","Reinstated by the college"],["Other","Type your own reason"]]
+};
+var TITLES={drop:"Drop a student",noshow:"Record a no-show",restore:"Bring a student back"};
+function handleStatusPick(sel){
+  var s=getU(sel.getAttribute("data-uid"));
+  if(!s)return;
+  var from=sel.getAttribute("data-cur"),to=sel.value;
+  if(from===to)return;
+  if(to==="dropped"||to==="noshow"){openStatus(to==="noshow"?"noshow":"drop",s.uid,to);return;}
+  if(from==="dropped"||from==="noshow"){openStatus("restore",s.uid,to);return;}
+  var d=todayISO(),fromLabel=statusLabel(s.status);
+  s.status=to;s.reason="";s.dropKind=null;s.since=d;
+  if(to==="enrolled"){
+    s.pos=null;
+    s.log.push({d:d,a:"Enrolled from wait list",r:"",from:fromLabel,to:"enrolled"});
+  } else {
+    var mx=0;students().forEach(function(o){if(o.pos&&o.pos>mx)mx=o.pos;});
+    s.pos=mx+1;
+    s.log.push({d:d,a:"Moved to wait list",r:"",from:fromLabel,to:"waitlist"});
+  }
+  persist();renderAll();
+  notice(s.name+": "+statusLabel(to)+" as of "+fmtDate(d)+".",true);
+}
+function openStatus(act,u,dest){
+  var s=getU(u);
+  if(!s)return;
+  statusCtx={act:act,uid:u,dest:dest};
+  $("statusTitle").textContent=TITLES[act];
+  var lead;
+  if(act==="drop")lead=s.name+" moves to the Dropped / No-show sheet. Their attendance is kept and you can bring them back at any time.";
+  else if(act==="noshow")lead=s.name+" is recorded as never having attended and moves to the Dropped / No-show sheet.";
+  else lead=s.name+" returns to the class list as "+statusLabel(dest==="waitlist"?"waitlist":"enrolled")+". The original drop stays in their history.";
+  $("statusLead").textContent=lead;
+  $("statusRlegend").textContent=(act==="restore")?"Reason for bringing them back":"Reason";
+  $("statusReasons").innerHTML=REASONS[act].map(function(r,i){
+    return "<label><input type='radio' name='statusReason' value='"+esc(r[0])+"'"+(i===0?" checked":"")+
+      "> <span>"+esc(r[0])+"<span class='rnote'>"+esc(r[1])+"</span></span></label>";
+  }).join("");
+  $("statusOtherWrap").hidden=true;
+  $("statusOther").value="";
+  $("statusErr").textContent="";
+  $("statusDate").value=todayISO();
+  openOv("ovStatus","statusDate");
+}
+$("statusReasons").addEventListener("change",function(e){
+  if(e.target.name!=="statusReason")return;
+  var other=(e.target.value==="Other");
+  $("statusOtherWrap").hidden=!other;
+  if(other)$("statusOther").focus();
+});
+$("statusCancel").addEventListener("click",function(){statusCtx=null;closeOv("ovStatus");renderRos();});
+$("statusForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  if(!statusCtx)return;
+  var s=getU(statusCtx.uid);
+  if(!s)return;
+  var picked=$("statusReasons").querySelector("input:checked");
+  var reason=picked?picked.value:"";
+  if(reason==="Other"){
+    reason=$("statusOther").value.trim();
+    if(!reason){$("statusErr").textContent="Type the reason you want recorded.";$("statusOther").focus();return;}
+  }
+  var d=$("statusDate").value||todayISO();
+  var act=statusCtx.act,dest=statusCtx.dest,from=statusLabel(s.status);
+  if(act==="drop"||act==="noshow"){
+    s.status="dropped";
+    s.dropKind=(act==="noshow")?"noshow":"drop";
+    s.reason=(act==="noshow"?"No-show":"Dropped")+(reason?(", "+reason):"");
+    s.since=d;
+    s.log.push({d:d,a:(act==="noshow"?"No-show":"Dropped"),r:reason,from:from,to:"dropped"});
+  } else {
+    var back=(dest==="waitlist")?"waitlist":"enrolled";
+    s.status=back;s.reason="";s.dropKind=null;s.since=d;
+    if(back==="waitlist"){var mx=0;students().forEach(function(o){if(o.pos&&o.pos>mx)mx=o.pos;});s.pos=mx+1;}
+    else s.pos=null;
+    s.log.push({d:d,a:"Reinstated to "+statusLabel(back),r:reason,from:from,to:back});
+  }
+  persist();
+  statusCtx=null;
+  closeOv("ovStatus");
+  renderAll();
+  notice(s.name+": "+statusLabel(s.status)+((s.status==="dropped"&&s.dropKind==="noshow")?" (no-show)":"")+" as of "+fmtDate(d)+".",true);
+});
+
+/* ===================== add student ===================== */
+function openAdd(pref){
+  if(!state)return;
+  $("addName").value="";$("addCode").value="";$("addConf").checked=false;$("addErr").textContent="";
+  var want=(pref==="waitlist")?"waitlist":"enrolled";
+  $("addForm").querySelectorAll("input[name=addStatus]").forEach(function(r){r.checked=(r.value===want);});
+  openOv("ovAdd","addName");
+}
+$("btnAddStudentAtt").addEventListener("click",function(){openAdd("enrolled");});
+$("btnAddStudentRos").addEventListener("click",function(){openAdd("enrolled");});
+$("addCancel").addEventListener("click",function(){closeOv("ovAdd");});
+$("addForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  var nm=$("addName").value.trim();
+  if(!nm){$("addErr").textContent="Enter a name as Last, First.";$("addName").focus();return;}
+  var conf=$("addConf").checked;
+  if(/\[c\]\s*$/i.test(nm)){conf=true;nm=nm.replace(/\[c\]\s*$/i,"").trim();}
+  var dup=students().some(function(o){return norm(o.name)===norm(nm);});
+  if(dup){$("addErr").textContent=nm+" is already on this class's roster.";$("addName").focus();return;}
+  var st=$("addForm").querySelector("input[name=addStatus]:checked").value;
+  var s=mkStudent({name:nm,conf:conf,code:$("addCode").value.trim()},st);
+  if(st==="waitlist"){
+    var mx=0;students().forEach(function(o){if(o.pos&&o.pos>mx)mx=o.pos;});
+    s.pos=mx+1;
+  }
+  students().push(s);
+  persist();closeOv("ovAdd");renderAll();
+  notice(nm+" added to "+statusLabel(st)+".",true);
+});
+
+/* ===================== import roster ===================== */
+function addRosterTo(list,target){
+  var have={},added=0,skipped=0,maxPos=0;
+  students().forEach(function(s){have[norm(s.name)]=true;if(s.pos&&s.pos>maxPos)maxPos=s.pos;});
+  list.forEach(function(r){
+    if(!r||!r.name)return;
+    var key=norm(r.name);
+    if(!key||have[key]){skipped++;return;}
+    have[key]=true;
+    var st=mkStudent({name:r.name,conf:r.conf,code:r.code,pos:null},target);
+    if(target==="waitlist"){
+      if(r.pos!=null){st.pos=r.pos;if(r.pos>maxPos)maxPos=r.pos;}
+      else st.pos=++maxPos;
+    }
+    if(r.team){var ti=teamIndexFor(state,r.team);if(ti!=null)st.team=ti;}
+    students().push(st);
+    added++;
+  });
+  return {added:added,skipped:skipped};
+}
+var impList=[];
+function openImport(pref){
+  if(!state)return;
+  impList=[];
+  $("impFile").value="";$("impPaste").value="";$("impMsg").textContent="";$("impErr").textContent="";
+  var want=(pref==="enrolled")?"enrolled":"waitlist";
+  $("importForm").querySelectorAll("input[name=impTarget]").forEach(function(r){r.checked=(r.value===want);});
+  openOv("ovImport","impFile");
+}
+function impPreview(err){
+  if(err){$("impMsg").textContent=err;return;}
+  if(!impList.length){$("impMsg").textContent="";return;}
+  var have={},seen={},dup=0;
+  students().forEach(function(s){have[norm(s.name)]=true;});
+  impList.forEach(function(r){
+    var k=norm(r.name);
+    if(!k)return;
+    if(have[k]||seen[k])dup++;
+    seen[k]=true;
+  });
+  $("impMsg").textContent=impList.length+" name"+(impList.length===1?"":"s")+" read."+
+    (dup?(" "+dup+" already on this roster and will be skipped, so "+(impList.length-dup)+" will be added.")
+        :" None are on this roster yet.");
+}
+$("impFile").addEventListener("change",function(){
+  var f=this.files&&this.files[0];
+  if(!f)return;
+  $("impPaste").value="";
+  readRosterFile(f,function(arr,err){impList=arr||[];impPreview(err);});
+});
+$("impPaste").addEventListener("input",function(){
+  if(this.value.trim()){$("impFile").value="";impList=parseRoster(this.value);}
+  else impList=[];
+  impPreview(null);
+});
+$("impCancel").addEventListener("click",function(){closeOv("ovImport");});
+$("importForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  if(!impList.length){$("impErr").textContent="Upload a file or paste a list of names first.";return;}
+  var target=$("importForm").querySelector("input[name=impTarget]:checked").value;
+  var res=addRosterTo(impList,target);
+  persist();closeOv("ovImport");renderAll();
+  notice("Added "+res.added+" student"+(res.added===1?"":"s")+" to "+(target==="waitlist"?"the wait list":"Enrolled")+
+    (res.skipped?(". Skipped "+res.skipped+" already on the roster."):"."),true);
+});
+$("btnImportAtt").addEventListener("click",function(){openImport("enrolled");});
+$("btnImportRos").addEventListener("click",function(){openImport(rosTab==="exit"?"enrolled":"waitlist");});
+
+/* ===================== teams and toggles ===================== */
+$("btnClearTeams").addEventListener("click",function(){
+  if(!state)return;
+  askConfirm("Clear every team assignment?",
+    "This removes the team from every student in this class. Attendance and the roster are not affected. This cannot be undone.",
+    "Yes, clear teams",function(){
+      students().forEach(function(s){s.team=null;s.seat=null;});
+      persist();renderAll();notice("Team assignments cleared.",true);
+    });
+});
+$("tblToggle").addEventListener("change",function(){
+  if(!state)return;
+  state.tbl=this.checked;persist();renderAll();
+});
+$("wlToggle").addEventListener("change",function(){
+  if(!state)return;
+  state.hideWl=!this.checked;
+  persist();renderAll();
+  notice(state.hideWl
+    ?("Wait list hidden from the roll sheet. Those "+byStatus("waitlist").length+" students are still on Roster & Status.")
+    :"Wait list showing on the roll sheet again.",true);
+});
+$("btnClearAtt").addEventListener("click",function(){
+  if(!state)return;
+  askConfirm("Erase attendance for this class?",
+    "Every attendance mark on the class list will be erased. Teams and the roster are not affected. This cannot be undone.",
+    "Yes, erase attendance",function(){
+      students().forEach(function(s){if(s.status!=="dropped"){s.att={};s.lab={};}});
+      persist();renderAtt();notice("Attendance cleared.",true);
+    });
+});
+["btnPrintAtt","btnPrintRos"].forEach(function(id){$(id).addEventListener("click",function(){window.print();});});
+
+/* ===================== exports ===================== */
+function csvCell(v){v=String(v==null?"":v);return /[",\n\r]/.test(v)?('"'+v.replace(/"/g,'""')+'"'):v;}
+function download(name,text,mime){
+  var blob=new Blob([text],{type:(mime||"text/csv")+";charset=utf-8;"});
+  var url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},1500);
+}
+function fileStem(){
+  var m=state.meta||{};
+  return String((m.course||m.title||"class")+(meetTag()?("_"+meetTag()):"")+(m.crn?("_"+m.crn):""))
+    .replace(/[^a-z0-9]+/gi,"_").replace(/^_|_$/g,"");
+}
+var ORDER={enrolled:0,waitlist:1,dropped:2};
+$("btnExportAtt").addEventListener("click",function(){
+  if(!state)return;
+  var D=days();
+  var split=isSplit();
+  var head=["Status","Wait list","Position","Student Name","Confidential","Team","Team position","Add Code"];
+  D.forEach(function(d){
+    if(split){head.push(dayFull(d)+" Lecture");head.push(dayFull(d)+" Lab");}
+    else head.push(dayFull(d));
+  });
+  head.push("Present","Partial","Absent","Status since","Reason");
+  var lines=[head];
+  students().slice().sort(function(a,b){return (ORDER[a.status]-ORDER[b.status])||byPos(a,b);}).forEach(function(s){
+    var r=[statusLabel(s.status),(s.status==="waitlist"?"W":""),(s.pos||""),s.name,(s.conf?"Y":""),
+      (s.team!=null?state.teamNames[s.team]:""),(s.seat||""),s.code||""];
+    var p=0,pa=0,ab=0;
+    function push(v){
+      if(v==="1")p++;else if(v==="3")pa++;else if(v==="2")ab++;
+      r.push(v==="1"?"Present":v==="3"?"Partial":v==="2"?"Absent":"");
+    }
+    D.forEach(function(d,j){
+      push(s.att[j]);
+      if(split)push((s.lab||{})[j]);
+    });
+    r.push(p,pa,ab,fmtDate(s.since),s.reason||"");
+    lines.push(r);
+  });
+  download(fileStem()+"_attendance_"+todayISO()+".csv","﻿"+lines.map(function(r){return r.map(csvCell).join(",");}).join("\r\n"));
+});
+$("btnExportRos").addEventListener("click",function(){
+  if(!state)return;
+  var lines=[["Student Name","Confidential","Status","Wait list","Left as","Team","Team position","Add Code","Wait list position",
+    "Status since","Current reason","Event date","Event","Event reason","From"]];
+  students().slice().sort(function(a,b){return (ORDER[a.status]-ORDER[b.status])||byPos(a,b);}).forEach(function(s){
+    var base=[s.name,(s.conf?"Y":""),statusLabel(s.status),(s.status==="waitlist"?"W":""),
+      (s.status==="dropped"?(((s.dropKind||"drop")==="noshow")?"No-show":"Dropped"):""),
+      (s.team!=null?state.teamNames[s.team]:""),(s.seat||""),s.code||"",(s.pos||""),fmtDate(s.since),s.reason||""];
+    var blank=base.map(function(){return "";});
+    if(!s.log||!s.log.length){lines.push(base.concat(["","","",""]));return;}
+    s.log.slice().sort(function(a,b){return String(a.d).localeCompare(String(b.d));}).forEach(function(e,i){
+      lines.push((i===0?base:blank).concat([fmtDate(e.d),e.a||"",e.r||"",e.from||""]));
+    });
+  });
+  download(fileStem()+"_roster_history_"+todayISO()+".csv","﻿"+lines.map(function(r){return r.map(csvCell).join(",");}).join("\r\n"));
+});
+
+/* ===================== backup / restore ===================== */
+$("btnBackup").addEventListener("click",function(){
+  var idx=getIndex();
+  if(!idx.length){notice("There are no classes to back up yet.",false);return;}
+  var payload={format:"course-engine-backup",version:2,exported:todayISO(),
+    courses:idx.map(function(r){return loadCourseRec(r.id);}).filter(Boolean)};
+  download("course_engine_backup_"+todayISO()+".json",JSON.stringify(payload,null,2),"application/json");
+  notice("Backed up "+payload.courses.length+" class"+(payload.courses.length===1?"":"es")+".",true);
+});
+$("btnRestore").addEventListener("click",function(){$("restoreFile").click();});
+$("restoreFile").addEventListener("change",function(){
+  var f=this.files&&this.files[0];
+  if(!f)return;
+  var rd=new FileReader();
+  rd.onload=function(){
+    var data;
+    try{data=JSON.parse(String(rd.result||""));}catch(e){notice("That file is not a Course Engine backup.",false);return;}
+    if(!data||!Array.isArray(data.courses)){notice("That file is not a Course Engine backup.",false);return;}
+    askConfirm("Restore "+data.courses.length+" class"+(data.courses.length===1?"":"es")+"?",
+      "Classes in the backup that share an id with a class already here will be overwritten. Everything else is added alongside what you have.",
+      "Yes, restore",function(){
+        var idx=getIndex(),n=0;
+        data.courses.forEach(function(c){
+          if(!c||!c.id)return;
+          saveCourseRec(c);
+          var found=false;
+          idx=idx.map(function(r){
+            if(r.id===c.id){found=true;return {id:c.id,label:courseLabel(c.meta||{},c.schedule||{})};}
+            return r;
+          });
+          if(!found)idx.push({id:c.id,label:courseLabel(c.meta||{},c.schedule||{})});
+          n++;
+        });
+        setIndex(idx);
+        activate(data.courses[0].id);
+        notice("Restored "+n+" class"+(n===1?"":"es")+".",true);
+      });
+  };
+  rd.readAsText(f);
+  this.value="";
+});
+
+/* ===================== class switching ===================== */
+function activate(id){
+  var c=loadCourseRec(id);
+  if(!c)return;
+  if(!Array.isArray(c.teamNames)||c.teamNames.length!==MAXTEAMS)c.teamNames=padTeams(c.teamNames||[]);
+  if(!c.teamCount)c.teamCount=6;
+  if(!c.seatCount)c.seatCount=6;
+  if(c.split==null)c.split=false;
+  if(c.hideWl==null)c.hideWl=false;
+  if(c.color==null)c.color=0;
+  if(!c.schedule)c.schedule={start:"",weeks:16,weekdays:[],meet:"",time:"",skip:[]};
+  if(!Array.isArray(c.schedule.skip))c.schedule.skip=[];
+  if(!Array.isArray(c.students))c.students=[];
+  c.students.forEach(function(s){
+    if(!s.att)s.att={};
+    if(!s.lab)s.lab={};
+    if(s.seat===undefined)s.seat=null;
+    if(!Array.isArray(s.log))s.log=[];
+    if(s.since==null)s.since="";
+    if(s.status==="dropped"&&!s.dropKind)s.dropKind=/no.?show/i.test(s.reason||"")?"noshow":"drop";
+    if(s.status!=="dropped")s.dropKind=null;
+    delete s.scores;delete s.ovr;delete s.prev;
+  });
+  delete c.categories;delete c.assessments;delete c.scale;delete c.weighted;
+  state=c;
+  jset(CUR,id);
+  renderAll();
+}
+$("btnDup").addEventListener("click",function(){
+  if(!state)return;
+  askConfirm("Duplicate this class?",
+    "Creates another section with the same schedule, team names, and team count. The roster starts empty so you can import that section's list. If this class is AM the copy is set to PM, and it gets the next class color.",
+    "Yes, duplicate",function(){
+      var c=JSON.parse(JSON.stringify(state));
+      c.id=uid("c");
+      c.meta=c.meta||{};
+      c.meta.crn="";
+      c.students=[];
+      c.color=((state.color||0)+1)%CLASSCOLORS.length;
+      if(c.schedule){
+        if(c.schedule.meet==="AM")c.schedule.meet="PM";
+        else if(c.schedule.meet==="PM")c.schedule.meet="AM";
+      }
+      saveCourseRec(c);
+      var idx=getIndex();idx.push({id:c.id,label:courseLabel(c.meta,c.schedule)});setIndex(idx);
+      activate(c.id);
+      openSetup(true);
+      notice("Duplicated. Rename the section, check AM or PM, then import its roster.",true);
+    });
+});
+$("btnDelete").addEventListener("click",function(){
+  if(!state)return;
+  var nm=state.meta.course||state.meta.title||"this class";
+  askConfirm("Delete "+nm+"?",
+    "This permanently removes that class, its roster, its attendance, and its history from this browser. This cannot be undone. Use Backup all first if you want a copy.",
+    "Yes, delete it",function(){
+      jdel(PFX+state.id);
+      var idx=getIndex().filter(function(r){return r.id!==state.id;});
+      setIndex(idx);
+      state=null;
+      if(idx.length)activate(idx[0].id);
+      else{jset(CUR,"");renderAll();openSetup(false);}
+      notice("Class deleted.",true);
+    });
+});
+
+/* ===================== class setup ===================== */
+var setupEditing=false,enRoster=[],wlRoster=[];
+function openSetup(editing){
+  setupEditing=!!editing&&!!state;
+  $("setupTitle").textContent=setupEditing?"Class setup":"New class";
+  $("setupErr").textContent="";
+  enRoster=[];wlRoster=[];
+  ["fEnMsg","fWlMsg"].forEach(function(id){$(id).textContent="";});
+  ["fEnPaste","fWlPaste"].forEach(function(id){$(id).value="";});
+  ["fEnFile","fWlFile"].forEach(function(id){$(id).value="";});
+  var m=(setupEditing&&state.meta)||{},sc=(setupEditing&&state.schedule)||{};
+  $("fTitle").value=m.title||"";
+  $("fInst").value=m.institution||"";
+  $("fCourse").value=m.course||"";
+  $("fTerm").value=m.term||"";
+  $("fCrn").value=m.crn||"";
+  $("fInstr").value=m.instructor||"";
+  $("fStart").value=sc.start||"";
+  $("fWeeks").value=sc.weeks||16;
+  $("fMeet").value=sc.meet||"";
+  $("fTime").value=sc.time||"";
+  $("fSkip").value=(sc.skip||[]).join(", ");
+  $("dowWrap").querySelectorAll("input").forEach(function(c){
+    c.checked=(sc.weekdays||[]).indexOf(+c.value)>=0;
+  });
+  $("fTbl").checked=setupEditing?!!state.tbl:false;
+  $("fSplit").checked=setupEditing?!!state.split:false;
+  $("fTeamCount").value=setupEditing?(state.teamCount||6):6;
+  $("fSeatCount").value=setupEditing?(state.seatCount||6):6;
+  $("fColor").innerHTML=CLASSCOLORS.map(function(c,i){return "<option value='"+i+"'>"+esc(c.name)+"</option>";}).join("");
+  $("fColor").value=String(setupEditing?(state.color||0):(getIndex().length%CLASSCOLORS.length));
+  $("rosterFs").hidden=setupEditing;
+  updateDayPreview();
+  openOv("ovSetup","fTitle");
+}
+function selectedWeekdays(){
+  return Array.prototype.slice.call($("dowWrap").querySelectorAll("input:checked")).map(function(c){return +c.value;});
+}
+function updateDayPreview(){
+  var wd=selectedWeekdays(),st=$("fStart").value,wk=parseInt($("fWeeks").value,10)||0;
+  var skip=parseSkip($("fSkip").value);
+  var all=genDays(st,wd,wk,[]),d=genDays(st,wd,wk,skip);
+  var removed=all.length-d.length;
+  var tag=$("fMeet").value?(" "+$("fMeet").value):"";
+  $("dayPreview").textContent=d.length
+    ? (d.length+" class day"+(d.length===1?"":"s")+": "+d.slice(0,6).map(function(x){return x.full+tag;}).join(", ")+
+       (d.length>6?(" … last is "+d[d.length-1].full+tag):"")+
+       (removed?("  ("+removed+" no-class date"+(removed===1?"":"s")+" skipped)"):""))
+    : "No class days generated. That is fine for an online class.";
+}
+$("fStart").addEventListener("change",updateDayPreview);
+$("fWeeks").addEventListener("input",updateDayPreview);
+$("fMeet").addEventListener("change",updateDayPreview);
+$("fSkip").addEventListener("input",updateDayPreview);
+$("dowWrap").addEventListener("change",updateDayPreview);
+function wireImport(fileId,pasteId,msgId,target){
+  $(fileId).addEventListener("change",function(){
+    var f=this.files&&this.files[0];
+    if(!f)return;
+    readRosterFile(f,function(arr,err){
+      if(target==="en")enRoster=arr;else wlRoster=arr;
+      $(msgId).textContent=err?err:(arr.length?(arr.length+" name"+(arr.length===1?"":"s")+" read from the file.")
+        :"No names found in that file. Try pasting the list instead.");
+    });
+  });
+  $(pasteId).addEventListener("input",function(){
+    var arr=this.value.trim()?parseRoster(this.value):[];
+    if(target==="en")enRoster=arr;else wlRoster=arr;
+    $(msgId).textContent=arr.length?(arr.length+" name"+(arr.length===1?"":"s")+" from the pasted list."):"";
+  });
+}
+wireImport("fEnFile","fEnPaste","fEnMsg","en");
+wireImport("fWlFile","fWlPaste","fWlMsg","wl");
+$("setupCancel").addEventListener("click",function(){
+  if(!state&&!getIndex().length)notice("Set up a class to start using the engine.",false);
+  closeOv("ovSetup");
+});
+$("setupForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  var err=$("setupErr");
+  err.textContent="";
+  var title=$("fTitle").value.trim(),course=$("fCourse").value.trim();
+  if(!title&&!course){
+    err.textContent="Give the class a course title or a course and section so you can tell your sections apart.";
+    $("fTitle").focus();return;
+  }
+  var weekdays=selectedWeekdays(),start=$("fStart").value,weeks=parseInt($("fWeeks").value,10)||0;
+  var skipDates=parseSkip($("fSkip").value);
+  var d=genDays(start,weekdays,weeks,skipDates);
+  var meta={title:title,institution:$("fInst").value.trim(),course:course,term:$("fTerm").value.trim(),
+    crn:$("fCrn").value.trim(),instructor:$("fInstr").value.trim()};
+  var schedule={start:start,weeks:weeks,weekdays:weekdays,meet:$("fMeet").value,time:$("fTime").value.trim(),skip:skipDates};
+  var tc=Math.max(2,Math.min(MAXTEAMS,parseInt($("fTeamCount").value,10)||6));
+  var sc2=Math.max(2,Math.min(12,parseInt($("fSeatCount").value,10)||6));
+  var col=parseInt($("fColor").value,10)||0;
+
+  if(setupEditing){
+    state.meta=meta;state.schedule=schedule;state.days=d;
+    state.tbl=$("fTbl").checked;state.split=$("fSplit").checked;state.teamCount=tc;state.seatCount=sc2;state.color=col;
+    persist();
+    setIndex(getIndex().map(function(r){return r.id===state.id?{id:r.id,label:courseLabel(meta,schedule)}:r;}));
+    closeOv("ovSetup");renderAll();
+    notice("Class setup saved.",true);
+    return;
+  }
+  var c=blankCourse();
+  c.meta=meta;c.schedule=schedule;c.days=d;
+  c.tbl=$("fTbl").checked;c.split=$("fSplit").checked;c.teamCount=tc;c.seatCount=sc2;c.color=col;
+  var made=todayISO(),seen={};
+  enRoster.forEach(function(r){
+    if(!r.name||seen[norm(r.name)])return;
+    seen[norm(r.name)]=true;
+    var s=mkStudent({name:r.name,conf:r.conf,code:r.code,pos:null},"enrolled",made);
+    if(r.team){var ti=teamIndexFor(c,r.team);if(ti!=null)s.team=ti;}
+    c.students.push(s);
+  });
+  wlRoster.forEach(function(r,k){
+    if(!r.name||seen[norm(r.name)])return;
+    seen[norm(r.name)]=true;
+    c.students.push(mkStudent({name:r.name,conf:r.conf,code:r.code,pos:(r.pos!=null?r.pos:(k+1))},"waitlist",made));
+  });
+  saveCourseRec(c);
+  var idx=getIndex();idx.push({id:c.id,label:courseLabel(meta,schedule)});setIndex(idx);
+  closeOv("ovSetup");
+  activate(c.id);
+  notice("Created "+courseLabel(meta,schedule)+" with "+c.students.length+" student"+(c.students.length===1?"":"s")+".",true);
+});
+$("btnSetup").addEventListener("click",function(){openSetup(!!state);});
+$("btnNew").addEventListener("click",function(){openSetup(false);});
+
+/* ===================== boot ===================== */
+(function boot(){
+  try{localStorage.setItem("course_engine_probe","1");localStorage.removeItem("course_engine_probe");}
+  catch(e){storageOK=false;notice(STORE_WARN,false);}
+
+  var moved=0;
+  try{moved=migrate();}catch(e){moved=0;}
+
+  var idx=getIndex();
+  if(!idx.length){
+    state=null;jset(CUR,"");renderAll();openSetup(false);return;
+  }
+  var cur=jget(CUR,""),found=idx.some(function(r){return r.id===cur;});
+  activate(found?cur:idx[0].id);
+  if(moved){
+    notice("Brought "+moved+" class"+(moved===1?"":"es")+" over from your old Attendance Engine and Grade Engine pages. Rosters and attendance came across; no scores were imported, because grades stay in Canvas. Check the Class menu, then use Backup all to keep a copy.",true);
+  }
+})();
+
+})();
+
+/* iframe height-sender for Kajabi, Canvas, and GitHub Pages embeds */
+(function(){
+  function sendHeight(){
+    var h=document.documentElement.scrollHeight;
+    try{parent.postMessage({frameId:window.name||"course-engine",id:"course-engine",type:"course-engine-height",height:h},"*");}catch(e){}
+  }
+  window.addEventListener("load",sendHeight);
+  window.addEventListener("resize",sendHeight);
+  if(window.ResizeObserver)new ResizeObserver(sendHeight).observe(document.body);
+})();
+</script>
+</body>
+</html>
