@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Course Engine &middot; Attendance, Teams &amp; Roster</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%20role%3D%22img%22%20aria-label%3D%22Course%20Engine%2C%20attendance%20roll%20sheet%22%3E%20%3Cdefs%3E%3CclipPath%20id%3D%22r%22%3E%3Crect%20x%3D%2216%22%20y%3D%2216%22%20width%3D%22480%22%20height%3D%22480%22%20rx%3D%22104%22%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%20%3Cg%20clip-path%3D%22url%28%23r%29%22%3E%20%3Crect%20x%3D%2216%22%20y%3D%2216%22%20width%3D%22480%22%20height%3D%22480%22%20fill%3D%22%23FAFAF9%22%2F%3E%20%3Crect%20x%3D%2216%22%20y%3D%2216%22%20width%3D%22480%22%20height%3D%2298%22%20fill%3D%22%231E3D4C%22%2F%3E%20%3Ccircle%20cx%3D%2292%22%20cy%3D%2265%22%20r%3D%2212%22%20fill%3D%22%23FFFFFF%22%2F%3E%20%3Crect%20x%3D%22118%22%20y%3D%2256%22%20width%3D%22118%22%20height%3D%2218%22%20rx%3D%229%22%20fill%3D%22%23B8924A%22%2F%3E%20%3Crect%20x%3D%22252%22%20y%3D%2256%22%20width%3D%2286%22%20height%3D%2218%22%20rx%3D%229%22%20fill%3D%22%23C2734D%22%2F%3E%20%3Crect%20x%3D%22354%22%20y%3D%2256%22%20width%3D%2266%22%20height%3D%2218%22%20rx%3D%229%22%20fill%3D%22%23FFFFFF%22%20opacity%3D%220.5%22%2F%3E%20%3C%2Fg%3E%20%3Crect%20x%3D%2216%22%20y%3D%2216%22%20width%3D%22480%22%20height%3D%22480%22%20rx%3D%22104%22%20fill%3D%22none%22%20stroke%3D%22%231E3D4C%22%20stroke-width%3D%2214%22%2F%3E%20%3Cg%20transform%3D%22translate%28256%20312%29%20scale%281.5%29%20translate%28-100%20-76%29%22%3E%20%3Cg%20transform%3D%22translate%2860%2C0%29%20rotate%288%200%20130%29%22%3E%20%3Ccircle%20cx%3D%220%22%20cy%3D%2220%22%20r%3D%2210%22%20fill%3D%22%231E3D4C%22%2F%3E%20%3Cpath%20d%3D%22M0%2C32%20C-10%2C32%20-16%2C36%20-16%2C42%20C-16%2C55%20-13%2C68%20-11%2C82%20C-10%2C100%20-12%2C118%20-14%2C130%20L14%2C130%20C12%2C118%2010%2C100%2011%2C82%20C13%2C68%2016%2C55%2016%2C42%20C16%2C36%2010%2C32%200%2C32%20Z%22%20fill%3D%22%231E3D4C%22%2F%3E%20%3C%2Fg%3E%20%3Cg%20transform%3D%22translate%28100%2C0%29%22%3E%20%3Ccircle%20cx%3D%220%22%20cy%3D%2210%22%20r%3D%2211%22%20fill%3D%22%23C2734D%22%2F%3E%20%3Cpath%20d%3D%22M0%2C22%20C-11%2C22%20-17%2C26%20-17%2C34%20C-17%2C52%20-14%2C70%20-12%2C86%20C-11%2C108%20-13%2C122%20-15%2C132%20L15%2C132%20C13%2C122%2011%2C108%2012%2C86%20C14%2C70%2017%2C52%2017%2C34%20C17%2C26%2011%2C22%200%2C22%20Z%22%20fill%3D%22%23C2734D%22%2F%3E%20%3C%2Fg%3E%20%3Cg%20transform%3D%22translate%28140%2C0%29%20rotate%28-8%200%20130%29%22%3E%20%3Ccircle%20cx%3D%220%22%20cy%3D%2220%22%20r%3D%2210%22%20fill%3D%22%23B8924A%22%2F%3E%20%3Cpath%20d%3D%22M0%2C32%20C-10%2C32%20-16%2C36%20-16%2C42%20C-16%2C55%20-13%2C68%20-11%2C82%20C-10%2C100%20-12%2C118%20-14%2C130%20L14%2C130%20C12%2C118%2010%2C100%2011%2C82%20C13%2C68%2016%2C55%2016%2C42%20C16%2C36%2010%2C32%200%2C32%20Z%22%20fill%3D%22%23B8924A%22%2F%3E%20%3C%2Fg%3E%20%3C%2Fg%3E%20%3C%2Fsvg%3E">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<meta name="application-name" content="Course Engine">
+<meta name="apple-mobile-web-app-title" content="Course Engine">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1E3D4C">
+<meta name="description" content="Attendance, teams and roster for BIO 004. Dr. Sharilyn Rennie.">
 <style>
   :root{
     --navy:#1E3D4C;--navy-deep:#142a36;--navy-tint:#EDF1F3;
@@ -97,6 +104,10 @@
   .teambar .spacer{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;}
 
   .scroll{max-height:72vh;overflow:auto;border:1px solid var(--navy);border-radius:8px;background:#fff;box-shadow:var(--rest-shadow);}
+  /* Embedded in an iframe the parent resizes to our height, so a vh-based scroller
+     would grow the frame, which grows the vh, which grows the frame. Pin it. */
+  body.framed .scroll{max-height:520px;}
+  body.framed .overlay{align-items:flex-start;padding-top:12px;}
   table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;min-width:820px;}
   caption{text-align:left;font-size:12.5px;color:var(--terra-dark);font-weight:600;padding:9px 10px;}
   caption b{color:var(--navy);}
@@ -116,7 +127,7 @@
 
   th.day{width:58px;min-width:58px;}
   th.day.daygrp{width:76px;min-width:76px;border-bottom:1px solid var(--gold);}
-  th.part{width:38px;min-width:38px;font-size:10px;font-weight:700;letter-spacing:.03em;background:#27505f;}
+  th.part{width:38px;min-width:38px;font-size:10px;font-weight:700;letter-spacing:.03em;background:var(--navy-deep);}
   .chk{min-width:34px;}
   td.cellwrap .chk{min-width:52px;}
   td.cellwrap.labcell{border-left:1px dotted rgba(255,255,255,.001);}
@@ -158,6 +169,9 @@
   td.actcell{padding:4px 6px;white-space:nowrap;text-align:center;}
   .mini{appearance:none;font:inherit;font-size:11px;font-weight:700;padding:5px 9px;border-radius:5px;cursor:pointer;border:1px solid var(--terra-dark);background:#fff;color:var(--terra-dark);min-height:28px;}
   .mini:hover{background:#f6e9e2;}
+  .mini.edit{border-color:var(--navy);color:var(--navy);margin-right:5px;}
+  .mini.edit:hover{background:var(--navy-tint);}
+  .sortsel{font-size:12.5px;font-weight:600;}
   .mini:focus-visible{outline:3px solid var(--focus);outline-offset:1px;}
 
   .help{font-size:11.5px;color:var(--gray);margin-top:14px;line-height:1.6;max-width:82ch;}
@@ -256,6 +270,12 @@
     <button type="button" class="btn" id="btnExportAtt">Export attendance CSV</button>
     <button type="button" class="btn" id="btnClearAtt">Clear attendance</button>
     <button type="button" class="btn" id="btnPrintAtt">Print</button>
+    <span class="fldinline"><label class="clabel" for="sortAtt">Sort</label>
+      <select id="sortAtt" class="courseSel sortsel" style="min-width:14em">
+        <option value="name">Name, A to Z</option>
+        <option value="teampos">Team, then position</option>
+        <option value="teamname">Team, then name</option>
+      </select></span>
     <span class="legend">Click a cell to cycle: <b>&#10003; present</b>, <b>&ndash; partial</b>, <b>&#10005; absent</b>, blank</span>
   </div>
 
@@ -292,6 +312,12 @@
     <button type="button" class="btn" id="btnImportRos">Import roster&hellip;</button>
     <button type="button" class="btn" id="btnExportRos">Export roster &amp; history CSV</button>
     <button type="button" class="btn" id="btnPrintRos">Print</button>
+    <span class="fldinline"><label class="clabel" for="sortRos">Sort</label>
+      <select id="sortRos" class="courseSel sortsel" style="min-width:14em">
+        <option value="name">Name, A to Z</option>
+        <option value="teampos">Team, then position</option>
+        <option value="teamname">Team, then name</option>
+      </select></span>
     <span class="fldinline" id="drpFilterWrap" hidden><label class="clabel" for="drpFilter">Show</label>
       <select id="drpFilter" class="courseSel" style="min-width:13em">
         <option value="all">Drops and no-shows</option>
@@ -491,6 +517,25 @@
   </form>
 </div>
 
+<!-- ===================== EDIT STUDENT ===================== -->
+<div class="overlay" id="ovEdit" hidden>
+  <form class="dialog narrow" id="editForm" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <h2 id="editTitle">Edit student</h2>
+    <p class="lead" id="editLead">Correcting a name here keeps everything attached to this student: attendance, team, position, status and history.</p>
+    <fieldset>
+      <legend>Student</legend>
+      <div class="fld"><label for="editName">Name, as Last, First</label><input type="text" id="editName"></div>
+      <div class="fld" style="margin-top:10px"><label for="editCode">Add code</label><input type="text" id="editCode" placeholder="optional"></div>
+      <label class="switch" style="margin-top:12px"><input type="checkbox" id="editConf"> FERPA confidential / directory hold</label>
+    </fieldset>
+    <p class="err" id="editErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn" id="editCancel">Cancel</button>
+      <button type="submit" class="btn primary" id="editSave">Save changes</button>
+    </div>
+  </form>
+</div>
+
 <!-- ===================== CONFIRM ===================== -->
 <div class="overlay" id="ovConfirm" hidden>
   <div class="dialog narrow" role="alertdialog" aria-modal="true" aria-labelledby="confTitle" aria-describedby="confBody">
@@ -558,6 +603,16 @@ function norm(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"");}
 function lastName(n){var p=String(n).split(",");return (p[0]||n).trim().toLowerCase();}
 function byName(a,b){return lastName(a.name).localeCompare(lastName(b.name))||String(a.name).localeCompare(String(b.name));}
 function byPos(a,b){return ((a.pos==null?9999:a.pos)-(b.pos==null?9999:b.pos))||byName(a,b);}
+var SORTS=["name","teampos","teamname"];
+function sortMode(){var m=state&&state.sort;return SORTS.indexOf(m)<0?"name":m;}
+function teamRank(s){return (s.team==null)?9999:s.team;}
+function bySeat(a,b){return ((a.seat==null?9999:a.seat)-(b.seat==null?9999:b.seat))||byName(a,b);}
+function byTeamPos(a,b){return (teamRank(a)-teamRank(b))||bySeat(a,b);}
+function byTeamName(a,b){return (teamRank(a)-teamRank(b))||byName(a,b);}
+function sortRoster(arr){
+  var m=sortMode();
+  return arr.sort(m==="teampos"?byTeamPos:(m==="teamname"?byTeamName:byName));
+}
 function statusLabel(s){return s==="enrolled"?"Enrolled":s==="waitlist"?"Wait List":"Dropped";}
 
 /* ===================== storage ===================== */
@@ -923,7 +978,7 @@ function teamIndexFor(course,name){
 }
 function blankCourse(){
   return {id:uid("c"),meta:{},schedule:{start:"",weeks:16,weekdays:[],meet:"",time:"",skip:[]},days:[],
-    tbl:false,split:false,hideWl:false,teamNames:DEFNAMES.slice(),teamCount:6,seatCount:6,color:0,students:[]};
+    tbl:false,split:false,hideWl:false,teamNames:DEFNAMES.slice(),teamCount:6,seatCount:6,color:0,sort:"name",students:[]};
 }
 function padTeams(arr){
   var out=(arr||[]).slice(0,MAXTEAMS);
@@ -940,13 +995,13 @@ function courseLabel(m,sc){
 /* ===================== selectors ===================== */
 function students(){return state?state.students:[];}
 function byStatus(st){return students().filter(function(s){return s.status===st;});}
-function onList(){return students().filter(function(s){return s.status!=="dropped";}).sort(byName);}
+function onList(){return sortRoster(students().filter(function(s){return s.status!=="dropped";}));}
 function rollList(){
-  return students().filter(function(s){
+  return sortRoster(students().filter(function(s){
     if(s.status==="dropped")return false;
     if(s.status==="waitlist"&&state&&state.hideWl)return false;
     return true;
-  }).sort(byName);
+  }));
 }
 function getU(u){var a=students();for(var i=0;i<a.length;i++){if(a[i].uid===u)return a[i];}return null;}
 function persist(){if(state)saveCourseRec(state);}
@@ -1196,17 +1251,45 @@ function seatCounts(){
   return m;
 }
 var SEATDUP={};
+/* who already holds each position on a given team, ignoring this student */
+function takenSeats(s){
+  var t={};
+  if(s.team==null)return t;
+  students().forEach(function(x){
+    if(x.uid===s.uid||x.status==="dropped")return;
+    if(x.team===s.team&&x.seat)t[x.seat]=x.name;
+  });
+  return t;
+}
+function freeSeats(s){
+  var t=takenSeats(s),n=seatCount(),out=[],i;
+  for(i=1;i<=n;i++)if(!t[i])out.push(i);
+  return out;
+}
 function seatSelect(s){
-  var n=seatCount(),o='<option value="">&ndash;</option>',i;
-  for(i=1;i<=n;i++)o+='<option value="'+i+'"'+(s.seat===i?" selected":"")+">"+i+"</option>";
-  if(s.seat!=null&&s.seat>n)o+='<option value="'+s.seat+'" selected>'+s.seat+"</option>";
+  var n=seatCount(),taken=takenSeats(s),free=[],o='<option value="">&ndash;</option>',i;
+  for(i=1;i<=n;i++){
+    var who=taken[i];
+    if(!who)free.push(i);
+    /* A position another team member already holds is offered but not selectable, so the
+       numbers still open are the only ones you can land on. The student's own current
+       number is never disabled, or the control would show empty. */
+    var dis=(who&&s.seat!==i);
+    o+="<option value='"+i+"'"+(s.seat===i?" selected":"")+(dis?" disabled":"")+">"+
+       i+(who?(s.seat===i?" (also used)":" (taken)"):"")+"</option>";
+  }
+  if(s.seat!=null&&s.seat>n)o+="<option value='"+s.seat+"' selected>"+s.seat+" (retired)</option>";
   var dup=(s.team!=null&&s.seat&&SEATDUP[s.team+":"+s.seat]>1);
   var lock=(s.team==null);
-  var ttl=dup
-    ? " title=\"Another student on "+esc(state.teamNames[s.team])+" already has position "+s.seat+".\""
-    : (lock?" title=\"Pick a team first, then a position within it.\"":"");
-  return "<select class='seatsel"+(dup?" dup":"")+"' data-uid='"+s.uid+"'"+(lock?" disabled":"")+ttl+
-    " aria-label='Team position for "+esc(s.name)+(dup?", duplicate position":"")+"'>"+o+"</select>";
+  var ttl;
+  if(lock)ttl="Pick a team first, then a position within it.";
+  else if(dup)ttl="Another student on "+state.teamNames[s.team]+" already has position "+s.seat+". Pick one of the open numbers.";
+  else if(free.length)ttl="Open on "+state.teamNames[s.team]+": "+free.join(", ");
+  else ttl="Every position on "+state.teamNames[s.team]+" is taken.";
+  var aria="Team position for "+s.name+
+    (lock?"":(dup?", duplicate position":(free.length?(", open positions "+free.join(" ")):", no positions left")));
+  return "<select class='seatsel"+(dup?" dup":"")+"' data-uid='"+s.uid+"'"+(lock?" disabled":"")+
+    " title=\""+esc(ttl)+"\" aria-label='"+esc(aria)+"'>"+o+"</select>";
 }
 function nameHtml(s){
   var n=esc(s.name);
@@ -1312,7 +1395,8 @@ function renderRos(){
       "<td class='datewrap'>"+esc(fmtDate(s.since))+"</td>"+
       (isList?"":"<td class='datewrap'>"+esc(s.reason||"")+"</td>")+
       "<td class='histwrap'>"+logHtml(s)+"</td>"+
-      "<td class='actcell'><button type='button' class='mini' data-act='remove' data-uid='"+s.uid+"'>Remove</button></td>"+
+      "<td class='actcell'><button type='button' class='mini edit' data-act='edit' data-uid='"+s.uid+"'>Edit</button>"+
+      "<button type='button' class='mini' data-act='remove' data-uid='"+s.uid+"'>Remove</button></td>"+
       "</tr>";
   });
   $("rosBody").innerHTML=h||"<tr><td class='empty' colspan='"+cols+"'>"+
@@ -1326,8 +1410,29 @@ function renderRos(){
 }
 
 function renderAll(){
-  applyBodyClasses();applyAccent();paintHeader();paintClassTabs();renderAtt();renderRos();
+  applyBodyClasses();applyAccent();paintHeader();paintClassTabs();syncSortSelects();renderAtt();renderRos();
 }
+
+/* ===================== sort order ===================== */
+function syncSortSelects(){
+  var m=sortMode();
+  ["sortAtt","sortRos"].forEach(function(id){var el=$(id);if(el)el.value=m;});
+}
+function sortWord(m){
+  return m==="teampos"?"team, then position":(m==="teamname"?"team, then name":"name, A to Z");
+}
+function setSort(m){
+  if(!state)return;
+  if(SORTS.indexOf(m)<0)m="name";
+  if(state.sort===m){syncSortSelects();return;}
+  state.sort=m;
+  persist();syncSortSelects();renderAtt();renderRos();
+  notice("Class list now sorted by "+sortWord(m)+".",true);
+}
+["sortAtt","sortRos"].forEach(function(id){
+  var el=$(id);
+  if(el)el.addEventListener("change",function(){setSort(el.value);});
+});
 
 /* ===================== view + tab switching ===================== */
 function wireTablist(list,onSelect){
@@ -1375,6 +1480,7 @@ document.addEventListener("click",function(e){
   var b=e.target.closest?e.target.closest("button"):null;
   if(!b||!state)return;
   if(b.classList.contains("chk")){cycleCell(b);return;}
+  if(b.getAttribute("data-act")==="edit"){openEdit(b.getAttribute("data-uid"));return;}
   if(b.getAttribute("data-act")==="remove"){
     var u=b.getAttribute("data-uid"),s=getU(u);
     if(!s)return;
@@ -1405,9 +1511,22 @@ document.addEventListener("change",function(e){
   if(t.classList&&t.classList.contains("teamsel")){
     var s=getU(t.getAttribute("data-uid"));
     if(!s)return;
+    var wasSeat=s.seat;
     s.team=(t.value===""?null:(+t.value));
     if(s.team==null)s.seat=null;
+    else if(s.seat){
+      var clash=students().some(function(x){
+        return x.uid!==s.uid&&x.status!=="dropped"&&x.team===s.team&&x.seat===s.seat;
+      });
+      if(clash)s.seat=null;
+    }
     persist();renderAtt();renderRos();
+    if(wasSeat&&s.seat==null&&s.team!=null){
+      var open=freeSeats(s);
+      notice(s.name+" moved to "+state.teamNames[s.team]+", where position "+wasSeat+
+        " was already taken, so their position was cleared. "+
+        (open.length?("Open there: "+open.join(", ")+"."):"Every position there is taken."),false);
+    }
     return;
   }
   if(t.classList&&t.classList.contains("seatsel")){
@@ -1508,6 +1627,45 @@ $("statusForm").addEventListener("submit",function(e){
   closeOv("ovStatus");
   renderAll();
   notice(s.name+": "+statusLabel(s.status)+((s.status==="dropped"&&s.dropKind==="noshow")?" (no-show)":"")+" as of "+fmtDate(d)+".",true);
+});
+
+/* ===================== edit student ===================== */
+var editUid=null;
+function openEdit(u){
+  var s=getU(u);
+  if(!s)return;
+  editUid=u;
+  $("editName").value=s.name||"";
+  $("editCode").value=s.code||"";
+  $("editConf").checked=!!s.conf;
+  $("editErr").textContent="";
+  $("editLead").textContent="Correcting a name here keeps everything attached to "+s.name+
+    ": attendance, team, position, status and history all stay put.";
+  openOv("ovEdit","editName");
+}
+$("editCancel").addEventListener("click",function(){editUid=null;closeOv("ovEdit");});
+$("editForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  var s=getU(editUid);
+  if(!s){editUid=null;closeOv("ovEdit");return;}
+  var nm=$("editName").value.trim();
+  if(!nm){$("editErr").textContent="Enter a name as Last, First.";$("editName").focus();return;}
+  var conf=$("editConf").checked;
+  if(/\[c\]\s*$/i.test(nm)){conf=true;nm=nm.replace(/\[c\]\s*$/i,"").trim();}
+  if(!nm){$("editErr").textContent="Enter a name as Last, First.";$("editName").focus();return;}
+  var dup=students().some(function(o){return o.uid!==s.uid&&norm(o.name)===norm(nm);});
+  if(dup){$("editErr").textContent=nm+" is already on this class's roster.";$("editName").focus();return;}
+  var old=s.name,code=$("editCode").value.trim(),changed=[];
+  if(norm(old)!==norm(nm)||old!==nm)changed.push("name");
+  if((s.code||"")!==code)changed.push("add code");
+  if(!!s.conf!==conf)changed.push("confidential flag");
+  if(!changed.length){editUid=null;closeOv("ovEdit");return;}
+  if(!Array.isArray(s.log))s.log=[];
+  if(old!==nm)s.log.push({d:todayISO(),a:"Name corrected to "+nm,r:"",from:old,to:s.status});
+  s.name=nm;s.code=code;s.conf=conf;
+  editUid=null;
+  persist();closeOv("ovEdit");renderAtt();renderRos();
+  notice((old===nm?nm:(old+" is now "+nm))+". Attendance, team, position, status and history were kept.",true);
 });
 
 /* ===================== add student ===================== */
@@ -1753,6 +1911,7 @@ function activate(id){
   if(c.split==null)c.split=false;
   if(c.hideWl==null)c.hideWl=false;
   if(c.color==null)c.color=0;
+  if(SORTS.indexOf(c.sort)<0)c.sort="name";
   if(!c.schedule)c.schedule={start:"",weeks:16,weekdays:[],meet:"",time:"",skip:[]};
   if(!Array.isArray(c.schedule.skip))c.schedule.skip=[];
   if(!Array.isArray(c.students))c.students=[];
@@ -1941,6 +2100,7 @@ $("btnNew").addEventListener("click",function(){openSetup(false);});
 
 /* ===================== boot ===================== */
 (function boot(){
+  try{if(window.self!==window.top)document.body.classList.add("framed");}catch(e){document.body.classList.add("framed");}
   try{localStorage.setItem("course_engine_probe","1");localStorage.removeItem("course_engine_probe");}
   catch(e){storageOK=false;notice(STORE_WARN,false);}
 
@@ -1962,13 +2122,19 @@ $("btnNew").addEventListener("click",function(){openSetup(false);});
 
 /* iframe height-sender for Kajabi, Canvas, and GitHub Pages embeds */
 (function(){
+  var lastH=0, timer=null;
   function sendHeight(){
-    var h=document.documentElement.scrollHeight;
+    var h=Math.max(document.documentElement.scrollHeight,document.body?document.body.scrollHeight:0);
+    /* Only speak up on a real change. Without this the parent resizes us, which fires the
+       observer, which resizes the parent again, and the frame creeps down the page. */
+    if(Math.abs(h-lastH)<24)return;
+    lastH=h;
     try{parent.postMessage({frameId:window.name||"course-engine",id:"course-engine",type:"course-engine-height",height:h},"*");}catch(e){}
   }
-  window.addEventListener("load",sendHeight);
-  window.addEventListener("resize",sendHeight);
-  if(window.ResizeObserver)new ResizeObserver(sendHeight).observe(document.body);
+  function queueHeight(){ if(timer)clearTimeout(timer); timer=setTimeout(sendHeight,120); }
+  window.addEventListener("load",queueHeight);
+  window.addEventListener("resize",queueHeight);
+  if(window.ResizeObserver)new ResizeObserver(queueHeight).observe(document.documentElement);
 })();
 </script>
 </body>
