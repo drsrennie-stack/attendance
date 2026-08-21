@@ -24,13 +24,16 @@ It replaces `Attendance_Engine.html` and `Grade_Engine.html`. Both are now legac
 | One mark per class day | Optional separate **Lec** and **Lab** marks per day |
 | Holidays generated attendance columns | **No-class dates** are skipped, so closures never get a column |
 | Six teams, same everywhere | 2 to 8 teams, set per class, named per class |
-| Team only | Team **plus a position within the team**, 1 to N, with duplicate detection |
+| Team only | Team **plus a position within the team**, 1 to N. Numbers already taken on that team are not selectable, so only the open slots are offered |
 | No way to tell two sections apart at a glance | Each class is a **colored tab** across the top with its own **AM / PM / EVE** chip |
 | Classes chosen from a drop-down | Class tabs, one click to switch, each showing a live head count |
 | Wait list always on the roll sheet | **Show wait list** toggle, so you can hide it once the class is full |
 | `alert` / `confirm` / `prompt` | In-page dialogs, because sandboxed Canvas iframes swallow the native ones |
 | Silent failure if browser storage was blocked | Storage is probed on load and a warning names the fix |
 | No way to move classes off one machine | **Backup all** and **Restore** as one JSON file |
+| A misspelled name meant deleting and re-adding the student | **Edit** on each roster row corrects the name in place. Attendance, team, position, status, and history stay attached |
+| Class list always alphabetical | A **Sort** pull-down: name, team then position, team then name, or fewest lab quiz turns |
+| No way to tell who keeps getting stuck with the lab quiz | **Lab quiz draw**: record the number you drew, and every student carries a running turn count |
 
 Your existing data is not lost. On first load the page imports every Attendance Engine class (roster, teams, attendance, drops) and every Grade Engine class. From the Grade Engine it takes **the roster only**: names, teams, and drop records. No scores are imported. The old storage keys are left untouched, so the old pages still open if you need them.
 
@@ -69,9 +72,46 @@ The team bar sits above the sheet: rename this class's teams, and see a live cou
 
 **Team and position.** Each student row has two pull-downs side by side. **Team** picks the team; **Pos** picks that student's position within it, 1 to however many positions you set for the class. So if the team is Oak with six members, you choose Oak, then 1 through 6 in the next column.
 
-Pos stays greyed out until a team is chosen, since a position without a team means nothing. If two students on the same team end up on the same position, both cells turn terra with a heavier border and a tooltip naming the clash, and a notice tells you which team and which number. The same position on a *different* team is fine and is not flagged. Clearing a student's team clears their position.
+**Taken numbers cannot be picked twice.** Once someone on a team holds a position, that number shows as `3 (taken)` and is not selectable for anyone else on that team. What is left in the list is exactly what is still open, so you can see the gap and slot the next student straight into it. Hovering the Pos cell lists them: *Open on Oak: 2, 4, 6*.
+
+The same number on a *different* team is untouched, because positions only ever clash within one team. If you move a student to a team where their number is already held, the position is cleared and a notice tells you which numbers are open there. Clearing a student's team clears their position too, and Pos stays greyed out until a team is chosen, since a position without a team means nothing.
+
+A student's own current number always stays selectable, so nothing gets stuck. If a duplicate ever arrives from older saved data, both cells are flagged in terra with a tooltip pointing at the open numbers, and picking one clears the flag.
 
 Both columns hide together when **Team-based (TBL)** is off.
+
+## The lab quiz draw
+
+Turn it on with the **Lab quiz draw** checkbox on the Attendance toolbar. It needs teams, so it switches **Team-based (TBL)** on if it is off.
+
+Each class day then reads **Lec | Lab | Qz**. The **Qz** box in the day header is where you record the number you drew. Pick it once and every team sends the person holding that position, so one draw covers the whole room.
+
+**When the number you drew is absent.** Say you draw 3, and on one team the number 3 is out that day. That team gets nothing from the draw, so a second Qz box appears underneath, and its tooltip names how many teams are still waiting. Draw again, enter the second number, and it covers **only the teams that were left uncovered**. Everyone else keeps the first number. The result is exactly one person per team per day, which is what you want, and it happens without you tracking which team needed what.
+
+A student counts as available unless they are marked **absent**. Present, partial, and not-yet-marked all count. The mark it reads is the **lab** mark when lecture and lab are marked separately, since this is a lab quiz, so someone who skipped lecture but came to lab is still eligible. Change an attendance mark and the quiz credit moves with it immediately.
+
+**The Turns column** sits beside Pos on both sheets and counts how many lab quizzes each student has taken. Zero shows in grey; whoever is currently tied for fewest is highlighted, so the people who are overdue stand out while you are looking at the sheet.
+
+**The readout under the toolbar** breaks the same thing down by number: how many turns number 1 has taken, number 2, and so on, ending with the numbers furthest behind. That is the one to glance at **before** you draw, since it tells you which numbers have been quiet.
+
+**Fixing a day by hand.** Click any **Qz** cell to add or remove a turn for that one student, for when someone stepped in and the numbers do not tell the story. A cell you set by hand is drawn with a small dot and its tooltip says so, so you can tell your corrections from the automatic ones. Click it again to hand it back to the draw.
+
+**Sort by fewest turns** reorders the sheet with the least-used students at the top.
+
+The number range follows **positions per class** in Class setup. If a team has seven members, set positions to 7 and the Qz menu offers 1 to 7.
+
+Draws and turn counts are **not** touched by **Clear attendance**, and they survive turning the feature off and on again. They go into the attendance CSV too: a **Lab quiz turns** total per student, and a column per day whose header names the numbers you drew that day.
+
+## Sorting
+
+**Sort** sits on both toolbars and changes the row order on the roll sheet and the class list together:
+
+- **Name, A to Z**, by last name. The default.
+- **Team, then position**, teams in the order they appear in the team bar, and inside each team by position number 1 to N. This is the one to use on a TBL day, since the sheet then reads in the same order the students are sitting.
+- **Team, then name**, teams in the same order, alphabetical inside each team. Useful before positions are assigned.
+- **Lab quiz turns, fewest first**, whoever has taken the fewest lab quizzes at the top.
+
+Students with no team yet sort to the bottom in both team modes, so the gaps are easy to see. The choice is saved per class, so a section you always run in team order stays that way. Sorting only changes the order rows are drawn in; it never touches attendance, teams, or positions. The **Dropped / No-show** sheet keeps its own order, most recent departure first.
 
 ### Roster & Status
 
@@ -86,6 +126,8 @@ Each row has a **Status** pull-down with four choices: Enrolled, Wait list, Drop
 - Bringing someone back from the exit sheet opens the same dialog. The original drop stays in the history; the reinstatement is added on top with its own date and reason.
 
 Every row carries a **History** disclosure listing every status change ever recorded for that student, oldest change kept forever.
+
+**Edit** opens a small dialog holding the student's name, add code, and FERPA confidential flag. Correcting a name here changes nothing else: attendance marks, team, position, status, and the whole history stay attached to the same student record, and the old spelling is written into that student's history so the correction is traceable. A name already on the roster is refused. Typing `[C]` on the end of a name sets the confidential flag instead of landing in the name.
 
 **Remove** is different from Drop. Drop keeps a record. Remove erases the student and everything attached to them, for someone added by mistake. It asks first and says exactly what will be lost.
 

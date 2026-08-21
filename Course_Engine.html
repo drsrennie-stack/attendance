@@ -145,6 +145,29 @@
   td.teamwrap{padding:2px 4px;min-width:120px;}
   td.seatwrap{padding:2px 4px;min-width:64px;width:64px;}
   th.seatcol{width:64px;min-width:64px;}
+  th.quizcol,td.quizcol{width:58px;min-width:58px;}
+  td.quizcol{text-align:center;font-weight:700;font-size:12.5px;}
+  td.quizcol .qn{display:inline-block;min-width:22px;padding:1px 5px;border-radius:9px;}
+  td.quizcol .qn.zero{color:var(--gray);font-weight:600;}
+  td.quizcol .qn.low{background:#F7EFDC;color:var(--gold-deep);}
+  th.part.qzhead{width:52px;min-width:52px;padding:3px 2px;}
+  .qzhead .qzlab{display:block;font-size:10px;font-weight:700;letter-spacing:.03em;margin-bottom:2px;}
+  .drawsel{width:46px;max-width:46px;height:24px;min-height:24px;font-size:11px;font-weight:700;padding:1px 2px;
+    margin:3px auto;display:block;border:1px solid #7C8990;border-radius:4px;background:#FFFFFF;color:var(--navy);}
+  .drawsel.more{background:#F7EFDC;}
+  td.qzcell{padding:0;}
+  .qchk{display:flex;align-items:center;justify-content:center;width:100%;min-width:52px;height:36px;
+    border:none;background:transparent;cursor:pointer;font:inherit;}
+  .qchk .qmark{font-size:15px;line-height:1;font-weight:700;}
+  .qchk[data-state="1"]{background:#F7EFDC;}
+  .qchk[data-state="1"] .qmark{color:var(--gold-deep);}
+  .qchk[data-state="1"].manual .qmark::after{content:"\00B7";}
+  .qchk[data-state="0"] .qmark{color:transparent;}
+  .qchk[data-state="0"].manual{background:repeating-linear-gradient(135deg,#FFF,#FFF 3px,#EDF1F3 3px,#EDF1F3 6px);}
+  @media (hover:hover){.qchk:hover{background:#EDF1F3;}}
+  .drawtally{margin:6px 2px 0;font-size:12px;color:var(--gray);line-height:1.5;flex-basis:100%;}
+  .drawtally b{color:var(--navy);}
+  .drawtally .lowmark{background:#F7EFDC;color:var(--gold-deep);padding:1px 5px;border-radius:9px;font-weight:700;}
   .seatsel{font:inherit;font-size:12px;font-weight:700;width:100%;min-width:54px;padding:5px 4px;border:1px solid var(--navy);border-radius:6px;background:var(--white);color:var(--navy);cursor:pointer;text-align:center;}
   .seatsel:focus-visible{outline:3px solid var(--focus);outline-offset:1px;}
   .seatsel[disabled]{opacity:.45;cursor:not-allowed;background:#f4f5f5;}
@@ -180,6 +203,7 @@
   .ferpa b{color:var(--terra-dark);}
 
   body.no-teams .teamcol{display:none;} body.no-teams .teambar{display:none;}
+  body:not(.quiz-on) .quizcol{display:none;} body:not(.quiz-on) .drawtally{display:none;}
 
   @media (prefers-reduced-motion:no-preference){.chk{transition:background 120ms ease;}}
 
@@ -220,7 +244,8 @@
     .views,.coursebar,.tabs,.toolbar .btn,.toolbar .switch,.toolbar .fldinline,.legend,.teambar .spacer,.actcell,a.skip,.notice,.help,.ferpa{display:none!important;}
     .scroll{max-height:none;overflow:visible;border:none;box-shadow:none;}
     thead th{position:static;} .c0,.c1{position:static;}
-    .chk{height:26px;}
+    .chk{height:26px;} .qchk{height:26px;}
+    .drawsel{border:none;background:transparent;-webkit-appearance:none;appearance:none;font-weight:700;}
     .overlay{display:none!important;}
     td.histwrap details{display:block;} td.histwrap summary{display:none;}
   }
@@ -265,6 +290,7 @@
     <p class="tally" id="attTally" aria-live="polite">Present: <span class="box p" id="tP">0</span> &nbsp; Partial: <span class="box r" id="tR">0</span> &nbsp; Absent: <span class="box a" id="tA">0</span> &nbsp; Unmarked: <span class="box u" id="tU">0</span></p>
     <label class="switch" title="Show or hide the team column"><input type="checkbox" id="tblToggle"> Team-based (TBL)</label>
     <label class="switch" title="Hide waitlisted students from the roll sheet once the class is full"><input type="checkbox" id="wlToggle" checked> Show wait list</label>
+    <label class="switch" title="Add a Quiz column to each class day so you can record the number you drew"><input type="checkbox" id="quizToggle"> Lab quiz draw</label>
     <button type="button" class="btn primary" id="btnAddStudentAtt">+ Add student</button>
     <button type="button" class="btn" id="btnImportAtt">Import roster&hellip;</button>
     <button type="button" class="btn" id="btnExportAtt">Export attendance CSV</button>
@@ -275,8 +301,10 @@
         <option value="name">Name, A to Z</option>
         <option value="teampos">Team, then position</option>
         <option value="teamname">Team, then name</option>
+        <option value="quizfew">Lab quiz turns, fewest first</option>
       </select></span>
     <span class="legend">Click a cell to cycle: <b>&#10003; present</b>, <b>&ndash; partial</b>, <b>&#10005; absent</b>, blank</span>
+    <p class="drawtally" id="drawTally" aria-live="polite"></p>
   </div>
 
   <div class="teambar">
@@ -317,6 +345,7 @@
         <option value="name">Name, A to Z</option>
         <option value="teampos">Team, then position</option>
         <option value="teamname">Team, then name</option>
+        <option value="quizfew">Lab quiz turns, fewest first</option>
       </select></span>
     <span class="fldinline" id="drpFilterWrap" hidden><label class="clabel" for="drpFilter">Show</label>
       <select id="drpFilter" class="courseSel" style="min-width:13em">
@@ -603,14 +632,16 @@ function norm(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"");}
 function lastName(n){var p=String(n).split(",");return (p[0]||n).trim().toLowerCase();}
 function byName(a,b){return lastName(a.name).localeCompare(lastName(b.name))||String(a.name).localeCompare(String(b.name));}
 function byPos(a,b){return ((a.pos==null?9999:a.pos)-(b.pos==null?9999:b.pos))||byName(a,b);}
-var SORTS=["name","teampos","teamname"];
+var SORTS=["name","teampos","teamname","quizfew"];
 function sortMode(){var m=state&&state.sort;return SORTS.indexOf(m)<0?"name":m;}
 function teamRank(s){return (s.team==null)?9999:s.team;}
 function bySeat(a,b){return ((a.seat==null?9999:a.seat)-(b.seat==null?9999:b.seat))||byName(a,b);}
 function byTeamPos(a,b){return (teamRank(a)-teamRank(b))||bySeat(a,b);}
 function byTeamName(a,b){return (teamRank(a)-teamRank(b))||byName(a,b);}
+function byQuizFew(a,b){return (quizCount(a)-quizCount(b))||byTeamPos(a,b);}
 function sortRoster(arr){
   var m=sortMode();
+  if(m==="quizfew")return arr.sort(byQuizFew);
   return arr.sort(m==="teampos"?byTeamPos:(m==="teamname"?byTeamName:byName));
 }
 function statusLabel(s){return s==="enrolled"?"Enrolled":s==="waitlist"?"Wait List":"Dropped";}
@@ -978,7 +1009,7 @@ function teamIndexFor(course,name){
 }
 function blankCourse(){
   return {id:uid("c"),meta:{},schedule:{start:"",weeks:16,weekdays:[],meet:"",time:"",skip:[]},days:[],
-    tbl:false,split:false,hideWl:false,teamNames:DEFNAMES.slice(),teamCount:6,seatCount:6,color:0,sort:"name",students:[]};
+    tbl:false,split:false,hideWl:false,quiz:false,draws:{},teamNames:DEFNAMES.slice(),teamCount:6,seatCount:6,color:0,sort:"name",students:[]};
 }
 function padTeams(arr){
   var out=(arr||[]).slice(0,MAXTEAMS);
@@ -1182,11 +1213,13 @@ function applyAccent(){
 function applyBodyClasses(){
   document.body.classList.toggle("no-teams",!(state&&state.tbl));
   document.body.classList.toggle("split-on",!!(state&&state.split));
+  document.body.classList.toggle("quiz-on",!!(state&&state.quiz&&state.tbl));
+  $("quizToggle").checked=!!(state&&state.quiz);
   $("tblToggle").checked=!!(state&&state.tbl);
   $("wlToggle").checked=!(state&&state.hideWl);
   var none=!state;
   ["btnSetup","btnDup","btnDelete","btnAddStudentAtt","btnAddStudentRos","btnImportAtt","btnImportRos",
-   "btnExportAtt","btnExportRos","btnClearAtt","btnClearTeams","tblToggle","wlToggle"].forEach(function(id){
+   "btnExportAtt","btnExportRos","btnClearAtt","btnClearTeams","tblToggle","wlToggle","quizToggle"].forEach(function(id){
     var el=$(id);if(el)el.disabled=none;
   });
 }
@@ -1194,28 +1227,207 @@ function applyBodyClasses(){
 /* ===================== attendance sheet ===================== */
 function isSplit(){return !!(state&&state.split);}
 function partName(part){return part==="b"?"lab":"lecture";}
+function perDayCells(){return (isSplit()?2:1)+(quizOn()?1:0);}
 function dayHeadRows(){
-  var D=days(),t=meetTag(),split=isSplit();
-  var rs=split?2:1;
+  var D=days(),t=meetTag(),split=isSplit(),qz=quizOn();
+  var tiers=split||qz,rs=tiers?2:1,wide=perDayCells();
   var fixed="<th class='c0' rowspan='"+rs+"' scope='col'>#</th>"+
             "<th class='c1' rowspan='"+rs+"' scope='col'>Student Name</th>"+
             "<th class='teamcol' rowspan='"+rs+"' scope='col'>Team</th>"+
-            "<th class='teamcol seatcol' rowspan='"+rs+"' scope='col' title='Position within the team'>Pos</th>";
+            "<th class='teamcol seatcol' rowspan='"+rs+"' scope='col' title='Position within the team'>Pos</th>"+
+            "<th class='teamcol quizcol' rowspan='"+rs+"' scope='col' title='Lab quiz turns taken so far'>Turns</th>";
   var r1=fixed,r2="";
   for(var j=0;j<D.length;j++){
     var lab=esc(D[j].dl)+(t?("<span class='ampm'>"+esc(t)+"</span>"):"");
-    if(split){
-      r1+="<th class='day daygrp' colspan='2' scope='colgroup' title='"+esc(dayFull(D[j]))+"'><span class='dl'>"+lab+
+    if(tiers){
+      r1+="<th class='day daygrp' colspan='"+wide+"' scope='colgroup' title='"+esc(dayFull(D[j]))+"'><span class='dl'>"+lab+
           "</span><span class='dd'>"+esc(D[j].dd)+"</span></th>";
-      r2+="<th class='part' scope='col' title='Lecture, "+esc(dayFull(D[j]))+"'>Lec</th>"+
-          "<th class='part' scope='col' title='Lab, "+esc(dayFull(D[j]))+"'>Lab</th>";
+      if(split){
+        r2+="<th class='part' scope='col' title='Lecture, "+esc(dayFull(D[j]))+"'>Lec</th>"+
+            "<th class='part' scope='col' title='Lab, "+esc(dayFull(D[j]))+"'>Lab</th>";
+      } else {
+        r2+="<th class='part' scope='col' title='Attendance, "+esc(dayFull(D[j]))+"'>Att</th>";
+      }
+      if(qz)r2+="<th class='part qzhead quizcol' scope='col' data-qzday='"+j+"' title='Number drawn for the lab quiz, "+
+                esc(dayFull(D[j]))+"'><span class='qzlab' aria-hidden='true'>Qz</span>"+drawSelects(j)+"</th>";
     } else {
       r1+="<th class='day' scope='col' title='"+esc(dayFull(D[j]))+"'><span class='dl'>"+lab+
           "</span><span class='dd'>"+esc(D[j].dd)+"</span></th>";
     }
   }
-  return split?("<tr>"+r1+"</tr><tr>"+r2+"</tr>"):("<tr>"+r1+"</tr>");
+  return tiers?("<tr>"+r1+"</tr><tr>"+r2+"</tr>"):("<tr>"+r1+"</tr>");
 }
+/* ===================== lab quiz draw =====================
+   One number is drawn for the whole class. Every team sends the member
+   holding that position. If a team's holder is absent, the next number
+   drawn covers that team only, so exactly one person per team answers. */
+function quizOn(){return !!(state&&state.quiz&&state.tbl);}
+function drawsFor(j){
+  var d=state&&state.draws&&state.draws[String(j)];
+  return Array.isArray(d)?d.filter(function(n){return n>0;}):[];
+}
+function setDraws(j,arr){
+  if(!state)return;
+  if(!state.draws)state.draws={};
+  var clean=[],seen={};
+  (arr||[]).forEach(function(n){n=+n;if(n>0&&!seen[n]){seen[n]=1;clean.push(n);}});
+  if(clean.length)state.draws[String(j)]=clean;else delete state.draws[String(j)];
+}
+/* absent students cannot answer; blank, present and partial all can */
+function quizAvail(s,j){
+  var v=(isSplit()?(s.lab||{}):(s.att||{}))[j]||"0";
+  return v!=="2";
+}
+function activeStudents(){return students().filter(function(s){return s.status!=="dropped";});}
+function activeTeams(){
+  var out=[],n=teamCount(),seen={};
+  activeStudents().forEach(function(s){if(s.team!=null&&s.team<n&&s.seat)seen[s.team]=1;});
+  for(var i=0;i<n;i++)if(seen[i])out.push(i);
+  return out;
+}
+/* uid -> true for whoever the draw order lands on, one per team */
+function autoAnswerers(j){
+  var out={},draws=drawsFor(j);
+  if(!draws.length||!quizOn())return out;
+  var byTeam={};
+  activeStudents().forEach(function(s){
+    if(s.team==null||!s.seat)return;
+    (byTeam[s.team]=byTeam[s.team]||[]).push(s);
+  });
+  Object.keys(byTeam).forEach(function(t){byTeam[t].sort(function(a,b){return a.seat-b.seat;});});
+  Object.keys(byTeam).forEach(function(t){
+    var mem=byTeam[t],i,k;
+    for(i=0;i<draws.length;i++){
+      for(k=0;k<mem.length;k++){
+        if(mem[k].seat===draws[i]&&quizAvail(mem[k],j)){out[mem[k].uid]=true;return;}
+      }
+    }
+  });
+  return out;
+}
+var QAUTO={},QLOW=null;
+function refreshQuiz(){
+  QAUTO={};QLOW=null;
+  if(!quizOn())return;
+  var D=days(),j;
+  for(j=0;j<D.length;j++)QAUTO[j]=autoAnswerers(j);
+  activeStudents().forEach(function(x){
+    if(x.status==="dropped")return;
+    var v=quizCount(x);
+    if(QLOW===null||v<QLOW)QLOW=v;
+  });
+}
+function quizOverride(s,j){var v=(s.qz||{})[j];return (v==="1"||v==="0")?v:null;}
+function quizCredited(s,j){
+  var ov=quizOverride(s,j);
+  if(ov==="1")return true;
+  if(ov==="0")return false;
+  return !!((QAUTO[j]||{})[s.uid]);
+}
+function quizCount(s){
+  if(!quizOn())return 0;
+  var n=0,D=days();
+  for(var j=0;j<D.length;j++)if(quizCredited(s,j))n++;
+  return n;
+}
+/* a team is covered once one of its members is credited that day */
+function coveredTeams(j){
+  var cov={};
+  activeStudents().forEach(function(s){
+    if(s.team==null||!s.seat)return;
+    if(quizCredited(s,j))cov[s.team]=true;
+  });
+  return cov;
+}
+function drawSelects(j){
+  var n=seatCount(),draws=drawsFor(j),h="",i,k,label,val;
+  var cov=coveredTeams(j),act=activeTeams();
+  var uncovered=draws.length?act.filter(function(t){return !cov[t];}).length:0;
+  var slots=Math.max(1,draws.length+(uncovered>0?1:0));
+  var D=days(),dayTxt=D[j]?dayFull(D[j]):("day "+(j+1));
+  for(i=0;i<slots;i++){
+    val=draws[i]||"";
+    label=(i===0)
+      ? ("Number drawn for the lab quiz, "+dayTxt)
+      : (uncovered>0
+          ? ("Extra number drawn for "+dayTxt+", covering the "+uncovered+" team"+(uncovered===1?"":"s")+" whose number was absent")
+          : ("Extra number drawn for "+dayTxt+". Every team is covered, so this number is not being used. Set it back to the dash to clear it."));
+    h+="<select class='drawsel"+(i>0?" more":"")+"' data-draw='"+j+"' data-slot='"+i+
+       "' aria-label=\""+esc(label)+"\" title=\""+esc(label)+"\"><option value=''>&ndash;</option>";
+    for(k=1;k<=n;k++)h+="<option value='"+k+"'"+(draws[i]===k?" selected":"")+">"+k+"</option>";
+    h+="</select>";
+  }
+  return h;
+}
+function drawTallyText(){
+  var el=$("drawTally");
+  if(!el)return;
+  if(!quizOn()){el.textContent="";return;}
+  var n=seatCount(),turns=[],i,lowest=null;
+  for(i=0;i<=n;i++)turns[i]=0;
+  var D=days();
+  activeStudents().forEach(function(s){
+    if(!s.seat||s.seat>n)return;
+    for(var j=0;j<D.length;j++)if(quizCredited(s,j))turns[s.seat]++;
+  });
+  for(i=1;i<=n;i++)if(lowest===null||turns[i]<lowest)lowest=turns[i];
+  var bits=[];
+  for(i=1;i<=n;i++){
+    var txt=i+": "+turns[i];
+    bits.push(turns[i]===lowest?("<span class='lowmark'>"+txt+"</span>"):("<b>"+txt+"</b>"));
+  }
+  var low=[];
+  for(i=1;i<=n;i++)if(turns[i]===lowest)low.push(i);
+  el.innerHTML="Lab quiz turns by number &nbsp; "+bits.join(" &nbsp; ")+
+    " &nbsp;&middot;&nbsp; furthest behind: "+low.join(", ");
+}
+function quizCell(s,j,D){
+  var on=quizCredited(s,j),ov=quizOverride(s,j);
+  var why=on?(ov==="1"?"counted, set by hand":"counted"):(ov==="0"?"not counted, set by hand":"not counted");
+  return "<td class='qzcell quizcol'><button type='button' class='qchk"+(ov?" manual":"")+"' data-uid='"+s.uid+
+    "' data-qday='"+j+"' data-state='"+(on?"1":"0")+"' aria-label='"+esc(s.name)+", lab quiz "+esc(dayFull(D[j]))+
+    ": "+why+"'><span class='qmark' aria-hidden='true'>&#10039;</span></button></td>";
+}
+function quizClass(c){return (c===0)?"qn zero":((QLOW!==null&&c===QLOW)?"qn low":"qn");}
+function quizCountCell(s){
+  var c=quizCount(s);
+  return "<td class='quizcol'><span class='"+quizClass(c)+"' title='Lab quiz turns taken so far'>"+c+"</span></td>";
+}
+/* refresh the quiz layer in place, without rebuilding the whole sheet */
+function paintTurnCounts(){
+  ["attBody","rosBody"].forEach(function(id){
+    var body=$(id);
+    if(!body)return;
+    body.querySelectorAll("td.quizcol .qn").forEach(function(el){
+      var tr=el.closest("tr"),s=tr?getU(tr.getAttribute("data-uid")):null;
+      if(!s)return;
+      var c=quizCount(s);
+      el.textContent=c;
+      el.className=quizClass(c);
+    });
+  });
+}
+function syncQuizUI(changedDay){
+  if(!quizOn())return;
+  refreshQuiz();
+  var D=days(),body=$("attBody");
+  if(body)body.querySelectorAll(".qchk").forEach(function(btn){
+    var s=getU(btn.getAttribute("data-uid")),j=+btn.getAttribute("data-qday");
+    if(!s||!D[j])return;
+    var on=quizCredited(s,j),ov=quizOverride(s,j);
+    btn.setAttribute("data-state",on?"1":"0");
+    btn.classList.toggle("manual",!!ov);
+    btn.setAttribute("aria-label",s.name+", lab quiz "+dayFull(D[j])+": "+
+      (on?(ov==="1"?"counted, set by hand":"counted"):(ov==="0"?"not counted, set by hand":"not counted")));
+  });
+  paintTurnCounts();
+  if(changedDay!=null){
+    var th=$("attHead").querySelector("th.qzhead[data-qzday='"+changedDay+"']");
+    if(th)th.innerHTML="<span class='qzlab' aria-hidden='true'>Qz</span>"+drawSelects(changedDay);
+  }
+  drawTallyText();
+}
+
 var CYCLE=["0","1","3","2"];
 function attWord(v){return v==="1"?"present":v==="3"?"partial":v==="2"?"absent":"unmarked";}
 function markFor(s,part){return part==="b"?(s.lab||(s.lab={})):s.att;}
@@ -1227,10 +1439,11 @@ function oneCell(s,j,D,part){
     "'><span class='mark' aria-hidden='true'></span></button></td>";
 }
 function attCells(s){
-  var h="",D=days(),split=isSplit();
+  var h="",D=days(),split=isSplit(),qz=quizOn();
   for(var j=0;j<D.length;j++){
     h+=oneCell(s,j,D,"a");
     if(split)h+=oneCell(s,j,D,"b");
+    if(qz)h+=quizCell(s,j,D);
   }
   return h;
 }
@@ -1299,23 +1512,26 @@ function nameHtml(s){
 }
 function renderAtt(){
   if(!state){$("attHead").innerHTML="";$("attBody").innerHTML="";$("attCap").textContent="";return;}
+  refreshQuiz();
   $("attHead").innerHTML=dayHeadRows();
   $("attCap").textContent="Class list"+(meetTag()?(", "+meetTag()):"")+". Click a cell to mark attendance"+
     (isSplit()?", lecture and lab marked separately so a partial day is recorded accurately":"")+
+    (quizOn()?". Pick the number you drew in the Quiz box at the top of a day; every team sends that position, and if a team's number is absent a second box appears for the number you draw again":"")+
     ". W marks a student still on the wait list. Status changes happen on the Roster & Status tab."+
     (state.hideWl?("  "+byStatus("waitlist").length+" waitlisted student"+(byStatus("waitlist").length===1?" is":"s are")+" hidden from this sheet."):"");
   SEATDUP=seatCounts();
-  var span=days().length*(isSplit()?2:1)+4,list=rollList(),h="";
+  var span=days().length*perDayCells()+5,list=rollList(),h="";
   list.forEach(function(s,i){
     var ns=(s.team!=null&&COLORS[s.team])?(" style=\"background:"+COLORS[s.team].bg+";color:"+COLORS[s.team].fg+";\""):"";
     h+="<tr data-uid='"+s.uid+"'><th scope='row' class='c0'>"+(i+1)+"</th><td class='c1'"+ns+">"+nameHtml(s)+
-       "</td><td class='teamwrap teamcol'>"+teamSelect(s)+"</td><td class='seatwrap teamcol seatcol'>"+seatSelect(s)+"</td>"+attCells(s)+"</tr>";
+       "</td><td class='teamwrap teamcol'>"+teamSelect(s)+"</td><td class='seatwrap teamcol seatcol'>"+seatSelect(s)+
+       "</td>"+quizCountCell(s)+attCells(s)+"</tr>";
   });
   $("attBody").innerHTML=h||"<tr><td class='empty' colspan='"+span+"'>Nobody on the class list yet. Use <b>Import roster</b> or <b>+ Add student</b>.</td></tr>";
   var counts=COLORS.map(function(){return 0;});
   list.forEach(function(s){if(s.team!=null&&counts[s.team]!=null)counts[s.team]++;});
   counts.forEach(function(v,i){var el=$("tc"+i);if(el)el.textContent=v;});
-  applyTeamCount();syncTeamInputs();updateTally();
+  applyTeamCount();syncTeamInputs();updateTally();drawTallyText();
 }
 function applyTeamCount(){
   var n=state?teamCount():6;
@@ -1370,10 +1586,12 @@ function renderRos(){
   $("drpFilterWrap").hidden=isList;
   $("rosHead").innerHTML="<th class='c0' scope='col'>#</th><th class='c1' scope='col'>Student Name</th><th scope='col'>Status</th>"+
     "<th class='teamcol' scope='col'>Team</th><th class='teamcol seatcol' scope='col' title='Position within the team'>Pos</th>"+
+    "<th class='teamcol quizcol' scope='col' title='Lab quiz turns taken so far'>Turns</th>"+
     "<th scope='col'>Add Code</th><th scope='col'>Since</th>"+
     (isList?"":"<th scope='col'>Reason</th>")+"<th scope='col'>History</th><th scope='col'>Actions</th>";
   SEATDUP=seatCounts();
-  var cols=isList?9:10,list;
+  refreshQuiz();
+  var cols=(isList?9:10)+(quizOn()?1:0),list;
   if(isList)list=onList();
   else{
     var f=$("drpFilter").value||"all";
@@ -1391,6 +1609,7 @@ function renderRos(){
       "<td class='statussel'>"+statusSelect(s)+"</td>"+
       "<td class='teamwrap teamcol'>"+teamSelect(s)+"</td>"+
       "<td class='seatwrap teamcol seatcol'>"+seatSelect(s)+"</td>"+
+      quizCountCell(s)+
       "<td class='code'>"+esc(s.code||"")+"</td>"+
       "<td class='datewrap'>"+esc(fmtDate(s.since))+"</td>"+
       (isList?"":"<td class='datewrap'>"+esc(s.reason||"")+"</td>")+
@@ -1480,6 +1699,7 @@ document.addEventListener("click",function(e){
   var b=e.target.closest?e.target.closest("button"):null;
   if(!b||!state)return;
   if(b.classList.contains("chk")){cycleCell(b);return;}
+  if(b.classList.contains("qchk")){toggleQuizCell(b);return;}
   if(b.getAttribute("data-act")==="edit"){openEdit(b.getAttribute("data-uid"));return;}
   if(b.getAttribute("data-act")==="remove"){
     var u=b.getAttribute("data-uid"),s=getU(u);
@@ -1492,6 +1712,16 @@ document.addEventListener("click",function(e){
       });
   }
 });
+function toggleQuizCell(btn){
+  var s=getU(btn.getAttribute("data-uid")),j=+btn.getAttribute("data-qday");
+  if(!s)return;
+  if(!s.qz)s.qz={};
+  var wanted=!quizCredited(s,j);
+  var auto=!!((QAUTO[j]||{})[s.uid]);
+  if(wanted===auto)delete s.qz[j];
+  else s.qz[j]=wanted?"1":"0";
+  persist();syncQuizUI(j);
+}
 function cycleCell(btn){
   var s=getU(btn.getAttribute("data-uid")),d=btn.getAttribute("data-day"),part=btn.getAttribute("data-part")||"a";
   if(!s)return;
@@ -1503,11 +1733,27 @@ function cycleCell(btn){
   var ctx=isSplit()?(", "+partName(part)):"";
   btn.setAttribute("aria-label",s.name+", "+dayFull(days()[d])+ctx+": "+attWord(ns));
   persist();updateTally();
+  if(quizOn())syncQuizUI(+d);
 }
 document.addEventListener("change",function(e){
   if(!state)return;
   var t=e.target;
   if(t.getAttribute&&t.getAttribute("data-act")==="status"){handleStatusPick(t);return;}
+  if(t.classList&&t.classList.contains("drawsel")){
+    var dj=+t.getAttribute("data-draw"),slot=+t.getAttribute("data-slot");
+    var cur=drawsFor(dj).slice();
+    var pick=t.value===""?0:(+t.value);
+    if(pick===0)cur.splice(slot,1);else cur[slot]=pick;
+    setDraws(dj,cur);
+    persist();syncQuizUI(dj);paintTurnCounts();
+    var back=$("attHead").querySelector(".drawsel[data-draw='"+dj+"'][data-slot='"+slot+"']");
+    if(back&&back.focus)back.focus();
+    var now=drawsFor(dj),dd=days()[dj];
+    notice(now.length
+      ?("Lab quiz "+(dd?dayFull(dd):("day "+(dj+1)))+": drew "+now.join(", then ")+".")
+      :("Lab quiz draw cleared for "+(dd?dayFull(dd):("day "+(dj+1)))+"."),true);
+    return;
+  }
   if(t.classList&&t.classList.contains("teamsel")){
     var s=getU(t.getAttribute("data-uid"));
     if(!s)return;
@@ -1780,6 +2026,15 @@ $("tblToggle").addEventListener("change",function(){
   if(!state)return;
   state.tbl=this.checked;persist();renderAll();
 });
+$("quizToggle").addEventListener("change",function(){
+  if(!state)return;
+  state.quiz=this.checked;
+  if(state.quiz&&!state.tbl){state.tbl=true;}
+  persist();renderAll();
+  notice(state.quiz
+    ?"Lab quiz draw is on. Each class day now has a Quiz box in the header where you record the number you drew, and every student has a running turn count."
+    :"Lab quiz draw is off. The numbers you already recorded are kept and come back if you turn it on again.",true);
+});
 $("wlToggle").addEventListener("change",function(){
   if(!state)return;
   state.hideWl=!this.checked;
@@ -1791,7 +2046,7 @@ $("wlToggle").addEventListener("change",function(){
 $("btnClearAtt").addEventListener("click",function(){
   if(!state)return;
   askConfirm("Erase attendance for this class?",
-    "Every attendance mark on the class list will be erased. Teams and the roster are not affected. This cannot be undone.",
+    "Every attendance mark on the class list will be erased. Teams, the roster, and the lab quiz record are not affected. This cannot be undone.",
     "Yes, erase attendance",function(){
       students().forEach(function(s){if(s.status!=="dropped"){s.att={};s.lab={};}});
       persist();renderAtt();notice("Attendance cleared.",true);
@@ -1818,16 +2073,24 @@ $("btnExportAtt").addEventListener("click",function(){
   if(!state)return;
   var D=days();
   var split=isSplit();
+  var qz=quizOn();
+  if(qz)refreshQuiz();
   var head=["Status","Wait list","Position","Student Name","Confidential","Team","Team position","Add Code"];
-  D.forEach(function(d){
+  if(qz)head.push("Lab quiz turns");
+  D.forEach(function(d,j){
     if(split){head.push(dayFull(d)+" Lecture");head.push(dayFull(d)+" Lab");}
     else head.push(dayFull(d));
+    if(qz){
+      var dr=drawsFor(j);
+      head.push(dayFull(d)+" Lab quiz"+(dr.length?(" (drew "+dr.join(", then ")+")"):""));
+    }
   });
   head.push("Present","Partial","Absent","Status since","Reason");
   var lines=[head];
   students().slice().sort(function(a,b){return (ORDER[a.status]-ORDER[b.status])||byPos(a,b);}).forEach(function(s){
     var r=[statusLabel(s.status),(s.status==="waitlist"?"W":""),(s.pos||""),s.name,(s.conf?"Y":""),
       (s.team!=null?state.teamNames[s.team]:""),(s.seat||""),s.code||""];
+    if(qz)r.push(s.status==="dropped"?"":quizCount(s));
     var p=0,pa=0,ab=0;
     function push(v){
       if(v==="1")p++;else if(v==="3")pa++;else if(v==="2")ab++;
@@ -1836,6 +2099,7 @@ $("btnExportAtt").addEventListener("click",function(){
     D.forEach(function(d,j){
       push(s.att[j]);
       if(split)push((s.lab||{})[j]);
+      if(qz)r.push(quizCredited(s,j)?(quizOverride(s,j)==="1"?"Yes (by hand)":"Yes"):"");
     });
     r.push(p,pa,ab,fmtDate(s.since),s.reason||"");
     lines.push(r);
@@ -1910,6 +2174,8 @@ function activate(id){
   if(!c.seatCount)c.seatCount=6;
   if(c.split==null)c.split=false;
   if(c.hideWl==null)c.hideWl=false;
+  if(c.quiz==null)c.quiz=false;
+  if(!c.draws||typeof c.draws!=="object"||Array.isArray(c.draws))c.draws={};
   if(c.color==null)c.color=0;
   if(SORTS.indexOf(c.sort)<0)c.sort="name";
   if(!c.schedule)c.schedule={start:"",weeks:16,weekdays:[],meet:"",time:"",skip:[]};
@@ -1918,6 +2184,7 @@ function activate(id){
   c.students.forEach(function(s){
     if(!s.att)s.att={};
     if(!s.lab)s.lab={};
+    if(!s.qz||typeof s.qz!=="object")s.qz={};
     if(s.seat===undefined)s.seat=null;
     if(!Array.isArray(s.log))s.log=[];
     if(s.since==null)s.since="";
